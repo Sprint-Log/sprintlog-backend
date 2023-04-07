@@ -4,8 +4,9 @@ from uuid import uuid4
 from starlite import Response, get
 from starlite.contrib.jwt import JWTAuth
 
+from app.domain.users import User
+
 from . import settings
-from .users import User
 
 if TYPE_CHECKING:
     from starlite import ASGIConnection

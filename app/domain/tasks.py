@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import ARRAY, Boolean, Integer, String
 from sqlalchemy.orm import Mapped
@@ -8,17 +8,21 @@ from app.lib import dto, orm, service
 from app.lib.repository.sqlalchemy import SQLAlchemyRepository
 from app.lib.worker import queue
 
+if TYPE_CHECKING:
+    from uuid import UUID
+
 
 class Task(orm.Base):
     title: Mapped[str] = MCol(String)
     description: Mapped[str] = MCol(String)
-    progress: Mapped[str] = MCol(Integer, default=0)
+    progress: Mapped[int] = MCol(Integer, default=0)
     sprint_number: Mapped[int] = MCol(Integer)
     project_slug: Mapped[str] = MCol(String)
-    priority: Mapped[str] = MCol(Integer)
+    priority: Mapped[int] = MCol(Integer)
     status: Mapped[str] = MCol(String)
-    is_closed: Mapped[bool] = MCol(Boolean)
-    labels: Mapped[list] = MCol(ARRAY(String))
+    is_backlog: Mapped[bool] = MCol(Boolean)
+    labels: Mapped[list | None] = MCol(ARRAY(String), nullable=True)
+    tags: Mapped[list | None] = MCol(ARRAY(String), nullable=True)
     assigned_to: Mapped[str] = MCol(String)
     assigned_by: Mapped[str] = MCol(String)
 
@@ -33,12 +37,12 @@ class Service(service.Service[Task]):
         await queue.enqueue("task_created", data=ReadDTO.from_orm(created).dict())
         return created
 
-    async def update(self, id_: str, data: Task) -> Task:
+    async def update(self, id_: "UUID", data: Task) -> Task:
         updated = await super().update(id_, data)
         await queue.enqueue("task_updated", data=ReadDTO.from_orm(updated).dict())
         return updated
 
-    async def delete(self, id_: str) -> Any:
+    async def delete(self, id_: "UUID") -> Any:
         deleted = await super().delete(id_)
         await queue.enqueue("task_delete", data=ReadDTO.from_orm(deleted).dict())
         return deleted

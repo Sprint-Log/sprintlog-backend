@@ -1,5 +1,7 @@
 # pyright: reportGeneralTypeIssues=false
 
+from uuid import UUID
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlite import get  # pylint: disable=unused-import
 from starlite import Controller, Dependency, Provide, delete, post, put
@@ -15,7 +17,7 @@ def provides_service(db_session: AsyncSession) -> Service:
 
 
 class ApiController(Controller):
-    details = "/{index:uuid}"
+    details = "/{col_id:uuid}"
     path = "/tasks"
     dependencies = {"service": Provide(provides_service)}
     tags = ["Tasks"]
@@ -35,16 +37,16 @@ class ApiController(Controller):
         return ReadDTO.from_orm(await service.create(Task.from_dto(data)))
 
     @get(details)
-    async def get(self, service: Service, col_id: str) -> ReadDTO:
+    async def get(self, service: Service, col_id: UUID) -> ReadDTO:
         """Get Task by ID."""
         return ReadDTO.from_orm(await service.get(col_id))
 
     @put(details)
-    async def update(self, data: WriteDTO, service: Service, col_id: str) -> ReadDTO:
+    async def update(self, data: WriteDTO, service: Service, col_id: UUID) -> ReadDTO:
         """Update an author."""
         return ReadDTO.from_orm(await service.update(col_id, Task.from_dto(data)))
 
     @delete(details, status_code=HTTP_200_OK)
-    async def delete(self, service: Service, col_id: str) -> ReadDTO:
+    async def delete(self, service: Service, col_id: UUID) -> ReadDTO:
         """Delete Task by ID."""
         return ReadDTO.from_orm(await service.delete(col_id))

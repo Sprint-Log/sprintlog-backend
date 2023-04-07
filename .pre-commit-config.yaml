@@ -92,6 +92,7 @@ repos:
         additional_dependencies:
           [
             aiosmtplib,
+            starlite_users,
             alembic,
             asyncpg,
             asyncpg-stubs,
@@ -115,6 +116,7 @@ repos:
           [
             aiosmtplib,
             alembic,
+            starlite_users,
             asyncpg,
             asyncpg-stubs,
             httpx,
@@ -136,6 +138,7 @@ repos:
         additional_dependencies:
           [
             aiosmtplib,
+            starlite_users,
             alembic,
             asyncpg,
             asyncpg-stubs,

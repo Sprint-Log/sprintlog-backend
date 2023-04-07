@@ -19,7 +19,6 @@ from . import (
     settings,
     sqlalchemy_plugin,
     static_files,
-    users,
     worker,
 )
 
@@ -42,6 +41,5 @@ __all__ = [
     "settings",
     "sqlalchemy_plugin",
     "static_files",
-    "users",
     "worker",
 ]

@@ -3,6 +3,9 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from starlite import Dependency, Parameter, Provide
+from starlite.contrib.jwt import Token
+
+from app.domain.users import User
 
 from . import settings
 from .repository.filters import BeforeAfter, CollectionFilter, LimitOffset
@@ -10,9 +13,6 @@ from .repository.types import FilterTypes
 
 if TYPE_CHECKING:
     from starlite import Request
-    from starlite_jwt import Token
-
-    from .users import User
 
 DTorNone = datetime | None
 
