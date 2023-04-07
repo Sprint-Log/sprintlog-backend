@@ -1,0 +1,39 @@
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ARRAY, ForeignKey
+from sqlalchemy.orm import relationship
+
+
+class Project(Base):
+    __tablename__ = "projects"
+    project_slug = Column(String, primary_key=True)
+    title = Column(String)
+    description = Column(String)
+    created_date = Column(DateTime)
+    updated_date = Column(DateTime)
+    tasks = relationship("Task", back_populates="project")
+
+
+class Sprint(Base):
+    __tablename__ = "sprints"
+    project_slug = Column(String, ForeignKey("projects.project_slug"), primary_key=True)
+    sprint_number = Column(Integer, primary_key=True)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
+    tasks = relationship("Task", back_populates="sprint")
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    description = Column(String)
+    progress = Column(Integer, default=0)
+    sprint_number = Column(Integer, ForeignKey("sprints.sprint_number"))
+    project_slug = Column(String, ForeignKey("projects.project_slug"))
+    created_date = Column(DateTime)
+    updated_date = Column(DateTime)
+    priority = Column(Integer)
+    status = Column(String)
+    is_closed = Column(Boolean)
+    labels = Column(ARRAY(String))
+    project = relationship("Project", back_populates="tasks")
+    sprint = relationship("Sprint", back_populates="tasks")
