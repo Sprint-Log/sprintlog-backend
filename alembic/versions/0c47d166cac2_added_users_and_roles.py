@@ -30,12 +30,8 @@ def upgrade():
     )
     op.create_table(
         "userrole",
-        sa.Column(
-            "user_id", starlite_users.adapter.sqlalchemy.guid.GUID(), nullable=False
-        ),
-        sa.Column(
-            "role_id", starlite_users.adapter.sqlalchemy.guid.GUID(), nullable=False
-        ),
+        sa.Column("user_id", sa.UUID(), nullable=False),
+        sa.Column("role_id", sa.UUID(), nullable=False),
         sa.Column("id", sa.UUID(), nullable=False),
         sa.Column("created", sa.DateTime(), nullable=False),
         sa.Column("updated", sa.DateTime(), nullable=False),

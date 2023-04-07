@@ -1,10 +1,11 @@
-from typing import TYPE_CHECKING
+from uuid import UUID
 
+import sqlalchemy as sa
 from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import MappedColumn as MCol
-from sqlalchemy.orm import relationship
-from starlite_users.adapter.sqlalchemy.guid import GUID
+from sqlalchemy.orm import registry, relationship
 from starlite_users.adapter.sqlalchemy.mixins import SQLAlchemyRoleMixin
 from starlite_users.password import PasswordManager
 from starlite_users.schema import (
@@ -18,9 +19,6 @@ from starlite_users.schema import (
 from starlite_users.service import BaseUserService
 
 from app.lib.orm import Base
-
-if TYPE_CHECKING:
-    import uuid
 
 password_manager = PasswordManager()
 
@@ -36,8 +34,13 @@ class User(Base):
 
 
 class UserRole(Base):
-    user_id: Mapped["uuid.UUID"] = MCol(GUID(), ForeignKey("user.id"))
-    role_id: Mapped["uuid.UUID"] = MCol(GUID(), ForeignKey("role.id"))
+    """Base for all SQLAlchemy declarative models."""
+
+    registry = registry(
+        type_annotation_map={UUID: pg.UUID, dict: pg.JSONB},
+    )
+    user_id: Mapped[UUID] = MCol(sa.UUID(), ForeignKey("user.id"))
+    role_id: Mapped[UUID] = MCol(sa.UUID(), ForeignKey("role.id"))
 
 
 class RoleCreateDTO(BaseRoleCreateDTO):  # type: ignore
