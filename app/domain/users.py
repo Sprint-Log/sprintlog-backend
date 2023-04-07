@@ -25,14 +25,14 @@ if TYPE_CHECKING:
 password_manager = PasswordManager()
 
 
+class Role(Base, SQLAlchemyRoleMixin):  # type: ignore
+    ...
+
+
 class User(Base):
     title: Mapped[str] = MCol(String(20))
     login_count: Mapped[int] = MCol(Integer(), default=0)
-    roles: Mapped["Role"] = relationship("Role", secondary="user_role", lazy="joined")
-
-
-class Role(Base, SQLAlchemyRoleMixin):  # type: ignore
-    ...
+    roles: Mapped[Role] = relationship("Role", secondary="userrole", lazy="joined")
 
 
 class UserRole(Base):

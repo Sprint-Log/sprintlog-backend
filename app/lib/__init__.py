@@ -1,7 +1,6 @@
 # this is because pycharm wigs out when there is a module called `exceptions`:
 # noinspection PyCompatibility
-from . import (
-    auth,
+from . import (  # auth,
     cache,
     compression,
     dependencies,
@@ -23,7 +22,7 @@ from . import (
 )
 
 __all__ = [
-    "auth",
+    # "auth",
     "cache",
     "compression",
     "dependencies",
