@@ -1,9 +1,11 @@
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import ARRAY, Boolean, Integer, String
+from sqlalchemy import ARRAY, Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import MappedColumn as MCol
+from sqlalchemy.orm import registry
 
+from app.domain.users import User
 from app.lib import dto, orm, service
 from app.lib.repository.sqlalchemy import SQLAlchemyRepository
 from app.lib.worker import queue
@@ -11,8 +13,13 @@ from app.lib.worker import queue
 if TYPE_CHECKING:
     from uuid import UUID
 
+from sqlalchemy.orm import relationship
+
 
 class Task(orm.Base):
+    registry = registry(
+        type_annotation_map={User: User},
+    )
     title: Mapped[str] = MCol(String)
     description: Mapped[str] = MCol(String)
     progress: Mapped[int] = MCol(Integer, default=0)
@@ -23,8 +30,14 @@ class Task(orm.Base):
     is_backlog: Mapped[bool] = MCol(Boolean)
     labels: Mapped[list | None] = MCol(ARRAY(String), nullable=True)
     tags: Mapped[list | None] = MCol(ARRAY(String), nullable=True)
-    assigned_to: Mapped[str] = MCol(String)
-    assigned_by: Mapped[str] = MCol(String)
+    assigner: Mapped["User" | None] = relationship(
+        back_populates="tasks_managed", foreign_keys=["assigner_id"]
+    )
+    assignee: Mapped["User" | None] = relationship(
+        back_populates="tasks_owned", foreign_keys=["assignee_id"]
+    )
+    assigner_id: Mapped["UUID" | None] = MCol(ForeignKey("user.id"))
+    assignee_id: Mapped["UUID" | None] = MCol(ForeignKey("user.id"))
 
 
 class Repository(SQLAlchemyRepository[Task]):

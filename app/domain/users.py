@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -20,6 +21,9 @@ from starlite_users.service import BaseUserService
 
 from app.lib.orm import Base
 
+if TYPE_CHECKING:
+    from app.domain.tasks import Task
+
 password_manager = PasswordManager()
 
 
@@ -31,6 +35,7 @@ class User(Base):
     title: Mapped[str] = MCol(String(20))
     login_count: Mapped[int] = MCol(Integer(), default=0)
     roles: Mapped[Role] = relationship("Role", secondary="userrole", lazy="joined")
+    tasks: Mapped[list["Task"] | None] = relationship(back_populates="assignee")
 
 
 class UserRole(Base):
