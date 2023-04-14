@@ -2,8 +2,6 @@ version: "3.9"
 services:
   redis:
     image: redis:latest
-    ports:
-      - "6379:6379"
     volumes:
       - cache:/data
 
@@ -12,12 +10,16 @@ services:
     volumes:
       - db:/var/lib/postrgresql/data/
     ports:
-      - "5432:5432"
+      - "54326:5432"
     environment:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: example-pg-docker
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U postgres"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -d $${POSTGRES_DB} -U postgres"
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -35,7 +37,7 @@ services:
         condition: service_healthy
 
     ports:
-      - "8000:8000"
+      - "8090:8000"
     env_file:
       - .env
     volumes:

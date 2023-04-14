@@ -7,7 +7,7 @@ from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy.orm import Mapped, registry, relationship
 from sqlalchemy.orm import MappedColumn as MCol
-from starlite_users.adapter.sqlalchemy.mixins import SQLAlchemyRoleMixin
+from starlite_users.adapter.sqlalchemy.mixins import SQLAlchemyRoleMixin, SQLAlchemyUserMixin
 from starlite_users.password import PasswordManager
 from starlite_users.schema import (
     BaseRoleCreateDTO,
@@ -40,10 +40,12 @@ password_manager = PasswordManager()
 
 
 class Role(Base, SQLAlchemyRoleMixin):  # type: ignore
+    __table__ = "role"
     ...
 
 
-class User(Base):
+class User(Base, SQLAlchemyUserMixin):
+    __table__ = "user"
     title: Mapped[str] = MCol(String(20))
     login_count: Mapped[int] = MCol(Integer(), default=0)
     roles: Mapped[Role] = relationship("Role", secondary="userrole", lazy="joined")
@@ -53,9 +55,7 @@ class User(Base):
 class UserRole(Base):
     """Base for all SQLAlchemy declarative models."""
 
-    registry = registry(
-        type_annotation_map={UUID: pg.UUID, dict: pg.JSONB},
-    )
+    __table__ = "userrole"
     user_id: Mapped[UUID] = MCol(sa.UUID(), ForeignKey("user.id"))
     role_id: Mapped[UUID] = MCol(sa.UUID(), ForeignKey("role.id"))
 

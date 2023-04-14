@@ -5,7 +5,7 @@ from litestar.contrib.sqlalchemy.base import AuditBase
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyRepository
 from litestar.dto.factory import DTOConfig
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import ARRAY, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
@@ -30,8 +30,8 @@ class Task(AuditBase):
     priority: Mapped[int]
     status: Mapped[str]
     is_backlog: Mapped[bool]
-    labels: Mapped[list | None]
-    tags: Mapped[list | None]
+    labels: Mapped[list[str] | None] = m_col(ARRAY(String))
+    tags: Mapped[list[str] | None] = m_col(ARRAY(String))
     assigner: Mapped[User | None] = relationship(back_populates="tasks_managed", foreign_keys=["assigner_id"])
     assignee: Mapped[User | None] = relationship(back_populates="tasks_owned", foreign_keys=["assignee_id"])
     assigner_id: Mapped[UUID | None] = m_col(ForeignKey("user.id"))

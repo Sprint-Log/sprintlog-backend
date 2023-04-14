@@ -19,8 +19,8 @@ saq = "*"
 sentry-sdk = "*"
 sqlalchemy = ">=2.0.0"
 # litestar = { path = "../litestar", extras = ["redis", "jwt", "cli"], develop = true }
-litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "dto-factory", extras = ["redis", "jwt", "cli"]}
-starlite_users = { git = "https://github.com/v3ss0n/starlite-users/", branch = "litestar"}
+litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "dto-factory", extras = ["redis", "jwt", "cli", "sqlalchemy"]}
+starlite_users = { git = "https://github.com/v3ss0n/starlite-users.git", branch = "litestar-upgrade-fixes"}
 
 uvicorn = { extras = ["standard"], version = "*" }
 uvloop = "*"
@@ -120,6 +120,7 @@ select = [
     "YTT", # flake8-2020
 ]
 ignore = [
+    "ERA001", #Commented out code
     "E501", # pycodestyle line too long, handled by black
     "D100", # pydocstyle - missing docstring in public module
     "D101", # pydocstyle - missing docstring in public class
