@@ -2199,7 +2199,7 @@ python-jose = "*"
 type = "git"
 url = "https://github.com/v3ss0n/starlite-users.git"
 reference = "litestar-upgrade-fixes"
-resolved_reference = "b686fe763357e643f72bb23efb2e46b075937a2d"
+resolved_reference = "dd025821fc6d8f3a85ab7869bc8c68750bc22dd0"
 
 [[package]]
 name = "texttable"
