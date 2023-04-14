@@ -40,22 +40,22 @@ password_manager = PasswordManager()
 
 
 class Role(Base, SQLAlchemyRoleMixin):  # type: ignore
-    __table__ = "role"
+    __tablename__ = "role"
     ...
 
 
 class User(Base, SQLAlchemyUserMixin):
-    __table__ = "user"
+    __tablename__ = "user"
     title: Mapped[str] = MCol(String(20))
     login_count: Mapped[int] = MCol(Integer(), default=0)
     roles: Mapped[Role] = relationship("Role", secondary="userrole", lazy="joined")
-    tasks: Mapped[list["Task"] | None] = relationship(back_populates="assignee")
+    assigned: Mapped[list["Task"] | None] = relationship(back_populates="assignee")
 
 
 class UserRole(Base):
     """Base for all SQLAlchemy declarative models."""
 
-    __table__ = "userrole"
+    __tablename__ = "userrole"
     user_id: Mapped[UUID] = MCol(sa.UUID(), ForeignKey("user.id"))
     role_id: Mapped[UUID] = MCol(sa.UUID(), ForeignKey("role.id"))
 

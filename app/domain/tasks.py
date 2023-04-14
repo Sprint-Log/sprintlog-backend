@@ -32,9 +32,7 @@ class Task(AuditBase):
     is_backlog: Mapped[bool]
     labels: Mapped[list[str] | None] = m_col(ARRAY(String))
     tags: Mapped[list[str] | None] = m_col(ARRAY(String))
-    assigner: Mapped[User | None] = relationship(back_populates="tasks_managed", foreign_keys=["assigner_id"])
-    assignee: Mapped[User | None] = relationship(back_populates="tasks_owned", foreign_keys=["assignee_id"])
-    assigner_id: Mapped[UUID | None] = m_col(ForeignKey("user.id"))
+    assignee: Mapped[User | None] = relationship(back_populates="assigned")
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey("user.id"))
 
 

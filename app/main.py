@@ -1,14 +1,3 @@
-"""This is the top-level of the application and should only ever import from
-other sub-packages of the application, and never be imported from. I.e., never
-do `from app.main import whatever` from within any other module of any other
-sub-package of the application.
-
-The main point of this restriction is to support unit-testing. We need to ensure that we can load
-any other component of the application for mocking things out in the unittests, without this module
-being loaded before that mocking has been completed.
-
-When writing tests, always use the `app` fixture, never import the app directly from this module.
-"""
 from typing import Any
 from uuid import UUID
 
@@ -16,11 +5,38 @@ import uvicorn
 from litestar import Litestar
 from litestar.contrib.repository.abc import FilterTypes
 from litestar.contrib.repository.exceptions import RepositoryError as RepositoryException
-from litestar.contrib.repository.filters import BeforeAfter, CollectionFilter, LimitOffset
+from litestar.contrib.repository.filters import (
+    BeforeAfter,
+    CollectionFilter,
+    LimitOffset,
+)
 from litestar.stores.registry import StoreRegistry
+from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlite_users import StarliteUsers, StarliteUsersConfig
+from starlite_users.config import (
+    AuthHandlerConfig,
+    CurrentUserHandlerConfig,
+    PasswordResetHandlerConfig,
+    RegisterHandlerConfig,
+    RoleManagementHandlerConfig,
+    UserManagementHandlerConfig,
+    VerificationHandlerConfig,
+)
+from starlite_users.guards import roles_accepted, roles_required
 
 from app.controllers import create_router
+from app.domain.users import (
+    Role,
+    RoleCreateDTO,
+    RoleReadDTO,
+    RoleUpdateDTO,
+    User,
+    UserCreateDTO,
+    UserReadDTO,
+    UserService,
+    UserUpdateDTO,
+)
 from app.lib import (
     cache,
     compression,
@@ -42,11 +58,36 @@ __all__ = ["create_app"]
 
 
 dependencies = create_collection_dependencies()
+su = StarliteUsers(
+    config=StarliteUsersConfig(
+        auth_backend="jwt",
+        secret=SecretStr("1234567890123456"),
+        # session_backend_config=MemoryBackendConfig(),
+        user_model=User,
+        user_create_dto=UserCreateDTO,
+        user_read_dto=UserReadDTO,
+        user_update_dto=UserUpdateDTO,
+        role_model=Role,
+        role_create_dto=RoleCreateDTO,
+        role_read_dto=RoleReadDTO,
+        role_update_dto=RoleUpdateDTO,
+        user_service_class=UserService,  # pyright: ignore
+        auth_handler_config=AuthHandlerConfig(),
+        current_user_handler_config=CurrentUserHandlerConfig(),
+        password_reset_handler_config=PasswordResetHandlerConfig(),
+        register_handler_config=RegisterHandlerConfig(),
+        role_management_handler_config=RoleManagementHandlerConfig(guards=[roles_accepted("administrator")]),
+        user_management_handler_config=UserManagementHandlerConfig(guards=[roles_required("administrator")]),
+        verification_handler_config=VerificationHandlerConfig(),
+    )
+)
 
 
 def create_app(**kwargs: Any) -> Litestar:
+
     kwargs.setdefault("debug", settings.app.DEBUG)
     return Litestar(
+        on_app_init=[su.on_app_init],
         response_cache_config=cache.config,
         stores=StoreRegistry(default_factory=cache.redis_store_factory),
         compression_config=compression.config,
