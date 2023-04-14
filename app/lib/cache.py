@@ -1,38 +1,16 @@
-from typing import TYPE_CHECKING
+from litestar.config.response_cache import ResponseCacheConfig
+from litestar.stores.redis import RedisStore
 
-from starlite import CacheConfig
-from starlite.cache.redis_cache_backend import (
-    RedisCacheBackend,
-    RedisCacheBackendConfig,
-)
-from starlite.config.cache import default_cache_key_builder
+from app.lib.redis import redis
 
 from . import settings
 
-if TYPE_CHECKING:
-    from starlite.connection import Request
+__all__ = ["redis_store_factory"]
 
 
-def cache_key_builder(request: "Request") -> str:
-    """App name prefixed cache key builder.
-
-    Parameters
-    ----------
-    request : Request
-        Current request instance.
-
-    Returns
-    -------
-    str
-        App slug prefixed cache key.
-    """
-    return f"{settings.app.slug}:{default_cache_key_builder(request)}"
+def redis_store_factory(name: str) -> RedisStore:
+    return RedisStore(redis, namespace=f"{settings.app.slug}:{name}")
 
 
-redis_backend = RedisCacheBackend(config=RedisCacheBackendConfig(url=settings.redis.URL, port=6379, db=0))
-config = CacheConfig(
-    backend=redis_backend,  # pyright:ignore[reportGeneralTypeIssues]
-    expiration=settings.api.CACHE_EXPIRATION,
-    cache_key_builder=cache_key_builder,
-)
+config = ResponseCacheConfig(default_expiration=settings.api.CACHE_EXPIRATION)
 """Cache configuration for application."""

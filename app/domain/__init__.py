@@ -1,4 +1,3 @@
-from .tasks import Task
-from .users import User
+from . import tasks, users
 
-__all__ = ["Task", "User"]
+__all__ = ["tasks", "users"]

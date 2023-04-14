@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 import sqlalchemy as sa
+from litestar.contrib.sqlalchemy.base import AuditBase as Base
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.dialects import postgresql as pg
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, registry, relationship
 from sqlalchemy.orm import MappedColumn as MCol
-from sqlalchemy.orm import registry, relationship
 from starlite_users.adapter.sqlalchemy.mixins import SQLAlchemyRoleMixin
 from starlite_users.password import PasswordManager
 from starlite_users.schema import (
@@ -19,7 +19,19 @@ from starlite_users.schema import (
 )
 from starlite_users.service import BaseUserService
 
-from app.lib.orm import Base
+__all__ = [
+    "Role",
+    "RoleCreateDTO",
+    "RoleReadDTO",
+    "RoleUpdateDTO",
+    "User",
+    "UserCreateDTO",
+    "UserReadDTO",
+    "UserRole",
+    "UserService",
+    "UserUpdateDTO",
+]
+
 
 if TYPE_CHECKING:
     from app.domain.tasks import Task
@@ -77,8 +89,6 @@ class UserUpdateDTO(BaseUserUpdateDTO):  # type: ignore
 
 
 class UserService(BaseUserService[User, UserCreateDTO, UserUpdateDTO, Role]):  # type: ignore
-    async def post_login_hook(
-        self, user: User
-    ) -> None:  # This will properly increment the user's `login_count`
+    async def post_login_hook(self, user: User) -> None:  # This will properly increment the user's `login_count`
         user.login_count += 1  # pyright: ignore
         await self.repository.session.commit()

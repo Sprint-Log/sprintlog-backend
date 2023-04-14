@@ -48,8 +48,8 @@ COPY . ./
 RUN poetry install --only-root
 
 # create a non-root user and switch to it, for security.
-RUN addgroup --system --gid 1000 "app-user"
-RUN adduser --system --uid 1000 "app-user"
+RUN addgroup --system --gid 1001 "app-user"
+RUN adduser --system --uid 1001 "app-user"
 USER "app-user"
 
 ENTRYPOINT ["/bin/sh", "-c"]

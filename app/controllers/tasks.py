@@ -1,14 +1,26 @@
 # pyright: reportGeneralTypeIssues=false
 
+from typing import TYPE_CHECKING
 from uuid import UUID
 
+from litestar import (
+    Controller,
+    delete,
+    get,  # pylint: disable=unused-import
+    post,
+    put,
+)
+from litestar.di import Provide
+from litestar.status_codes import HTTP_200_OK
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlite import get  # pylint: disable=unused-import
-from starlite import Controller, Dependency, Provide, delete, post, put
-from starlite.status_codes import HTTP_200_OK
 
-from app.domain.tasks import CreateDTO, ReadDTO, Repository, Service, Task, WriteDTO
-from app.lib.repository.types import FilterTypes
+from app.domain.tasks import ReadDTO, Repository, Service, WriteDTO
+from app.domain.tasks import Task as Model
+
+if TYPE_CHECKING:
+    from litestar.contrib.repository.abc import FilterTypes
+
+__all__ = ["ApiController", "provides_service"]
 
 
 def provides_service(db_session: AsyncSession) -> Service:
@@ -17,36 +29,35 @@ def provides_service(db_session: AsyncSession) -> Service:
 
 
 class ApiController(Controller):
+    DETAIL_ROUTE = "/{col_id:uuid}"
+    dto = WriteDTO
+    return_dto = ReadDTO
     details = "/{col_id:uuid}"
     path = "/tasks"
     dependencies = {"service": Provide(provides_service)}
     tags = ["Tasks"]
 
     @get()
-    async def tasklist(
-        self,
-        service: Service,
-        filters: list[FilterTypes] = Dependency(skip_validation=True),
-    ) -> list[ReadDTO]:
-        """Get a list of Tasks."""
-        return [ReadDTO.from_orm(item) for item in await service.list(*filters)]
+    async def filter(self, service: Service, filters: list["FilterTypes"]) -> list[Model]:
+        """Get a list of templates."""
+        return await service.list(*filters)
 
     @post()
-    async def create(self, data: CreateDTO, service: Service) -> ReadDTO:
-        """Create an `Task`."""
-        return ReadDTO.from_orm(await service.create(Task.from_dto(data)))
+    async def create(self, data: Model, service: Service) -> Model:
+        """Create an `Model`."""
+        return await service.create(data)
 
-    @get(details)
-    async def get(self, service: Service, col_id: UUID) -> ReadDTO:
-        """Get Task by ID."""
-        return ReadDTO.from_orm(await service.get(col_id))
+    @get(DETAIL_ROUTE)
+    async def retrieve(self, service: Service, template_id: UUID) -> Model:
+        """Get Model by ID."""
+        return await service.get(template_id)
 
-    @put(details)
-    async def update(self, data: WriteDTO, service: Service, col_id: UUID) -> ReadDTO:
-        """Update an author."""
-        return ReadDTO.from_orm(await service.update(col_id, Task.from_dto(data)))
+    @put(DETAIL_ROUTE)
+    async def update(self, data: Model, service: Service, template_id: UUID) -> Model:
+        """Update an template."""
+        return await service.update(template_id, data)
 
-    @delete(details, status_code=HTTP_200_OK)
-    async def delete(self, service: Service, col_id: UUID) -> ReadDTO:
-        """Delete Task by ID."""
-        return ReadDTO.from_orm(await service.delete(col_id))
+    @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
+    async def delete(self, service: Service, template_id: UUID) -> Model:
+        """Delete Model by ID."""
+        return await service.delete(template_id)
