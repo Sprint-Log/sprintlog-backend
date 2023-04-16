@@ -38,7 +38,7 @@ class AppSettings(BaseEnvSettings):
     BUILD_NUMBER : str
         Identity of the CI build of current app instance.
     DEBUG : bool
-        If `True` runs `Starlite` in debug mode.
+        If `True` runs `Litestar` in debug mode.
     ENVIRONMENT : str
         "dev", "prod", etc.
     LOG_LEVEL : str
@@ -50,11 +50,11 @@ class AppSettings(BaseEnvSettings):
     class Config:
         case_sensitive = True
 
-    BUILD_NUMBER: str
-    DEBUG: bool
-    ENVIRONMENT: str
-    LOG_LEVEL: str
-    NAME: str
+    BUILD_NUMBER: str = "0"
+    DEBUG: bool = False
+    ENVIRONMENT: str = "local"
+    LOG_LEVEL: str = "INFO"
+    NAME: str = "litestar-pg-redis-docker"
 
     @property
     def slug(self) -> str:
@@ -86,13 +86,13 @@ class APISettings(BaseEnvSettings):
         env_prefix = "API_"
         case_sensitive = True
 
-    CACHE_EXPIRATION: int
-    DB_SESSION_DEPENDENCY_KEY: str
-    DEFAULT_PAGINATION_LIMIT: int
-    DEFAULT_USER_NAME: str
-    HEALTH_PATH: str
-    SECRET_KEY: str
-    USER_DEPENDENCY_KEY: str
+    CACHE_EXPIRATION: int = 60
+    DB_SESSION_DEPENDENCY_KEY: str = "db_session"
+    DEFAULT_PAGINATION_LIMIT: int = 100
+    DEFAULT_USER_NAME: str = "__default_user__"
+    HEALTH_PATH: str = "/health"
+    SECRET_KEY: str = "abc123"
+    USER_DEPENDENCY_KEY: str = "user"
 
 
 # noinspection PyUnresolvedReferences
@@ -117,10 +117,10 @@ class OpenAPISettings(BaseEnvSettings):
         env_prefix = "OPENAPI_"
         case_sensitive = True
 
-    TITLE: str | None
-    VERSION: str
-    CONTACT_NAME: str
-    CONTACT_EMAIL: str
+    TITLE: str | None = "My litestar App"
+    VERSION: str = "0.1.0"
+    CONTACT_NAME: str = "My Name"
+    CONTACT_EMAIL: str = "some_human@some_domain.com"
 
 
 # noinspection PyUnresolvedReferences
@@ -141,13 +141,15 @@ class DatabaseSettings(BaseEnvSettings):
         env_prefix = "DB_"
         case_sensitive = True
 
-    ECHO: bool
-    ECHO_POOL: bool | Literal["debug"]
-    POOL_DISABLE: bool
-    POOL_MAX_OVERFLOW: int
-    POOL_SIZE: int
-    POOL_TIMEOUT: int
-    URL: PostgresDsn
+    ECHO: bool = False
+    ECHO_POOL: bool | Literal["debug"] = False
+    POOL_DISABLE: bool = False
+    POOL_MAX_OVERFLOW: int = 10
+    POOL_SIZE: int = 5
+    POOL_TIMEOUT: int = 30
+    URL: PostgresDsn = PostgresDsn(
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres", scheme="postgresql+asyncpg"
+    )
 
 
 # noinspection PyUnresolvedReferences
@@ -166,7 +168,7 @@ class RedisSettings(BaseEnvSettings):
         env_prefix = "REDIS_"
         case_sensitive = True
 
-    URL: AnyUrl
+    URL: AnyUrl = AnyUrl("redis://localhost:6379/0", scheme="redis")
 
 
 # noinspection PyUnresolvedReferences
@@ -185,8 +187,8 @@ class SentrySettings(BaseEnvSettings):
         env_prefix = "SENTRY_"
         case_sensitive = True
 
-    DSN: str
-    TRACES_SAMPLE_RATE: float
+    DSN: str = ""
+    TRACES_SAMPLE_RATE: float = 0.0
 
 
 # noinspection PyUnresolvedReferences
@@ -195,11 +197,11 @@ class ServerSettings(BaseEnvSettings):
         env_prefix = "UVICORN_"
         case_sensitive = True
 
-    HOST: str
-    LOG_LEVEL: str
-    PORT: int
-    RELOAD: bool
-    KEEPALIVE: int
+    HOST: str = "localhost"
+    LOG_LEVEL: str = "info"
+    PORT: int = 8000
+    RELOAD: bool = True
+    KEEPALIVE: int = 65
 
 
 class EmailSettings(BaseEnvSettings):
@@ -207,11 +209,11 @@ class EmailSettings(BaseEnvSettings):
         env_prefix = "EMAIL_"
         case_sensitive = True
 
-    HOST: str
-    NEW_AUTHOR_SUBJECT: str
-    PORT: int
-    RECIPIENT: str
-    SENDER: str
+    HOST: str = "mailhog"
+    NEW_AUTHOR_SUBJECT: str = "New author created"
+    PORT: int = 1025
+    RECIPIENT: str = "admin@localhost"
+    SENDER: str = "admin@localhost"
 
 
 # `.parse_obj()` thing is a workaround for pyright and pydantic interplay, see:

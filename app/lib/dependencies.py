@@ -1,18 +1,22 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
 from uuid import UUID
 
-from starlite import Dependency, Parameter, Provide
-from starlite.contrib.jwt import Token
-
-from app.domain.users import User
+from litestar.contrib.repository.abc import FilterTypes
+from litestar.contrib.repository.filters import BeforeAfter, CollectionFilter, LimitOffset
+from litestar.di import Provide
+from litestar.params import Dependency, Parameter
 
 from . import settings
-from .repository.filters import BeforeAfter, CollectionFilter, LimitOffset
-from .repository.types import FilterTypes
 
-if TYPE_CHECKING:
-    from starlite import Request
+__all__ = [
+    "create_collection_dependencies",
+    "provide_created_filter",
+    "provide_filter_dependencies",
+    "provide_id_filter",
+    "provide_limit_offset_pagination",
+    "provide_updated_filter",
+]
+
 
 DTorNone = datetime | None
 
@@ -21,18 +25,6 @@ FILTERS_DEPENDENCY_KEY = "filters"
 ID_FILTER_DEPENDENCY_KEY = "id_filter"
 LIMIT_OFFSET_DEPENDENCY_KEY = "limit_offset"
 UPDATED_FILTER_DEPENDENCY_KEY = "updated_filter"
-
-
-async def provide_user(request: "Request[User, Token]") -> "User":
-    """Gets the user from the request.
-
-    Args:
-        request: current request.
-
-    Returns:
-    User | None
-    """
-    return request.user
 
 
 def provide_id_filter(
@@ -45,7 +37,7 @@ def provide_id_filter(
     ids : list[UUID] | None
         Parsed out of comma separated list of values in query params.
 
-    Returns
+    Returns:
     -------
     CollectionFilter[UUID]
     """
@@ -72,8 +64,7 @@ def provide_updated_filter(
     before: DTorNone = Parameter(query="updated-before", default=None, required=False),
     after: DTorNone = Parameter(query="updated-after", default=None, required=False),
 ) -> BeforeAfter:
-    """
-    Return type consumed by `Repository.filter_on_datetime_field()`.
+    """Return type consumed by `Repository.filter_on_datetime_field()`.
     Parameters
     ----------
     before : datetime | None
@@ -93,8 +84,7 @@ def provide_limit_offset_pagination(
         required=False,
     ),
 ) -> LimitOffset:
-    """
-    Return type consumed by `Repository.apply_limit_offset_pagination()`.
+    """Return type consumed by `Repository.apply_limit_offset_pagination()`.
     Parameters
     ----------
     page : int
@@ -130,7 +120,8 @@ def provide_filter_dependencies(
         Filter for scoping query to instance update date/time.
     limit_offset : repository.LimitOffset
         Filter for query pagination.
-    Returns
+
+    Returns:
     -------
     list[FilterTypes]
         List of filters parsed from connection.
@@ -144,9 +135,9 @@ def provide_filter_dependencies(
 
 
 def create_collection_dependencies() -> dict[str, Provide]:
-    """
-    Creates a dictionary of provides for pagination endpoints.
-    Returns
+    """Creates a dictionary of provides for pagination endpoints.
+
+    Returns:
     -------
     dict[str, Provide]
 

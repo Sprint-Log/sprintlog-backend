@@ -1,12 +1,14 @@
 import contextlib
 
+from litestar import get
+from litestar.contrib.sqlalchemy.repository import SQLAlchemyRepository
+from litestar.exceptions import ServiceUnavailableException
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlite import get
-from starlite.exceptions import ServiceUnavailableException
 
 from . import settings
-from .repository.sqlalchemy import SQLAlchemyRepository
 from .settings import AppSettings
+
+__all__ = ["HealthCheckFailure", "health_check"]
 
 
 class HealthCheckFailure(ServiceUnavailableException):

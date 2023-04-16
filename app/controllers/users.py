@@ -14,8 +14,8 @@ from litestar.di import Provide
 from litestar.status_codes import HTTP_200_OK
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.tasks import ReadDTO, Repository, Service, WriteDTO
-from app.domain.tasks import Task as Model
+from app.domain.users import ReadDTO, Repository, Service, WriteDTO
+from app.domain.users import User as Model
 
 if TYPE_CHECKING:
     from litestar.contrib.repository.abc import FilterTypes
@@ -33,9 +33,9 @@ class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
     details = "/{col_id:uuid}"
-    path = "/tasks"
+    path = "/users"
     dependencies = {"service": Provide(provides_service)}
-    tags = ["Tasks"]
+    tags = ["Users"]
 
     @get()
     async def filter(self, service: Service, filters: list["FilterTypes"]) -> list[Model]:
