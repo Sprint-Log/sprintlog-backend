@@ -19,8 +19,7 @@ saq = "*"
 sentry-sdk = "*"
 sqlalchemy = ">=2.0.0"
 # litestar = { path = "../litestar", extras = ["redis", "jwt", "cli"], develop = true }
-litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "dto-factory", extras = ["redis", "jwt", "cli", "sqlalchemy"]}
-starlite_users = { git = "https://github.com/v3ss0n/starlite-users.git", branch = "litestar-upgrade-fixes"}
+litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "sqlalchemy-plugin", extras = ["redis", "jwt", "cli", "sqlalchemy"]}
 
 uvicorn = { extras = ["standard"], version = "*" }
 uvloop = "*"
@@ -33,7 +32,7 @@ pytest = "*"
 pytest-asyncio = "*"
 pytest-dotenv = "*"
 # litestar = { path = "../litestar", extras = ["testing"], develop = true}
-litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "dto-factory", extras = ["testing"]}
+litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "sqlalchemy-plugin", extras = ["testing"]}
 
 [tool.poetry.group.coverage]
 optional = true
