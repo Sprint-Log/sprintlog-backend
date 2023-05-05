@@ -24,12 +24,12 @@ __all__ = [
 from app.domain.roles import Role
 
 if TYPE_CHECKING:
-    from app.domain.tasks import Task
+    from app.domain.backlogs import Backlog
 
 
 class User(Base, SQLAlchemyUserMixin):
     title: Mapped[str] = MCol(String(20))
-    tasks: Mapped[list["Task"] | None] = relationship(back_populates="assignee")
+    tasks: Mapped[list["Backlog"]] = relationship(back_populates="assignee")
 
 
 class Repository(SQLAlchemyRepository[User]):
@@ -40,5 +40,7 @@ class Service(service.Service[User]):
     repository_type = User
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[User, DTOConfig(exclude={"id", "created", "updated"})]]
+WriteDTO = SQLAlchemyDTO[
+    Annotated[User, DTOConfig(exclude={"id", "created", "updated"})]
+]
 ReadDTO = SQLAlchemyDTO[User]

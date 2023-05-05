@@ -1,6 +1,8 @@
 import json
 
-from app.domain import tasks
+from app.domain import backlogs
+
+__all__ = ["task_created", "task_deleted", "task_updated"]
 
 
 async def task_created(_: dict, *, data: dict) -> None:
@@ -13,7 +15,7 @@ async def task_created(_: dict, *, data: dict) -> None:
     Returns:
         The author object.
     """
-    await tasks.Service.create_zulip_topic(json.dumps(data))
+    await backlogs.Service.create_zulip_topic(json.dumps(data))
 
 
 async def task_updated(_: dict, *, data: dict) -> None:
@@ -26,7 +28,7 @@ async def task_updated(_: dict, *, data: dict) -> None:
     Returns:
         The author object.
     """
-    await tasks.Service.update_zulip_topic(json.dumps(data))
+    await backlogs.Service.update_zulip_topic(json.dumps(data))
 
 
 async def task_deleted(_: dict, *, data: dict) -> None:
@@ -39,4 +41,4 @@ async def task_deleted(_: dict, *, data: dict) -> None:
     Returns:
         The author object.
     """
-    await tasks.Service.delete_zulip_topic(json.dumps(data))
+    await backlogs.Service.delete_zulip_topic(json.dumps(data))

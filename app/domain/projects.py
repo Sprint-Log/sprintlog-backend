@@ -11,7 +11,7 @@ from sqlalchemy.orm import mapped_column as m_col
 from app.lib import service
 
 if TYPE_CHECKING:
-    from app.domain.tasks import Task
+    from app.domain.backlogs import Backlog
 
 __all__ = [
     "Project",
@@ -28,7 +28,9 @@ class Project(AuditBase):
     description: Mapped[str]
     start_date: Mapped[datetime] = m_col(default=datetime.now)
     end_date: Mapped[datetime] = m_col(default=datetime.now)
-    tasks: Mapped[list["Task"] | None] = relationship("Task", back_populates="project", lazy="joined")
+    tasks: Mapped[list["Backlog"] | None] = relationship(
+        "Task", back_populates="project", lazy="joined"
+    )
 
 
 class Repository(SQLAlchemyRepository[Project]):
@@ -39,5 +41,7 @@ class Service(service.Service[Project]):
     repository_type = Project
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created", "updated", "tasks"})]]
+WriteDTO = SQLAlchemyDTO[
+    Annotated[Project, DTOConfig(exclude={"id", "created", "updated", "tasks"})]
+]
 ReadDTO = SQLAlchemyDTO[Project]
