@@ -23,8 +23,8 @@ __all__ = [
 
 
 class Project(AuditBase):
-    project_slug: Mapped[str]
-    title: Mapped[str]
+    slug: Mapped[str]
+    name: Mapped[str]
     description: Mapped[str]
     start_date: Mapped[datetime] = m_col(default=datetime.now)
     end_date: Mapped[datetime] = m_col(default=datetime.now)

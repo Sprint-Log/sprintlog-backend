@@ -14,9 +14,8 @@ from litestar.di import Provide
 from litestar.status_codes import HTTP_200_OK
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.backlogs import Service as BacklogService
-from app.domain.projects import Project as Model
-from app.domain.projects import ReadDTO, Repository, Service, WriteDTO
+from app.domain.backlogs import Backlog as Model
+from app.domain.backlogs import ReadDTO, Repository, Service, WriteDTO
 
 if TYPE_CHECKING:
     from litestar.contrib.repository.abc import FilterTypes
@@ -30,17 +29,13 @@ def provides_service(db_session: AsyncSession) -> Service:
 
 
 class ApiController(Controller):
-    DETAIL_ROUTE = "/{id_col:uuid}"
-    BACKLOG_ROUTE = "/{id_col:uuid}/backlog/"
+    DETAIL_ROUTE = "/{col_id:uuid}"
     dto = WriteDTO
     return_dto = ReadDTO
-    details = "/{id_col:uuid}"
-    path = "/projects"
-    dependencies = {
-        "service": Provide(provides_service),
-        "backlog_service": Provide(BacklogService),
-    }
-    tags = ["Projects"]
+    details = "/{col_id:uuid}"
+    path = "/backlogs"
+    dependencies = {"service": Provide(provides_service)}
+    tags = ["Backlogs"]
 
     @get()
     async def filter(
