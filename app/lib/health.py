@@ -1,7 +1,7 @@
 import contextlib
 
 from litestar import get
-from litestar.contrib.sqlalchemy.repository import SQLAlchemyRepository
+from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.exceptions import ServiceUnavailableException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,6 +19,6 @@ class HealthCheckFailure(ServiceUnavailableException):
 async def health_check(db_session: AsyncSession) -> AppSettings:
     """Check database available and returns app config info."""
     with contextlib.suppress(Exception):
-        if await SQLAlchemyRepository.check_health(db_session):
+        if await SQLAlchemyAsyncRepository.check_health(db_session):
             return settings.app
     raise HealthCheckFailure("DB not ready.")

@@ -1,3 +1,14 @@
+"""This is the top-level of the application and should only ever import from
+other sub-packages of the application, and never be imported from. I.e., never
+do `from app.main import whatever` from within any other module of any other
+sub-package of the application.
+
+The main point of this restriction is to support unit-testing. We need to ensure that we can load
+any other component of the application for mocking things out in the unittests, without this module
+being loaded before that mocking has been completed.
+
+When writing tests, always use the `app` fixture, never import the app directly from this module.
+"""
 from typing import Any
 from uuid import UUID
 
@@ -9,6 +20,8 @@ from litestar.contrib.repository.filters import (
     BeforeAfter,
     CollectionFilter,
     LimitOffset,
+    OrderBy,
+    SearchFilter,
 )
 from litestar.stores.registry import StoreRegistry
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,6 +75,8 @@ def create_app(**kwargs: Any) -> Litestar:
             "CollectionFilter": CollectionFilter,
             "LimitOffset": LimitOffset,
             "UUID": UUID,
+            "OrderBy": OrderBy,
+            "SearchFilter": SearchFilter,
         },
         static_files_config=[static_files.config],
         type_encoders=type_encoders_map,

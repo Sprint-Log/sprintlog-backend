@@ -54,7 +54,7 @@ class AppSettings(BaseEnvSettings):
     DEBUG: bool = False
     ENVIRONMENT: str = "local"
     LOG_LEVEL: str = "INFO"
-    NAME: str = "litestar-pg-redis-docker"
+    NAME: str = "starlite-pg-redis-docker"
 
     @property
     def slug(self) -> str:
@@ -117,7 +117,7 @@ class OpenAPISettings(BaseEnvSettings):
         env_prefix = "OPENAPI_"
         case_sensitive = True
 
-    TITLE: str | None = "My litestar App"
+    TITLE: str | None = "My Starlite App"
     VERSION: str = "0.1.0"
     CONTACT_NAME: str = "My Name"
     CONTACT_EMAIL: str = "some_human@some_domain.com"

@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
 import msgspec
-from litestar.contrib.sqlalchemy.init_plugin import SQLAlchemyInitPlugin
-from litestar.contrib.sqlalchemy.init_plugin.config import SQLAlchemyAsyncConfig
-from litestar.contrib.sqlalchemy.init_plugin.config.common import (
+from litestar.contrib.sqlalchemy.plugins.init import SQLAlchemyInitPlugin
+from litestar.contrib.sqlalchemy.plugins.init.config import SQLAlchemyAsyncConfig
+from litestar.contrib.sqlalchemy.plugins.init.config.common import (
     SESSION_SCOPE_KEY,
     SESSION_TERMINUS_ASGI_EVENTS,
 )

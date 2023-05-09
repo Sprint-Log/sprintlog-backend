@@ -5,7 +5,7 @@ from uuid import UUID
 
 from litestar.contrib.sqlalchemy.base import AuditBase
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
-from litestar.contrib.sqlalchemy.repository import SQLAlchemyRepository
+from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.dto.factory import DTOConfig
 from sqlalchemy import ForeignKey, event
 from sqlalchemy.orm import Mapped, relationship
@@ -74,22 +74,16 @@ class Backlog(AuditBase):
     priority: Mapped[PriorityEnum | None]
     status: Mapped[StatusEnum | None]
     is_task: Mapped[bool]
-    # labels: Mapped[list[str]] = m_col(ARRAY(String))
     category: Mapped[TagEnum | None]
     est_days: Mapped[float | None]
-    beg_date: Mapped[datetime.datetime] = m_col(
-        default=datetime.datetime.now(tz=datetime.UTC)
-    )
-    end_date: Mapped[datetime.datetime] = m_col(
-        default=datetime.datetime.now(tz=datetime.UTC)
-    )
-    due_date: Mapped[datetime.datetime] = m_col(
-        default=datetime.datetime.now(tz=datetime.UTC)
-    )
+    beg_date: Mapped[datetime.datetime] = m_col(default=datetime.datetime.now(tz=datetime.UTC))
+    end_date: Mapped[datetime.datetime] = m_col(default=datetime.datetime.now(tz=datetime.UTC))
+    due_date: Mapped[datetime.datetime] = m_col(default=datetime.datetime.now(tz=datetime.UTC))
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID] = m_col(ForeignKey(User.id))
-    project_slug: Mapped[UUID] = m_col(ForeignKey(Project.slug))
+    project_slug: Mapped[str] = m_col(ForeignKey(Project.slug))
+    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", back_populates="backlog", lazy="joined")
 
     @property
     def assignee_link(self) -> str | None:
@@ -111,9 +105,7 @@ class Backlog(AuditBase):
         uuid_short = uuid_str[:8].replace("-", "")
         return f"{slug}-S{sprint_number}-{uuid_short}"
 
-    def gen_due_date(
-        self, beg_date: datetime.datetime, est_days: int
-    ) -> datetime.datetime:
+    def gen_due_date(self, beg_date: datetime.datetime, est_days: int) -> datetime.datetime:
         return beg_date + datetime.timedelta(days=est_days)
 
 
@@ -125,6 +117,7 @@ class BacklogAudit(AuditBase):
 
     backlog: Mapped["Backlog"] = relationship(
         "Backlog",
+        single_parent=True,
         back_populates="audits",
         foreign_keys=[backlog_id],
         lazy="joined",
@@ -162,47 +155,7 @@ def track_changes_before_insert(mapper: Any, connection: Any, backlog: Backlog) 
     connection.commit()
 
 
-# @event.listens_for(Backlog, "before_update")
-# def track_changes_before_update(mapper, connection, backlog):
-#     changed_attrs = {}
-#     for attr in mapper.attrs:
-#         history = attr.history
-#         if history.has_changes():
-#             changed_attrs[attr.key] = {
-#                 "old": str(history.deleted[0]) if history.deleted else None,
-#                 "new": str(history.added[0]) if history.added else None,
-#             }
-#     if changed_attrs:
-#         user_id = (
-#             get_current_user_id()
-#         )  # replace with your own logic to get the current user ID
-#         for key, values in changed_attrs.items():
-#             audit = BacklogAudit(
-#                 backlog=backlog,
-#                 created_by_id=user_id,
-#                 field_name=key,
-#                 old_value=values["old"],
-#                 new_value=values["new"],
-#             )
-#             connection.add(audit)
-
-
-# @event.listens_for(Backlog, "before_delete")
-# def track_changes_before_delete(mapper, connection, backlog):
-#     user_id = (
-#         get_current_user_id()
-#     )  # replace with your own logic to get the current user ID
-#     audit = BacklogAudit(
-#         backlog=backlog,
-#         created_by_id=user_id,
-#         field_name="deleted",
-#         old_value=None,
-#         new_value=None,
-#     )
-#     connection.add(audit)
-
-
-class Repository(SQLAlchemyRepository[Backlog]):
+class Repository(SQLAlchemyAsyncRepository[Backlog]):
     model_type = Backlog
 
 
@@ -210,7 +163,5 @@ class Service(service.Service[Backlog]):
     repository_type = Backlog
 
 
-WriteDTO = SQLAlchemyDTO[
-    Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated", "project"})]
-]
-ReadDTO = SQLAlchemyDTO[Backlog]
+WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]
+ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"backlog_audit"})]]

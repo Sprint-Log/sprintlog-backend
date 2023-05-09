@@ -20,6 +20,7 @@ from app.domain.backlogs import ReadDTO, Repository, Service, WriteDTO
 if TYPE_CHECKING:
     from litestar.contrib.repository.abc import FilterTypes
 
+
 __all__ = ["ApiController", "provides_service"]
 
 
@@ -38,9 +39,7 @@ class ApiController(Controller):
     tags = ["Backlogs"]
 
     @get()
-    async def filter(
-        self, service: Service, filters: list["FilterTypes"]
-    ) -> list[Model]:
+    async def filter(self, service: Service, filters: list["FilterTypes"]) -> list[Model]:
         """Get a list of templates."""
         return await service.list(*filters)
 
