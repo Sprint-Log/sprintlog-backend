@@ -14,7 +14,6 @@ from litestar.di import Provide
 from litestar.status_codes import HTTP_200_OK
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.backlogs import Service as BacklogService
 from app.domain.projects import Project as Model
 from app.domain.projects import ReadDTO, Repository, Service, WriteDTO
 
@@ -38,14 +37,11 @@ class ApiController(Controller):
     path = "/projects"
     dependencies = {
         "service": Provide(provides_service),
-        "backlog_service": Provide(BacklogService),
     }
     tags = ["Projects"]
 
     @get()
-    async def filter(
-        self, service: Service, filters: list["FilterTypes"]
-    ) -> list[Model]:
+    async def filter(self, service: Service, filters: list["FilterTypes"]) -> list[Model]:
         """Get a list of templates."""
         return await service.list(*filters)
 

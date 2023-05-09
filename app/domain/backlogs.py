@@ -1,4 +1,4 @@
-import datetime
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Annotated, Any
 from uuid import UUID
@@ -76,9 +76,9 @@ class Backlog(AuditBase):
     is_task: Mapped[bool]
     category: Mapped[TagEnum | None]
     est_days: Mapped[float | None]
-    beg_date: Mapped[datetime.datetime] = m_col(default=datetime.datetime.now(tz=datetime.UTC))
-    end_date: Mapped[datetime.datetime] = m_col(default=datetime.datetime.now(tz=datetime.UTC))
-    due_date: Mapped[datetime.datetime] = m_col(default=datetime.datetime.now(tz=datetime.UTC))
+    beg_date: Mapped[datetime] = m_col(default=datetime.now(tz=UTC))
+    end_date: Mapped[datetime] = m_col(default=datetime.now(tz=UTC))
+    due_date: Mapped[datetime] = m_col(default=datetime.now(tz=UTC))
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID] = m_col(ForeignKey(User.id))
@@ -105,8 +105,8 @@ class Backlog(AuditBase):
         uuid_short = uuid_str[:8].replace("-", "")
         return f"{slug}-S{sprint_number}-{uuid_short}"
 
-    def gen_due_date(self, beg_date: datetime.datetime, est_days: int) -> datetime.datetime:
-        return beg_date + datetime.timedelta(days=est_days)
+    def gen_due_date(self, beg_date: datetime, est_days: int) -> datetime:
+        return beg_date + timedelta(days=est_days)
 
 
 class BacklogAudit(AuditBase):

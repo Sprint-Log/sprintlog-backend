@@ -1,3 +1,3 @@
-from . import projects
+from . import backlogs, projects
 
-__all__ = ["projects"]
+__all__ = ["projects", "backlogs"]
