@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from enum import Enum
 from typing import Annotated, Any
 from uuid import UUID
@@ -77,16 +77,15 @@ class Backlog(AuditBase):
     is_task: Mapped[bool]
     category: Mapped[TagEnum | None]
     est_days: Mapped[float | None]
-    beg_date: Mapped[datetime] = m_col(default=datetime.now(tz=UTC))
-    end_date: Mapped[datetime] = m_col(default=datetime.now(tz=UTC))
-    due_date: Mapped[datetime] = m_col(default=datetime.now(tz=UTC))
+    beg_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
+    end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
+    due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID] = m_col(ForeignKey(User.id))
     audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", back_populates="backlog", lazy="joined")
     project_id: Mapped[str] = m_col(ForeignKey(Project.id))
     project: Mapped["Project"] = relationship("Project", back_populates="backlogs", lazy="joined")
-
     project_slug: AssociationProxy[str] = association_proxy("project", "slug")
 
     def gen_ref_id(self) -> str | None:

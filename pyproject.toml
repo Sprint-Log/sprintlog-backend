@@ -3,7 +3,7 @@ name = "starlite-pg-redis-docker"
 version = "0.1.0"
 description = "An example Starlite application with Redis, Postgres and Docker"
 authors = []
-packages = [{include = "app" }]
+packages = [{ include = "app" }]
 license = "MIT"
 
 [tool.poetry.dependencies]
@@ -19,7 +19,6 @@ saq = "*"
 sentry-sdk = "*"
 sqlalchemy = ">=2.0.0"
 # litestar = { path = "../litestar", extras = ["redis", "jwt", "cli"], develop = true }
-#litestar = { version = "==2.0.0a5" , extras = ["redis", "jwt","cli","sqlalchemy"] }
 litestar = { git = "https://github.com/v3ss0n/litestar.git", branch = "fqn-random-dtoid",  extras = ["redis", "cli"] }
 
 uvloop = "*"
@@ -32,7 +31,6 @@ pytest = "*"
 pytest-asyncio = "*"
 pytest-dotenv = "*"
 # litestar = { path = "../litestar", extras = ["testing"], develop = true}
-#litestar = { version = "==2.0.0a5" , extras = ["redis", "cli"] }
 litestar = { git = "https://github.com/v3ss0n/litestar.git", branch = "fqn-random-dtoid",  extras = ["redis", "cli"] }
 
 [tool.poetry.group.coverage]
@@ -84,39 +82,39 @@ testpaths = ["tests/unit"]
 
 [tool.ruff]
 select = [
-    "A", # flake8-builtins
-    "B", # flake8-bugbear
+    "A",   # flake8-builtins
+    "B",   # flake8-bugbear
     "BLE", # flake8-blind-except
-    "C4", # flake8-comprehensions
+    "C4",  # flake8-comprehensions
     "C90", # mccabe
-    "D", # pydocstyle
-    "DJ", # flake8-django
+    "D",   # pydocstyle
+    "DJ",  # flake8-django
     "DTZ", # flake8-datetimez
-    "E", # pycodestyle errors
+    "E",   # pycodestyle errors
     "ERA", # eradicate
     "EXE", # flake8-executable
-    "F", # pyflakes
-    "G", # flake8-logging-format
-    "I", # isort
+    "F",   # pyflakes
+    "G",   # flake8-logging-format
+    "I",   # isort
     "ICN", # flake8-import-conventions
     "ISC", # flake8-implicit-str-concat
-    "N", # pep8-naming
+    "N",   # pep8-naming
     "PIE", # flake8-pie
     "PLC", # pylint - convention
     "PLE", # pylint - error
     "PLW", # pylint - warning
     "PTH", # flake8-use-pathlib
-    "Q", # flake8-quotes
+    "Q",   # flake8-quotes
     "RET", # flake8-return
     "RUF", # Ruff-specific rules
-    "S", # flake8-bandit
+    "S",   # flake8-bandit
     "SIM", # flake8-simplify
     "T10", # flake8-debugger
     "T20", # flake8-print
     "TCH", # flake8-type-checking
     "TID", # flake8-tidy-imports
-    "UP", # pyupgrade
-    "W", # pycodestyle - warning
+    "UP",  # pyupgrade
+    "W",   # pycodestyle - warning
     "YTT", # flake8-2020
 ]
 ignore = [
@@ -133,7 +131,7 @@ ignore = [
     "D205", # pydocstyle - 1 blank line required between summary line and description
     "D415", # pydocstyle - first line should end with a period, question mark, or exclamation point
     "A003", # flake8-builtins - class attribute {name} is shadowing a python builtin
-    "B010" # flake8-bugbear - do not call setattr with a constant attribute value
+    "B010", # flake8-bugbear - do not call setattr with a constant attribute value
 ]
 line-length = 100
 src = ["src", "tests"]

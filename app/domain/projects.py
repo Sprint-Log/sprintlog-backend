@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Annotated
 
 from litestar.contrib.sqlalchemy.base import AuditBase
@@ -25,9 +25,9 @@ class Project(AuditBase):
     slug: Mapped[str] = m_col(unique=True)
     name: Mapped[str]
     description: Mapped[str]
-    start_date: Mapped[datetime] = m_col(default=datetime.now)
-    end_date: Mapped[datetime] = m_col(default=datetime.now)
-    backlogs: Mapped["Backlog"] = relationship("Backlog", back_populates="project", lazy="noload")
+    start_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
+    end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
+    backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
 
 
 class Repository(SQLAlchemyAsyncRepository[Project]):
@@ -38,5 +38,5 @@ class Service(service.Service[Project]):
     repository_type = Project
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created", "updated", "tasks"})]]
+WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created", "updated", "backlogs"})]]
 ReadDTO = SQLAlchemyDTO[Project]

@@ -1,6 +1,6 @@
 # pyright: reportGeneralTypeIssues=false
 
-from typing import TYPE_CHECKING
+from typing import Any
 from uuid import UUID
 
 from litestar import (
@@ -10,15 +10,14 @@ from litestar import (
     post,
     put,
 )
+from litestar.contrib.repository.abc import FilterTypes
 from litestar.di import Provide
+from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.projects import Project as Model
 from app.domain.projects import ReadDTO, Repository, Service, WriteDTO
-
-if TYPE_CHECKING:
-    from litestar.contrib.repository.abc import FilterTypes
 
 __all__ = ["ApiController", "provides_service"]
 
@@ -28,21 +27,21 @@ def provides_service(db_session: AsyncSession) -> Service:
     return Service(Repository(session=db_session))
 
 
+validation_skip: Any = Dependency(skip_validation=True)
+
+
 class ApiController(Controller):
-    DETAIL_ROUTE = "/{id_col:uuid}"
-    BACKLOG_ROUTE = "/{id_col:uuid}/backlog/"
     dto = WriteDTO
     return_dto = ReadDTO
-    details = "/{id_col:uuid}"
     path = "/projects"
-    dependencies = {
-        "service": Provide(provides_service),
-    }
+    dependencies = {"service": Provide(provides_service)}
     tags = ["Projects"]
+    DETAIL_ROUTE = "/{id_col:uuid}"
+    BACKLOG_ROUTE = "/{id_col:uuid}/backlog/"
 
     @get()
-    async def filter(self, service: Service, filters: list["FilterTypes"]) -> list[Model]:
-        """Get a list of templates."""
+    async def filter(self, service: Service, filters: list[FilterTypes] = validation_skip) -> list[Model]:
+        """Get a list of Models."""
         return await service.list(*filters)
 
     @post()
@@ -51,16 +50,16 @@ class ApiController(Controller):
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
-    async def retrieve(self, service: Service, id_col: UUID) -> Model:
+    async def retrieve(self, service: Service, col_id: UUID) -> Model:
         """Get Model by ID."""
-        return await service.get(id_col)
+        return await service.get(col_id)
 
     @put(DETAIL_ROUTE)
-    async def update(self, data: Model, service: Service, id_col: UUID) -> Model:
-        """Update an template."""
-        return await service.update(id_col, data)
+    async def update(self, data: Model, service: Service, col_id: UUID) -> Model:
+        """Update an Model."""
+        return await service.update(col_id, data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
-    async def delete(self, service: Service, id_col: UUID) -> Model:
-        """Delete Model by ID."""
-        return await service.delete(id_col)
+    async def delete(self, service: Service, col_id: UUID) -> Model:
+        """Delete Author by ID."""
+        return await service.delete(col_id)

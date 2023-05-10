@@ -8,8 +8,7 @@ from litestar.di import Provide
 from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 
-from app.domain.backlogs import Backlog as Model
-from app.domain.backlogs import ReadDTO, Repository, Service, WriteDTO
+from app.domain.authors import ReadDTO, Repository, Service, WriteDTO
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -17,12 +16,13 @@ if TYPE_CHECKING:
     from litestar.contrib.repository.abc import FilterTypes
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from app.domain.authors import Author
 
 __all__ = [
-    "ApiController",
+    "AuthorController",
 ]
 
-DETAIL_ROUTE = "/{backlog_id:uuid}"
+DETAIL_ROUTE = "/{author_id:uuid}"
 
 
 def provides_service(db_session: AsyncSession) -> Service:
@@ -30,36 +30,36 @@ def provides_service(db_session: AsyncSession) -> Service:
     return Service(Repository(session=db_session))
 
 
-class ApiController(Controller):
+class AuthorController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
-    path = "/backlogs"
+    path = "/authors"
     dependencies = {"service": Provide(provides_service)}
-    tags = ["Backlogs"]
+    tags = ["Authors"]
 
     @get()
-    async def filter(
+    async def get_authors(
         self, service: Service, filters: list[FilterTypes] = Dependency(skip_validation=True)
-    ) -> list[Model]:
-        """Get a list of Models."""
+    ) -> list[Author]:
+        """Get a list of authors."""
         return await service.list(*filters)
 
     @post()
-    async def create(self, data: Model, service: Service) -> Model:
-        """Create an `Model`."""
+    async def create_author(self, data: Author, service: Service) -> Author:
+        """Create an `Author`."""
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
-    async def retrieve(self, service: Service, col_id: UUID) -> Model:
-        """Get Model by ID."""
-        return await service.get(col_id)
+    async def get_author(self, service: Service, author_id: UUID) -> Author:
+        """Get Author by ID."""
+        return await service.get(author_id)
 
     @put(DETAIL_ROUTE)
-    async def update(self, data: Model, service: Service, col_id: UUID) -> Model:
-        """Update an Model."""
-        return await service.update(col_id, data)
+    async def update_author(self, data: Author, service: Service, author_id: UUID) -> Author:
+        """Update an author."""
+        return await service.update(author_id, data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
-    async def delete(self, service: Service, col_id: UUID) -> Model:
+    async def delete_author(self, service: Service, author_id: UUID) -> Author:
         """Delete Author by ID."""
-        return await service.delete(col_id)
+        return await service.delete(author_id)
