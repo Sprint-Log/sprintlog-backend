@@ -1,13 +1,15 @@
 from datetime import datetime
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from litestar.contrib.sqlalchemy.base import AuditBase
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.dto.factory import DTOConfig
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
+if TYPE_CHECKING:
+    from app.domain.backlogs import Backlog
 from app.lib import service
 
 __all__ = [
@@ -25,6 +27,7 @@ class Project(AuditBase):
     description: Mapped[str]
     start_date: Mapped[datetime] = m_col(default=datetime.now)
     end_date: Mapped[datetime] = m_col(default=datetime.now)
+    backlogs: Mapped["Backlog"] = relationship("Backlog", back_populates="project", lazy="noload")
 
 
 class Repository(SQLAlchemyAsyncRepository[Project]):

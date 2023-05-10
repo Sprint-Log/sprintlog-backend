@@ -30,7 +30,8 @@ def provides_service(db_session: AsyncSession) -> Service:
 
 
 class ApiController(Controller):
-    DETAIL_ROUTE = "/{col_id:uuid}"
+    DETAIL_ROUTE = "/details/{col_id:uuid}"
+    PROJECT_ROUTE = "/project/{slug:str}"
     dto = WriteDTO
     return_dto = ReadDTO
     details = "/{col_id:uuid}"

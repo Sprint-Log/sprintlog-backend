@@ -19,7 +19,9 @@ saq = "*"
 sentry-sdk = "*"
 sqlalchemy = ">=2.0.0"
 # litestar = { path = "../litestar", extras = ["redis", "jwt", "cli"], develop = true }
-litestar = { version = "==2.0.0a5" , extras = ["redis", "jwt","cli","sqlalchemy"] }
+#litestar = { version = "==2.0.0a5" , extras = ["redis", "jwt","cli","sqlalchemy"] }
+litestar = { git = "https://github.com/v3ss0n/litestar.git", branch = "fqn-random-dtoid",  extras = ["redis", "cli"] }
+
 uvloop = "*"
 
 [tool.poetry.group.testing]
@@ -30,7 +32,8 @@ pytest = "*"
 pytest-asyncio = "*"
 pytest-dotenv = "*"
 # litestar = { path = "../litestar", extras = ["testing"], develop = true}
-litestar = { version = "==2.0.0a5" , extras = ["redis", "cli"] }
+#litestar = { version = "==2.0.0a5" , extras = ["redis", "cli"] }
+litestar = { git = "https://github.com/v3ss0n/litestar.git", branch = "fqn-random-dtoid",  extras = ["redis", "cli"] }
 
 [tool.poetry.group.coverage]
 optional = true

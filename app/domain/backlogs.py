@@ -8,6 +8,7 @@ from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.dto.factory import DTOConfig
 from sqlalchemy import ForeignKey, event
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
@@ -82,20 +83,11 @@ class Backlog(AuditBase):
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID] = m_col(ForeignKey(User.id))
-    project_slug: Mapped[str] = m_col(ForeignKey(Project.slug))
     audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", back_populates="backlog", lazy="joined")
+    project_id: Mapped[str] = m_col(ForeignKey(Project.id))
+    project: Mapped["Project"] = relationship("Project", back_populates="backlogs", lazy="joined")
 
-    @property
-    def assignee_link(self) -> str | None:
-        return f"/user/{self.assignee_id}/backlog" if self.assignee_id else None
-
-    @property
-    def owner_link(self) -> str | None:
-        return f"/user/{self.owner_id}/backlog"
-
-    @property
-    def project_link(self) -> str | None:
-        return f"/project/{self.project_slug}/backlog"
+    project_slug: AssociationProxy[str] = association_proxy("project", "slug")
 
     def gen_ref_id(self) -> str | None:
         slug = self.project_slug
@@ -163,5 +155,7 @@ class Service(service.Service[Backlog]):
     repository_type = Backlog
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]
+WriteDTO = SQLAlchemyDTO[
+    Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated", "projects", "backlog_audit"})]
+]
 ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"backlog_audit"})]]
