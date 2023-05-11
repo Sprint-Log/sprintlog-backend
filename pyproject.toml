@@ -22,6 +22,8 @@ sqlalchemy = ">=2.0.0"
 litestar = { git = "https://github.com/v3ss0n/litestar.git", branch = "fqn-random-dtoid",  extras = ["redis", "cli"] }
 
 uvloop = "*"
+aiosql = "^8.0"
+structlog = "^23.1.0"
 
 [tool.poetry.group.testing]
 optional = true

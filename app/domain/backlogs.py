@@ -69,26 +69,28 @@ class TagEnum(Enum):
 class Backlog(AuditBase):
     title: Mapped[str]
     description: Mapped[str | None]
-    ref_id: Mapped[str | None]
-    progress: Mapped[ProgressEnum | None]
+    ref_id: Mapped[str]
+    progress: Mapped[ProgressEnum]
     sprint_number: Mapped[int]
-    priority: Mapped[PriorityEnum | None]
-    status: Mapped[StatusEnum | None]
+    priority: Mapped[PriorityEnum]
+    status: Mapped[StatusEnum]
     is_task: Mapped[bool]
-    category: Mapped[TagEnum | None]
-    est_days: Mapped[float | None]
+    category: Mapped[TagEnum]
+    est_days: Mapped[float]
     beg_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID] = m_col(ForeignKey(User.id))
-    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", back_populates="backlog", lazy="joined")
     project_id: Mapped[str] = m_col(ForeignKey(Project.id))
     project: Mapped["Project"] = relationship("Project", back_populates="backlogs", lazy="joined")
+    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", back_populates="backlog", lazy="joined")
     project_slug: AssociationProxy[str] = association_proxy("project", "slug")
+    assignee: AssociationProxy[str] = association_proxy("user", "name")
+    owner: AssociationProxy[str] = association_proxy("user", "name")
 
-    def gen_ref_id(self) -> str | None:
+    def gen_ref_id(self) -> str:
         slug = self.project_slug
         sprint_number = self.sprint_number
         uuid_str = str(self.id)
@@ -155,6 +157,21 @@ class Service(service.Service[Backlog]):
 
 
 WriteDTO = SQLAlchemyDTO[
-    Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated", "projects", "backlog_audit"})]
+    Annotated[
+        Backlog,
+        DTOConfig(
+            exclude={
+                "id",
+                "created",
+                "updated",
+                "projects",
+                "ref_id",
+                "audits",
+                "project_id",
+                "assignee_id",
+                "owner_id",
+            }
+        ),
+    ]
 ]
 ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"backlog_audit"})]]
