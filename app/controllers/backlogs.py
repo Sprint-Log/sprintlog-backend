@@ -57,7 +57,7 @@ class ApiController(Controller):
     @get(SLUG_ROUTE)
     async def retrieve_linked(self, service: Service, slug: str) -> list[Model]:
         """Get Model by ID."""
-        return await service.list(filters=CollectionFilter(field_name="project_slug", values=[slug]), value=slug)
+        return await service.list(filters=CollectionFilter(field_name="project_slug", values=[slug]))
 
     @put(DETAIL_ROUTE)
     async def update(self, data: Model, service: Service, col_id: "UUID") -> Model:
