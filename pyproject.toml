@@ -259,4 +259,4 @@ known-first-party = ['tests', 'app']
 convention = "google"
 
 [tool.codespell]
-ignore-words-list = "alog"
+ignore-words-list = "alog,astroid"
