@@ -1,0 +1,27 @@
+version: "3.3"
+services:
+  app:
+    build:
+      context: .
+      target: build-image
+      dockerfile: ./Dockerfile
+      args:
+        # remove this to build for production.
+        POETRY_INSTALL_ARGS: --with=dev,docs,lint
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./docs:/workspace/app/docs/
+      - ./tests:/workspace/app/tests/
+      - ./src:/workspace/app/src/
+      - ./Makefile:/workspace/app/Makefile
+      - ./pyproject.toml:/workspace/app/pyproject.toml
+      - ./poetry.lock:/workspace/app/poetry.lock
+      - ./mkdocs.yml:/workspace/app/mkdocs.yml
+    command: run server --reload
+
+  localmail:
+    image: mailhog/mailhog:v1.0.0
+    container_name: localmail
+    ports:
+      - "8025:8025"

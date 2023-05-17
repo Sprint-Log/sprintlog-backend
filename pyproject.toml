@@ -1,157 +1,262 @@
 [tool.poetry]
-name = "starlite-pg-redis-docker"
-version = "0.1.0"
-description = "An example Starlite application with Redis, Postgres and Docker"
-authors = []
-packages = [{ include = "app" }]
+authors = ["Cody Fincher <cody.fincher@gmail.com>"]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Web Environment",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development",
+  "Typing :: Typed",
+]
+description = "Opinionated template for integrating Litestar with a SPA"
+documentation = "https://cofin.github.io/litestar-fullstack"
+homepage = "https://github.com/cofin/litestar-fullstack"
+include = ["CHANGELOG.md"]
+keywords = ["api", "rest", "http", "asgi", "pydantic", "litestar", "fastapi", "framework", "websocket", "vite", "spa"]
 license = "MIT"
+maintainers = ["Cody Fincher <cody.fincher@gmail.com>"]
+name = "app"
+packages = [
+  {include = "app", from = "src"},
+]
+readme = "README.md"
+repository = "https://github.com/cofin/litestar-fullstack"
+version = "0.1.0"
+[tool.poetry.scripts]
+app = "app.__main__:run_cli"
 
 [tool.poetry.dependencies]
-python = "~=3.11.0"
-aiosmtplib = "*"
+aiosql = "*"
 alembic = "*"
 asyncpg = "*"
-httpx = "*"
-pydantic = "*"
-python-dotenv = "*"
-redis = "*"
+greenlet = {version = ">=2.0.1", platform = "darwin"}
+hiredis = "*"
+jinja2 = "*"
+litestar = {git = "https://github.com/litestar-org/litestar.git", branch = "main", extras = ["jwt", 'cli', 'redis', 'jinja2'], develop = true}
+passlib = {version = "*", extras = ["argon2"]}
+pydantic = {version = ">=1.9.0", extras = [
+  "dotenv",
+  "typing_extensions",
+  "email",
+]}
+python = ">=3.10,<3.12"
+redis = ">=4.4.2"
+rich-click = ">=1.6.0"
 saq = "*"
-sentry-sdk = "*"
-sqlalchemy = ">=2.0.0"
-# litestar = { path = "../litestar", extras = ["redis", "jwt", "cli"], develop = true }
-litestar = { git = "https://github.com/v3ss0n/litestar.git", branch = "fqn-random-dtoid",  extras = ["redis", "cli"] }
-
+sqlalchemy = {version = ">=2.0.0"}
+structlog = ">=22.3.0"
+tenacity = "*"
+uvicorn = {extras = ["standard"], version = "*"}
 uvloop = "*"
-aiosql = "^8.0"
-structlog = "^23.1.0"
+# litestar = {version = "*", extras = ["jwt", 'cli', 'redis', 'jinja2'], allow-prereleases = true}
 
-[tool.poetry.group.testing]
-optional = true
-
-[tool.poetry.group.testing.dependencies]
+[tool.poetry.group.dev.dependencies]
+asgi-lifespan = "*"
+coverage = {extras = ["toml"], version = "*"}
+cython = "*"
 pytest = "*"
 pytest-asyncio = "*"
-pytest-dotenv = "*"
-# litestar = { path = "../litestar", extras = ["testing"], develop = true}
-litestar = { git = "https://github.com/v3ss0n/litestar.git", branch = "fqn-random-dtoid",  extras = ["redis", "cli"] }
-
-[tool.poetry.group.coverage]
-optional = true
-
-[tool.poetry.group.coverage.dependencies]
 pytest-cov = "*"
-
-[tool.poetry.group.integration]
-optional = true
-
-[tool.poetry.group.integration.dependencies]
 pytest-docker = "*"
-docker-compose = "*"
+pytest-dotenv = "*"
+pytest-mock = "*"
 
-[tool.poetry.group.linting]
+[tool.poetry.group.docs]
 optional = true
 
-[tool.poetry.group.linting.dependencies]
+[tool.poetry.group.docs.dependencies]
+mkdocs = "*"
+mkdocs-material = "*"
+mkdocstrings = "*"
+mkdocstrings-python = "*"
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+asyncpg-stubs = "*"
+black = "*"
+blacken-docs = "*"
+mypy = "*"
 pre-commit = "*"
+pylint = "*"
+pylint-pydantic = "*"
+ruff = '*'
+slotscheck = "*"
+types-click = "*"
+types-passlib = "*"
+types-python-jose = "*"
+types-pyyaml = "*"
+types-redis = "*"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core", "setuptools", "cython"]
 
 [tool.black]
-line-length = 120
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.tox
+  | venv
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
 include = '\.pyi?$'
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
+line-length = 120
 
 [tool.coverage.report]
-show_missing = true
 exclude_lines = [
-    'if TYPE_CHECKING:',
-    'pragma: no cover',
-    "if __name__ == '__main__':",
+  'if TYPE_CHECKING:',
+  'pragma: no cover',
+  "if __name__ == .__main__.:",
+  'def __repr__',
+  'if self\.debug:',
+  'if settings\.DEBUG',
+  'raise AssertionError',
+  'raise NotImplementedError',
+  'if 0:',
+  'class .*\bProtocol\):',
+  '@(abc\.)?abstractmethod',
 ]
-
+omit = ["*/tests/*"]
+show_missing = true
 [tool.coverage.run]
-omit = ["tests/*"]
+branch = true
+omit = ["tests/*", "**/*/migrations/**/*.py"]
 
 [tool.pytest.ini_options]
+addopts = ["-ra", "--ignore", "migrations"]
 asyncio_mode = "auto"
-env_files = [".env.example"]
-testpaths = ["tests/unit"]
+env_files = [".env.test"]
+env_override_existing_values = 1
+filterwarnings = [
+  "ignore::DeprecationWarning:pkg_resources",
+  "ignore::DeprecationWarning:google.*",
+  "ignore::DeprecationWarning:passlib.*",
+]
+testpaths = ["tests"]
 
 [tool.ruff]
-select = [
-    "A",   # flake8-builtins
-    "B",   # flake8-bugbear
-    "BLE", # flake8-blind-except
-    "C4",  # flake8-comprehensions
-    "C90", # mccabe
-    "D",   # pydocstyle
-    "DJ",  # flake8-django
-    "DTZ", # flake8-datetimez
-    "E",   # pycodestyle errors
-    "ERA", # eradicate
-    "EXE", # flake8-executable
-    "F",   # pyflakes
-    "G",   # flake8-logging-format
-    "I",   # isort
-    "ICN", # flake8-import-conventions
-    "ISC", # flake8-implicit-str-concat
-    "N",   # pep8-naming
-    "PIE", # flake8-pie
-    "PLC", # pylint - convention
-    "PLE", # pylint - error
-    "PLW", # pylint - warning
-    "PTH", # flake8-use-pathlib
-    "Q",   # flake8-quotes
-    "RET", # flake8-return
-    "RUF", # Ruff-specific rules
-    "S",   # flake8-bandit
-    "SIM", # flake8-simplify
-    "T10", # flake8-debugger
-    "T20", # flake8-print
-    "TCH", # flake8-type-checking
-    "TID", # flake8-tidy-imports
-    "UP",  # pyupgrade
-    "W",   # pycodestyle - warning
-    "YTT", # flake8-2020
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
+  '__pycache__',
 ]
+fix = true
 ignore = [
-    "E501", # pycodestyle line too long, handled by black
-    "D100", # pydocstyle - missing docstring in public module
-    "D101", # pydocstyle - missing docstring in public class
-    "D102", # pydocstyle - missing docstring in public method
-    "D103", # pydocstyle - missing docstring in public function
-    "D104", # pydocstyle - missing docstring in public package
-    "D105", # pydocstyle - missing docstring in magic method
-    "D106", # pydocstyle - missing docstring in public nested class
-    "D107", # pydocstyle - missing docstring in __init__
-    "D202", # pydocstyle - no blank lines allowed after function docstring
-    "D205", # pydocstyle - 1 blank line required between summary line and description
-    "D415", # pydocstyle - first line should end with a period, question mark, or exclamation point
-    "A003", # flake8-builtins - class attribute {name} is shadowing a python builtin
-    "B010", # flake8-bugbear - do not call setattr with a constant attribute value
+  "E501", # pycodestyle line too long, handled by black
+  "D100", # pydocstyle - missing docstring in public module
+  "D101", # pydocstyle - missing docstring in public class
+  "D102", # pydocstyle - missing docstring in public method
+  "D103", # pydocstyle - missing docstring in public function
+  "D104", # pydocstyle - missing docstring in public package
+  "D105", # pydocstyle - missing docstring in magic method
+  "D106", # pydocstyle - missing docstring in public nested class
+  "D107", # pydocstyle - missing docstring in __init__
+  "D202", # pydocstyle - no blank lines allowed after function docstring
+  "D205", # pydocstyle - 1 blank line required between summary line and description
+  "D415", # pydocstyle - first line should end with a period, question mark, or exclamation point
+  "UP037", # pyupgrade - removes quotes from type annotation
+  "A003", # flake8-builtins - class attribute {name} is shadowing a python builtin
+  "B010", # flake8-bugbear - do not call setattr with a constant attribute value
+  "B008", #  flake8-bugbear - Do not perform function call `Parameter` in argument defaultsRuff(B008)
 ]
-line-length = 100
-src = ["src", "tests"]
+line-length = 120
+select = [
+  "A", # flake8-builtins
+  "B", # flake8-bugbear
+  "BLE", # flake8-blind-except
+  "C4", # flake8-comprehensions
+  "C90", # mccabe
+  "D", # pydocstyle
+  "DJ", # flake8-django
+  "DTZ", # flake8-datetimez
+  "E", # pycodestyle errors
+  "ERA", # eradicate
+  "EXE", # flake8-executable
+  "F", # pyflakes
+  "G", # flake8-logging-format
+  "I", # isort
+  "ICN", # flake8-import-conventions
+  "ISC", # flake8-implicit-str-concat
+  "N", # pep8-naming
+  "PIE", # flake8-pie
+  "PLC", # pylint - convention
+  "PLE", # pylint - error
+  "PLW", # pylint - warning
+  "PTH", # flake8-use-pathlib
+  "Q", # flake8-quotes
+  "RET", # flake8-return
+  "RUF", # Ruff-specific rules
+  "S", # flake8-bandit
+  "SIM", # flake8-simplify
+  "T10", # flake8-debugger
+  "T20", # flake8-print
+  "TCH", # flake8-type-checking
+  "TID", # flake8-tidy-imports
+  "UP", # pyupgrade
+  "W", # pycodestyle - warning
+  "YTT", # flake8-2020
+]
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+src = ["src", "tests/"]
 target-version = "py311"
+
+[tool.slotscheck]
+strict-imports = false
+
+[tool.ruff.mccabe]
+max-complexity = 12
+
+[tool.ruff.pep8-naming]
+classmethod-decorators = [
+  "classmethod",
+  "pydantic.validator",
+  "pydantic.root_validator",
+  "sqlalchemy.ext.declarative.declared_attr",
+  "sqlalchemy.orm.declared_attr.directive",
+  "sqlalchemy.orm.declared_attr",
+]
+
+[tool.ruff.per-file-ignores]
+"*/migrations/*.py" = ['D104', 'D103', 'D205', 'D212']
+"__init__.py" = ['F401', 'D104']
+"tests/*.py" = ['D103', 'S101', 'D104']
+
+[tool.ruff.isort]
+known-first-party = ['tests', 'app']
 
 [tool.ruff.pydocstyle]
 convention = "google"
 
-[tool.ruff.isort]
-known-first-party = ["app", "tests"]
-
-[tool.ruff.pep8-naming]
-classmethod-decorators = [
-    "classmethod",
-    "sqlalchemy.orm.declared_attr.directive",
-]
-
-[tool.ruff.per-file-ignores]
-"examples/tests/**/*.*" = ["S101"]
-"app/lib/dependencies.py" = ["B008"]
-"tests/**/*.*" = ["S101", "DTZ"]
+[tool.codespell]
+ignore-words-list = "alog"
