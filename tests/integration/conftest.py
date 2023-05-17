@@ -1,27 +1,27 @@
+from __future__ import annotations
+
 import asyncio
 import timeit
-from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import asyncpg
 import pytest
 from httpx import AsyncClient
-from litestar import Litestar
+from litestar.contrib.sqlalchemy.base import Base
 from redis.asyncio import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 from sqlalchemy.engine import URL
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.domain.accounts.models import User
-from app.domain.security import auth
-from app.domain.teams.models import Team
-from app.lib import db, worker
+from app.lib import sqlalchemy_plugin, worker
 
 if TYPE_CHECKING:
-    from collections import abc
+    from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
+    from typing import Any
 
+    from litestar import Litestar
     from pytest_docker.plugin import Services
 
 
@@ -29,21 +29,25 @@ here = Path(__file__).parent
 
 
 @pytest.fixture(scope="session")
-def docker_compose_file() -> Path:
-    """Load docker compose file.
+def event_loop() -> Iterator[asyncio.AbstractEventLoop]:
+    """Need the event loop scoped to the session so that we can use it to check
+    containers are ready in session scoped containers fixture.
+    """
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
 
-    Returns:
-        Path to the docker-compose file for end-to-end test environment.
+
+@pytest.fixture(scope="session")
+def docker_compose_file() -> Path:
+    """Returns:
+    Path to the docker-compose file for end-to-end test environment.
     """
     return here / "docker-compose.yml"
 
 
-async def wait_until_responsive(
-    check: "abc.Callable[..., abc.Awaitable]",
-    timeout: float,
-    pause: float,
-    **kwargs: Any,
-) -> None:
+async def wait_until_responsive(check: Callable[..., Awaitable], timeout: float, pause: float, **kwargs: Any) -> None:
     """Wait until a service is responsive.
 
     Args:
@@ -60,7 +64,7 @@ async def wait_until_responsive(
         await asyncio.sleep(pause)
         now = timeit.default_timer()
 
-    raise Exception("Timeout reached while waiting on service!")
+    raise ConnectionError("Timeout reached while waiting on service!")
 
 
 async def redis_responsive(host: str) -> bool:
@@ -88,11 +92,7 @@ async def db_responsive(host: str) -> bool:
     """
     try:
         conn = await asyncpg.connect(
-            host=host,
-            port=5423,
-            user="postgres",
-            database="postgres",
-            password="super-secret",  # noqa: S106
+            host=host, port=5423, user="postgres", database="postgres", password="super-secret"  # noqa: S106
         )
     except (ConnectionError, asyncpg.CannotConnectNowError):
         return False
@@ -104,33 +104,27 @@ async def db_responsive(host: str) -> bool:
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def _containers(docker_ip: str, docker_services: "Services") -> None:  # pylint: disable=unused-argument
+async def _containers(docker_ip: str, docker_services: Services) -> None:
     """Starts containers for required services, fixture waits until they are
     responsive before returning.
-
-    Args:
-        docker_ip: the test docker IP
-        docker_services: the test docker services
     """
     await wait_until_responsive(timeout=30.0, pause=0.1, check=db_responsive, host=docker_ip)
     await wait_until_responsive(timeout=30.0, pause=0.1, check=redis_responsive, host=docker_ip)
 
 
-@pytest.fixture(name="redis")
-async def fx_redis(docker_ip: str) -> Redis:
-    """Redis instance for testing.
-
-    Args:
+@pytest.fixture()
+async def redis(docker_ip: str) -> Redis:
+    """Args:
         docker_ip: IP of docker host.
 
     Returns:
         Redis client instance, function scoped.
     """
-    return Redis(host=docker_ip, port=6397)
+    return Redis(host=docker_ip, port=6379)
 
 
-@pytest.fixture(name="engine")
-async def fx_engine(docker_ip: str) -> AsyncEngine:
+@pytest.fixture()
+async def engine(docker_ip: str) -> AsyncEngine:
     """Postgresql instance for end-to-end testing.
 
     Args:
@@ -154,66 +148,36 @@ async def fx_engine(docker_ip: str) -> AsyncEngine:
     )
 
 
-@pytest.fixture(name="sessionmaker")
-def fx_session_maker_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    return async_sessionmaker(bind=engine, expire_on_commit=False)
-
-
-@pytest.fixture(name="session")
-def fx_session(sessionmaker: async_sessionmaker[AsyncSession]) -> AsyncSession:
-    return sessionmaker()
-
-
 @pytest.fixture(autouse=True)
 async def _seed_db(
-    engine: AsyncEngine,
-    sessionmaker: async_sessionmaker[AsyncSession],
-    raw_users: list[User | dict[str, Any]],
-    raw_teams: list[Team | dict[str, Any]],
+    engine: AsyncEngine, raw_countries: list[dict[str, Any]], raw_authors: list[dict[str, Any]]
 ) -> AsyncIterator[None]:
-    """Populate test database with.
+    """Populate test database."""
+    # get models into metadata
 
-    Args:
-        engine: The SQLAlchemy engine instance.
-        sessionmaker: The SQLAlchemy sessionmaker factory.
-        raw_users: Test users to add to the database
-        raw_teams: Test teams to add to the database
-
-    """
-
-    from app.domain.accounts.services import UserService
-    from app.domain.teams.services import TeamService
-    from app.lib.db import orm  # pylint: disable=[import-outside-toplevel,unused-import]
-
-    metadata = orm.DatabaseModel.registry.metadata
+    metadata = Base.registry.metadata
     async with engine.begin() as conn:
-        await conn.run_sync(metadata.drop_all)
         await conn.run_sync(metadata.create_all)
-    async with UserService.new(sessionmaker()) as users_service:
-        await users_service.create_many(raw_users)
-        await users_service.repository.session.commit()
-    async with TeamService.new(sessionmaker()) as teams_services:
-        for raw_team in raw_teams:
-            await teams_services.create(raw_team)
-        await teams_services.repository.session.commit()
+
+    country_table = metadata.tables["country"]
+    async with engine.begin() as conn:
+        await conn.execute(country_table.insert(), raw_countries)
+
+    author_table = metadata.tables["author"]
+    async with engine.begin() as conn:
+        await conn.execute(author_table.insert(), raw_authors)
 
     yield
 
+    async with engine.begin() as conn:
+        await conn.run_sync(metadata.drop_all)
+
 
 @pytest.fixture(autouse=True)
-def _patch_db(
-    app: "Litestar",
-    engine: AsyncEngine,
-    sessionmaker: async_sessionmaker[AsyncSession],
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(db, "async_session_factory", sessionmaker)
-    monkeypatch.setattr(db.base, "async_session_factory", sessionmaker)
-    monkeypatch.setitem(app.state, db.config.engine_app_state_key, engine)
+def _patch_db(app: "Litestar", engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setitem(app.state, sqlalchemy_plugin.config.engine_app_state_key, engine)
     monkeypatch.setitem(
-        app.state,
-        db.config.session_maker_app_state_key,
-        async_sessionmaker(bind=engine, expire_on_commit=False),
+        app.state, sqlalchemy_plugin.config.session_maker_app_state_key, async_sessionmaker(bind=engine)
     )
 
 
@@ -222,39 +186,24 @@ def _patch_redis(app: "Litestar", redis: Redis, monkeypatch: pytest.MonkeyPatch)
     cache_config = app.response_cache_config
     assert cache_config is not None
     monkeypatch.setattr(app.stores.get(cache_config.store), "_redis", redis)
-    for queue in worker.queues.values():
-        monkeypatch.setattr(queue, "redis", redis)
+    monkeypatch.setattr(worker.queue, "redis", redis)
 
 
 @pytest.fixture(name="client")
 async def fx_client(app: Litestar) -> AsyncIterator[AsyncClient]:
     """Async client that calls requests on the app.
 
+    We need to use `httpx.AsyncClient` here, as `litestar.TestClient` creates its own event loop to
+    run async calls to the underlying app in a sync context, resulting in errors like:
+
     ```text
     ValueError: The future belongs to a different loop than the one specified as the loop argument
     ```
+
+    Related: https://www.starlette.io/testclient/#asynchronous-tests
+
+    The httpx async client will call the app, but not trigger lifecycle events. However, we need
+    the lifecycle events to be called to configure the logging, hence `LifespanManager`.
     """
     async with AsyncClient(app=app, base_url="http://testserver") as client:
         yield client
-
-
-@pytest.fixture(name="superuser_token_headers")
-def fx_superuser_token_headers() -> dict[str, str]:
-    """Valid superuser token.
-
-    ```text
-    ValueError: The future belongs to a different loop than the one specified as the loop argument
-    ```
-    """
-    return {"Authorization": f"Bearer {auth.create_token(identifier='superuser@example.com')}"}
-
-
-@pytest.fixture(name="user_token_headers")
-def fx_user_token_headers() -> dict[str, str]:
-    """Valid user token.
-
-    ```text
-    ValueError: The future belongs to a different loop than the one specified as the loop argument
-    ```
-    """
-    return {"Authorization": f"Bearer {auth.create_token(identifier='user@example.com')}"}
