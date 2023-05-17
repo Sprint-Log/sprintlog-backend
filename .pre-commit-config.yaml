@@ -52,7 +52,6 @@ repos:
             jinja2,
             aiosql,
             uvloop,
-            re2,
             hiredis,
             passlib,
             rich,
