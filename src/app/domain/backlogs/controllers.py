@@ -36,31 +36,31 @@ class ApiController(Controller):
     SLUG_ROUTE = "/project/{slug:str}"
 
     @get()
-    async def filter(self, service: Service, filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
+    async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
         """Get a list of Models."""
         return await service.list(*filters)
 
     @post()
-    async def create(self, data: Model, service: Service) -> Model:
+    async def create(self, data: Model, service: "Service") -> Model:
         """Create an `Model`."""
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
-    async def retrieve(self, service: Service, col_id: "UUID") -> Model:
+    async def retrieve(self, service: "Service", col_id: "UUID") -> Model:
         """Get Model by ID."""
         return await service.get(col_id)
 
     @get(SLUG_ROUTE)
-    async def retrieve_linked(self, service: Service, slug: str) -> Sequence[Model]:
+    async def retrieve_linked(self, service: "Service", slug: str) -> Sequence[Model]:
         """Get Model by ID."""
         return await service.list(filters=CollectionFilter(field_name="project_slug", values=[slug]))
 
     @put(DETAIL_ROUTE)
-    async def update(self, data: Model, service: Service, col_id: "UUID") -> Model:
+    async def update(self, data: Model, service: "Service", col_id: "UUID") -> Model:
         """Update an Model."""
         return await service.update(col_id, data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
-    async def delete(self, service: Service, col_id: "UUID") -> Model:
+    async def delete(self, service: "Service", col_id: "UUID") -> Model:
         """Delete Author by ID."""
         return await service.delete(col_id)

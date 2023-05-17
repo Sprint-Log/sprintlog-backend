@@ -1,6 +1,6 @@
 ARG PYTHON_BUILDER_IMAGE=3.11-slim-bullseye
 ARG NODE_BUILDER_IMAGE=18-slim
-ARG PYTHON_RUN_IMAGE=gcr.io/distroless/cc:nonroot
+ARG PYTHON_RUN_IMAGE=3.11-slim-bullseye
 ## ---------------------------------------------------------------------------------- ##
 ## ------------------------- UI image ----------------------------------------------- ##
 ## ---------------------------------------------------------------------------------- ##
@@ -90,7 +90,7 @@ EXPOSE 8000
 ## ---------------------------------------------------------------------------------- ##
 ## ------------------------- use distroless `cc` image  ----------------------------- ##
 
-FROM ${PYTHON_RUN_IMAGE} as run-image
+FROM python:${PYTHON_RUN_IMAGE} as run-image
 ARG ENV_SECRETS="runtime-secrets"
 # TODO: it would be great if chipset was autodetected as x86 or arm for better M1 support
 ARG CHIPSET_ARCH=x86_64-linux-gnu
@@ -129,4 +129,4 @@ ENV PIP_DEFAULT_TIMEOUT=100 \
 STOPSIGNAL SIGINT
 EXPOSE 8000/tcp
 ENTRYPOINT [ "app" ]
-CMD [ "run", "server"]
+CMD ["run", "server"]

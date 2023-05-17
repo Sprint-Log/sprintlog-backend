@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from app.lib import settings, worker
 from app.lib.worker.controllers import WorkerController
 
-from . import accounts, analytics, openapi, security, system, teams, urls, web
+from . import accounts, analytics, backlogs, openapi, projects, security, system, teams, urls, web
 
 if TYPE_CHECKING:
     from litestar.types import ControllerRouterHandler
@@ -16,6 +16,8 @@ routes: list[ControllerRouterHandler] = [
     accounts.controllers.AccessController,
     accounts.controllers.AccountController,
     teams.controllers.TeamController,
+    backlogs.controllers.ApiController,
+    projects.controllers.ApiController,
     # teams.controllers.TeamInvitationController,
     # teams.controllers.TeamMemberController,
     analytics.controllers.StatsController,
@@ -38,6 +40,8 @@ __all__ = [
     "routes",
     "openapi",
     "analytics",
+    "backlogs",
+    "projects",
 ]
 tasks: dict[worker.Queue, list[worker.WorkerFunction]] = {
     worker.queues.get("system-tasks"): [  # type: ignore[dict-item]

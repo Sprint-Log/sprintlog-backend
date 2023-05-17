@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.domain.backlogs.models import Service
+from app.domain.projects.models import Service
 from app.lib import log
 
 __all__ = ["provides_service"]

@@ -18,9 +18,11 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from litestar.contrib.repository.abc import FilterTypes
+
+    from app.domain.projects.models import Service
 from app.domain.projects.dependencies import provides_service
 from app.domain.projects.models import Project as Model
-from app.domain.projects.models import ReadDTO, Service, WriteDTO
+from app.domain.projects.models import ReadDTO, WriteDTO
 
 __all__ = ["ApiController"]
 
@@ -37,26 +39,26 @@ class ApiController(Controller):
     DETAIL_ROUTE = "/{col_id:uuid}"
 
     @get()
-    async def filter(self, service: Service, filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
+    async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
         """Get a list of Models."""
         return await service.list(*filters)
 
     @post()
-    async def create(self, data: Model, service: Service) -> Model:
+    async def create(self, data: Model, service: "Service") -> Model:
         """Create an `Model`."""
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
-    async def retrieve(self, service: Service, col_id: "UUID") -> Model:
+    async def retrieve(self, service: "Service", col_id: "UUID") -> Model:
         """Get Model by ID."""
         return await service.get(col_id)
 
     @put(DETAIL_ROUTE)
-    async def update(self, data: Model, service: Service, col_id: "UUID") -> Model:
+    async def update(self, data: Model, service: "Service", col_id: "UUID") -> Model:
         """Update an Model."""
         return await service.update(col_id, data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
-    async def delete(self, service: Service, col_id: "UUID") -> Model:
+    async def delete(self, service: "Service", col_id: "UUID") -> Model:
         """Delete Author by ID."""
         return await service.delete(col_id)
