@@ -1,5 +1,3 @@
-default_language_version:
-  python: "3.11"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -13,14 +11,10 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.265"
+    rev: "v0.0.267"
     hooks:
       - id: ruff
         args: ["--fix"]
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.4
-    hooks:
-      - id: codespell
   - repo: https://github.com/psf/black
     rev: 23.3.0
     hooks:
@@ -34,57 +28,54 @@ repos:
     rev: "v3.0.0-alpha.9-for-vscode"
     hooks:
       - id: prettier
-        exclude: docs
-  - repo: https://github.com/pycqa/bandit
-    rev: 1.7.5
-    hooks:
-      - id: bandit
-        exclude: "test_*"
-        args: ["-iii", "-ll", "-s=B308,B703"]
+        exclude: "_templates"
   - repo: https://github.com/python-formate/flake8-dunder-all
     rev: v0.3.0
     hooks:
       - id: ensure-dunder-all
-        exclude: "test*|examples*"
+        exclude: "test*|examples*|tools"
+  - repo: https://github.com/ariebovenberg/slotscheck
+    rev: v0.16.5
+    hooks:
+      - id: slotscheck
+        exclude: "test_*|docs|migrations"
+        entry: env PYTHONPATH=src slotscheck
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.2.0"
+    rev: "v1.3.0"
     hooks:
       - id: mypy
-        exclude: "alembic"
+        args: [--python-version=3.11]
         additional_dependencies:
           [
+            pydantic,
+            pylint-pydantic,
+            jinja2,
+            aiosql,
+            uvloop,
+            re2,
+            hiredis,
+            passlib,
+            rich,
+            packaging,
+            click,
+            rich-click,
+            polyfactory,
+            structlog,
             aiosmtplib,
             alembic,
             asyncpg,
             asyncpg-stubs,
             httpx,
-            litestar==2.0.0a5,
             pytest,
             pytest-docker,
             saq,
-            sentry-sdk,
-            sqlalchemy,
+            https://github.com/litestar-org/litestar/archive/refs/heads/main.zip,
+            types-freezegun,
+            types-python-jose,
+            types-click,
             types-redis,
-            uvicorn,
-          ]
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.306
-    hooks:
-      - id: pyright
-        exclude: "alembic"
-        additional_dependencies:
-          [
-            aiosmtplib,
-            alembic,
-            asyncpg,
-            asyncpg-stubs,
-            httpx,
-            litestar==2.0.0a5,
-            pytest,
-            pytest-docker,
-            saq,
-            sentry-sdk,
-            sqlalchemy,
-            types-redis,
+            types-passlib,
+            types-click,
+            types-PyYAML,
             uvicorn,
           ]

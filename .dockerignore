@@ -1,6 +1,5 @@
-*
-!app
-!scripts
-!pyproject.toml
-!poetry.lock
-!alembic.ini
+.venv
+venv
+node_modules
+__pycache__
+*.pyc
