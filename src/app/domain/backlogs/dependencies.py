@@ -4,9 +4,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
-from sqlalchemy.orm import joinedload,selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
-from app.domain.backlogs.models import Backlog, BacklogAudit, Service
+from app.domain.backlogs.models import Backlog, Service
 from app.lib import log
 
 __all__ = ["provides_service"]
