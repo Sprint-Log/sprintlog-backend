@@ -34,8 +34,8 @@ class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
     path = "/projects"
-    dependencies = {"service": Provide(provides_service)}
-    tags = ["Projects"]
+    dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
+    tags = ["Projects API"]
     DETAIL_ROUTE = "/{col_id:uuid}"
 
     @get()

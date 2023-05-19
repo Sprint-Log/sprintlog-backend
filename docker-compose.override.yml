@@ -3,8 +3,7 @@ services:
   app:
     build:
       context: .
-      target: build-image
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.bullseye
       args:
         # remove this to build for production.
         POETRY_INSTALL_ARGS: --with=dev,docs,lint
@@ -18,7 +17,6 @@ services:
       - ./pyproject.toml:/workspace/app/pyproject.toml
       - ./poetry.lock:/workspace/app/poetry.lock
       - ./mkdocs.yml:/workspace/app/mkdocs.yml
-    command: run server --reload
 
   localmail:
     image: mailhog/mailhog:v1.0.0

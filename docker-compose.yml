@@ -51,7 +51,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.bullseye
     image: app:latest
     restart: always
     depends_on:
@@ -67,7 +67,7 @@ services:
   migrator:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.bullseye
     image: app:latest
     restart: "no"
     command: manage upgrade-database

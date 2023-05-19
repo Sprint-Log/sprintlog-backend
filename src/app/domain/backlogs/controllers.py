@@ -7,6 +7,8 @@ from litestar.contrib.repository.filters import CollectionFilter
 from litestar.di import Provide
 from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
+from app.domain.accounts.guards import requires_active_user
+from app.domain.accounts.models import User
 
 from app.domain.backlogs.dependencies import provides_service
 from app.domain.backlogs.models import Backlog as Model
@@ -30,10 +32,11 @@ class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
     path = "/backlogs"
-    dependencies = {"service": Provide(provides_service)}
+    dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
     tags = ["Backlogs"]
     DETAIL_ROUTE = "/detail/{col_id:uuid}"
     SLUG_ROUTE = "/project/{slug:str}"
+    guards = [requires_active_user]
 
     @get()
     async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
@@ -41,8 +44,10 @@ class ApiController(Controller):
         return await service.list(*filters)
 
     @post()
-    async def create(self, data: Model, service: "Service") -> Model:
+    async def create(self, data: Model, current_user: User, service: "Service") -> Model:
         """Create an `Model`."""
+        data.owner_id = current_user.id
+        data.assignee_id = current_user.id
         return await service.create(data)
 
     @get(DETAIL_ROUTE)

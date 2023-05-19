@@ -119,13 +119,12 @@ def run_server(
     log.config.configure()
     settings.server.HOST = host or settings.server.HOST
     settings.server.PORT = port or settings.server.PORT
-    settings.server.RELOAD = reload or settings.server.RELOAD if settings.server.RELOAD is not None else None
+    settings.server.RELOAD = True
     settings.server.HTTP_WORKERS = http_workers or settings.server.HTTP_WORKERS
     settings.worker.CONCURRENCY = worker_concurrency or settings.worker.CONCURRENCY
     settings.app.DEBUG = debug or settings.app.DEBUG
     settings.log.LEVEL = 10 if verbose or settings.app.DEBUG else settings.log.LEVEL
     logger.info("starting all application services.")
-
     try:
         logger.info("starting Background worker processes.")
         worker_process = multiprocessing.Process(target=worker.run_worker)
@@ -137,7 +136,7 @@ def run_server(
             vite_process.start()
 
         logger.info("Starting HTTP Server.")
-        reload_dirs = settings.server.RELOAD_DIRS if settings.server.RELOAD else None
+        reload_dirs = "."
         process_args = {
             "reload": bool(settings.server.RELOAD),
             "host": settings.server.HOST,

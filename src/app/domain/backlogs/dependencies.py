@@ -3,7 +3,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.domain.backlogs.models import Service
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload,selectinload
+
+from app.domain.backlogs.models import Backlog, BacklogAudit, Service
 from app.lib import log
 
 __all__ = ["provides_service"]
@@ -21,6 +24,10 @@ async def provides_service(db_session: AsyncSession) -> AsyncGenerator[Service, 
     """Construct repository and service objects for the request."""
     async with Service.new(
         session=db_session,
+        statement=select(Backlog).options(
+            joinedload(Backlog.project),
+            selectinload(Backlog.audits)
+            )
     ) as service:
         try:
             yield service
