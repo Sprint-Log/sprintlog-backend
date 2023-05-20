@@ -13,11 +13,11 @@ if TYPE_CHECKING:
 
 
 routes: list[ControllerRouterHandler] = [
+    projects.controllers.ApiController,
+    backlogs.controllers.ApiController,
     accounts.controllers.AccessController,
     accounts.controllers.AccountController,
     teams.controllers.TeamController,
-    backlogs.controllers.ApiController,
-    projects.controllers.ApiController,
     # teams.controllers.TeamInvitationController,
     # teams.controllers.TeamMemberController,
     analytics.controllers.StatsController,

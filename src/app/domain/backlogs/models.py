@@ -4,20 +4,19 @@ from enum import Enum
 from typing import Annotated, Any
 from uuid import UUID
 
+from litestar.contrib.repository.filters import CollectionFilter
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
-from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.dto.factory import DTOConfig, Mark, dto_field
-from sqlalchemy import Connection, ForeignKey, event
+from sqlalchemy import ForeignKey
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
-from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy.orm import Mapped, Mapper, Session, relationship
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
-from sqlalchemy.orm.attributes import History, get_history
-from sqlalchemy.orm import attributes
-from sqlalchemy import inspect
+
 from app.domain.accounts.models import User
 from app.domain.projects.models import Project
+from app.domain.projects.models import Repository as ProjectRepository
 from app.lib.db import orm
+from app.lib.repository import SQLAlchemyAsyncSlugRepository
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
 
 __all__ = [
@@ -73,7 +72,7 @@ class TagEnum(Enum):
 class Backlog(orm.TimestampedDatabaseModel):
     title: Mapped[str]
     description: Mapped[str | None]
-    ref_id: Mapped[str] = m_col(unique=True,default=secrets.token_hex(6))
+    slug: Mapped[str | None] = m_col(unique=True, nullable=True)
     progress: Mapped[ProgressEnum]
     sprint_number: Mapped[int]
     priority: Mapped[PriorityEnum]
@@ -88,22 +87,13 @@ class Backlog(orm.TimestampedDatabaseModel):
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID] = m_col(ForeignKey(User.id))
     project_id: Mapped[str] = m_col(ForeignKey(Project.id))
-    project: Mapped["Project"] = relationship( "Project",uselist=False, back_populates="backlogs", lazy="joined", info=dto_field(Mark.READ_ONLY))
-    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", lazy="selectin",info=dto_field(Mark.READ_ONLY))
+    project: Mapped["Project"] = relationship(
+        "Project", uselist=False, back_populates="backlogs", lazy="joined", info=dto_field(Mark.READ_ONLY)
+    )
+    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", lazy="selectin", info=dto_field(Mark.READ_ONLY))
     project_slug: AssociationProxy[str] = association_proxy("project", "slug")
     assignee: AssociationProxy[str] = association_proxy("user", "name")
     owner: AssociationProxy[str] = association_proxy("user", "name")
-
-    @hybrid_method
-    async def gen_refid_slug(self,project_slug) -> str:
-        slug = project_slug
-        sprint_number = self.sprint_number
-        # Take the first 8 characters of the UUID and remove any hyphens
-        return f"{slug}-S{sprint_number}-{self.ref_id}"
-
-    @hybrid_method
-    async def gen_due_date(self, beg_date: date, est_days: float) -> date:
-        return beg_date + timedelta(days=est_days)
 
 
 class BacklogAudit(orm.TimestampedDatabaseModel):
@@ -112,20 +102,42 @@ class BacklogAudit(orm.TimestampedDatabaseModel):
     old_value: Mapped[str]
     new_value: Mapped[str]
 
-class Repository(SQLAlchemyAsyncRepository[Backlog]):
+
+class Repository(SQLAlchemyAsyncSlugRepository[Backlog]):
     model_type = Backlog
+
+    async def get_available_backlog_slug(self, backlog: Backlog) -> str | None:
+        project_slug: str | None = backlog.project_slug
+        if not project_slug:
+            project: Project = await ProjectRepository(session=self.session).get(backlog.project_id)
+            project_slug = project.slug
+        if not backlog.slug:
+            token = secrets.token_hex(2)
+            slug = f"{project_slug}-S{backlog.sprint_number}-{token}"
+            if await self._is_slug_unique(slug):
+                return slug
+        return backlog.slug
+
+    async def _get_due_date(self, beg_date: date, est_days: float = 3.0) -> date:
+        return beg_date + timedelta(days=est_days)
 
 
 class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
     repository_type = Repository
 
-    async def create(self, data: Backlog) -> Backlog:
-        data.due_date = await data.gen_due_date(data.beg_date, data.est_days)
-        data = await super().create(data)
-        data.ref_id = await data.gen_refid_slug(project_slug=data.project_slug)
-        return await super().update(item_id=data.id,data=data)
-    async def to_model(self, data: Backlog, operation: str | None = None) -> Backlog:
+    def __init__(self, **repo_kwargs: Any) -> None:
+        self.repository: Repository = self.repository_type(**repo_kwargs)
+        self.model_type = self.repository.model_type
+
+    async def to_model(self, data: Backlog | dict[str, Any], operation: str | None = None) -> Backlog:
+        if isinstance(data, Backlog):
+            data.slug = await self.repository.get_available_backlog_slug(backlog=data)
+            data.due_date = await self.repository._get_due_date(data.beg_date, data.est_days)
+
         return await super().to_model(data, operation)
+
+    async def get_by_project_slug(self, project_slug: str) -> list[Backlog]:
+        return await self.repository.list(CollectionFilter(field_name="project_slug", values=[project_slug]))
 
 
 WriteDTO = SQLAlchemyDTO[

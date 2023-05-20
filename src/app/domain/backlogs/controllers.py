@@ -3,13 +3,12 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from litestar import Controller, delete, get, post, put
-from litestar.contrib.repository.filters import CollectionFilter
 from litestar.di import Provide
 from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
+
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.models import User
-
 from app.domain.backlogs.dependencies import provides_service
 from app.domain.backlogs.models import Backlog as Model
 from app.domain.backlogs.models import ReadDTO, Service, WriteDTO
@@ -35,7 +34,8 @@ class ApiController(Controller):
     dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
     tags = ["Backlogs"]
     DETAIL_ROUTE = "/detail/{col_id:uuid}"
-    SLUG_ROUTE = "/project/{slug:str}"
+    PROJECT_ROUTE = "/project/{slug:str}"
+    SLUG_ROUTE = "/slug/{slug:str}"
     guards = [requires_active_user]
 
     @get()
@@ -55,11 +55,6 @@ class ApiController(Controller):
         """Get Model by ID."""
         return await service.get(col_id)
 
-    @get(SLUG_ROUTE)
-    async def retrieve_linked(self, service: "Service", slug: str) -> Sequence[Model]:
-        """Get Model by ID."""
-        return await service.list(filters=CollectionFilter(field_name="project_slug", values=[slug]))
-
     @put(DETAIL_ROUTE)
     async def update(self, data: Model, service: "Service", col_id: "UUID") -> Model:
         """Update an Model."""
@@ -69,3 +64,13 @@ class ApiController(Controller):
     async def delete(self, service: "Service", col_id: "UUID") -> Model:
         """Delete Author by ID."""
         return await service.delete(col_id)
+
+    @get(PROJECT_ROUTE)
+    async def retrieve_by_project(self, service: "Service", slug: str) -> list[Model]:
+        """Filter Model by Project SLUG."""
+        return await service.get_by_project_slug(slug)
+
+    @get(SLUG_ROUTE)
+    async def retrieve_by_slug(self, service: "Service", slug: str) -> Model:
+        """Get Model by SLUG."""
+        return await service.get_one_or_none(slug=slug)  # type: ignore
