@@ -31,46 +31,40 @@ class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
     path = "/backlogs"
-    dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
+    dependencies = {"service": Provide(provides_service, sync_to_thread=False)}
     tags = ["Backlogs"]
-    DETAIL_ROUTE = "/detail/{col_id:uuid}"
-    PROJECT_ROUTE = "/project/{slug:str}"
-    SLUG_ROUTE = "/slug/{slug:str}"
+    detail_route = "/detail/{col_id:uuid}"
+    project_route = "/project/{slug:str}"
+    slug_route = "/slug/{slug:str}"
     guards = [requires_active_user]
 
     @get()
     async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
-        """Get a list of Models."""
         return await service.list(*filters)
 
     @post()
     async def create(self, data: Model, current_user: User, service: "Service") -> Model:
-        """Create an `Model`."""
         data.owner_id = current_user.id
-        data.assignee_id = current_user.id
+        if not data.assignee_id:
+            data.assignee_id = current_user.id
         return await service.create(data)
 
-    @get(DETAIL_ROUTE)
+    @get(detail_route)
     async def retrieve(self, service: "Service", col_id: "UUID") -> Model:
-        """Get Model by ID."""
         return await service.get(col_id)
 
-    @put(DETAIL_ROUTE)
+    @put(detail_route)
     async def update(self, data: Model, service: "Service", col_id: "UUID") -> Model:
-        """Update an Model."""
         return await service.update(col_id, data)
 
-    @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
+    @delete(detail_route, status_code=HTTP_200_OK)
     async def delete(self, service: "Service", col_id: "UUID") -> Model:
-        """Delete Author by ID."""
         return await service.delete(col_id)
 
-    @get(PROJECT_ROUTE)
+    @get(project_route)
     async def retrieve_by_project(self, service: "Service", slug: str) -> list[Model]:
-        """Filter Model by Project SLUG."""
         return await service.get_by_project_slug(slug)
 
-    @get(SLUG_ROUTE)
+    @get(slug_route)
     async def retrieve_by_slug(self, service: "Service", slug: str) -> Model:
-        """Get Model by SLUG."""
         return await service.get_one_or_none(slug=slug)  # type: ignore
