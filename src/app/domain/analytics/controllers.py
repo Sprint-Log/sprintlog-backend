@@ -16,7 +16,7 @@ from app.lib import log
 from .schemas import NewUsersByWeek
 
 if TYPE_CHECKING:
-    from app.lib.db.base import SQLAlchemyAiosqlQueryManager
+    from app.lib.aiosql import AiosqlQueryManager
 
 
 __all__ = ["StatsController"]
@@ -31,7 +31,7 @@ class StatsController(Controller):
     tags = ["Statistics"]
     guards = [requires_active_user]
     dependencies = {
-        "analytic_queries": Provide(provides_analytic_queries, sync_to_thread=False),
+        "analytic_queries": Provide(provides_analytic_queries),
     }
 
     @get(
@@ -42,9 +42,7 @@ class StatsController(Controller):
         description="List New Users by Week.",
         cache=1000,
     )
-    async def weekly_new_users(
-        self, analytic_queries: SQLAlchemyAiosqlQueryManager
-    ) -> OffsetPagination[NewUsersByWeek]:
+    async def weekly_new_users(self, analytic_queries: AiosqlQueryManager) -> OffsetPagination[NewUsersByWeek]:
         """New Users by week."""
         results = await analytic_queries.select("users_by_week")
         return OffsetPagination[NewUsersByWeek](
