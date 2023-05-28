@@ -77,7 +77,7 @@ class Backlog(orm.TimestampedDatabaseModel):
     sprint_number: Mapped[int]
     priority: Mapped[PriorityEnum]
     status: Mapped[StatusEnum]
-    is_task: Mapped[bool]
+    type: Mapped[str] = m_col(default="backlog", index=True, server_default="backlog")
     category: Mapped[TagEnum]
     est_days: Mapped[float]
     beg_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
@@ -90,10 +90,8 @@ class Backlog(orm.TimestampedDatabaseModel):
     project: Mapped["Project"] = relationship(
         "Project", uselist=False, back_populates="backlogs", lazy="joined", info=dto_field(Mark.READ_ONLY)
     )
-    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", lazy="selectin", info=dto_field(Mark.READ_ONLY))
     project_slug: AssociationProxy[str] = association_proxy("project", "slug")
-    assignee: AssociationProxy[str] = association_proxy("user", "name")
-    owner: AssociationProxy[str] = association_proxy("user", "name")
+    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", lazy="selectin", info=dto_field(Mark.READ_ONLY))
 
 
 class BacklogAudit(orm.TimestampedDatabaseModel):

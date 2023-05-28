@@ -30,11 +30,11 @@ validation_skip: Any = Dependency(skip_validation=True)
 class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
-    path = "/backlogs"
+    path = "/api/backlogs"
     dependencies = {"service": Provide(provides_service, sync_to_thread=False)}
     tags = ["Backlogs"]
-    detail_route = "/detail/{col_id:uuid}"
-    project_route = "/project/{slug:str}"
+    detail_route = "/detail/{row_id:uuid}"
+    project_route = "/project/{prj_slug:str}"
     slug_route = "/slug/{slug:str}"
     guards = [requires_active_user]
 
@@ -50,20 +50,20 @@ class ApiController(Controller):
         return await service.create(data)
 
     @get(detail_route)
-    async def retrieve(self, service: "Service", col_id: "UUID") -> Model:
-        return await service.get(col_id)
+    async def retrieve(self, service: "Service", row_id: "UUID") -> Model:
+        return await service.get(row_id)
 
     @put(detail_route)
-    async def update(self, data: Model, service: "Service", col_id: "UUID") -> Model:
-        return await service.update(col_id, data)
+    async def update(self, data: Model, service: "Service", row_id: "UUID") -> Model:
+        return await service.update(row_id, data)
 
     @delete(detail_route, status_code=HTTP_200_OK)
-    async def delete(self, service: "Service", col_id: "UUID") -> Model:
-        return await service.delete(col_id)
+    async def delete(self, service: "Service", row_id: "UUID") -> Model:
+        return await service.delete(row_id)
 
     @get(project_route)
-    async def retrieve_by_project(self, service: "Service", slug: str) -> list[Model]:
-        return await service.get_by_project_slug(slug)
+    async def retrieve_by_project(self, service: "Service", prj_slug: str) -> list[Model]:
+        return await service.get_by_project_slug(prj_slug)
 
     @get(slug_route)
     async def retrieve_by_slug(self, service: "Service", slug: str) -> Model:

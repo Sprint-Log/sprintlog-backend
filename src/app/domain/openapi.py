@@ -1,10 +1,19 @@
 from litestar.openapi.config import OpenAPIConfig
+from litestar.openapi.controller import OpenAPIController
 from litestar.openapi.spec import Contact
 
 from app.domain.security import auth
 from app.lib import settings
 
+__all__ = ["LatestSwaggerController"]
+
+
+class LatestSwaggerController(OpenAPIController):
+    swagger_ui_version = "5.0.0-alpha.14"
+
+
 config = OpenAPIConfig(
+    openapi_controller=LatestSwaggerController,
     title=settings.openapi.TITLE or settings.app.NAME,
     version=settings.openapi.VERSION,
     contact=Contact(name=settings.openapi.CONTACT_NAME, email=settings.openapi.CONTACT_EMAIL),

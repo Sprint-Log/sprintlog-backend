@@ -33,10 +33,10 @@ validation_skip: Any = Dependency(skip_validation=True)
 class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
-    path = "/projects"
+    path = "/api/projects"
     dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
     tags = ["Projects API"]
-    DETAIL_ROUTE = "/{col_id:uuid}"
+    DETAIL_ROUTE = "/{row_id:uuid}"
 
     @get()
     async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
@@ -49,16 +49,16 @@ class ApiController(Controller):
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
-    async def retrieve(self, service: "Service", col_id: "UUID") -> Model:
+    async def retrieve(self, service: "Service", row_id: "UUID") -> Model:
         """Get Model by ID."""
-        return await service.get(col_id)
+        return await service.get(row_id)
 
     @put(DETAIL_ROUTE)
-    async def update(self, data: Model, service: "Service", col_id: "UUID") -> Model:
+    async def update(self, data: Model, service: "Service", row_id: "UUID") -> Model:
         """Update an Model."""
-        return await service.update(col_id, data)
+        return await service.update(row_id, data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
-    async def delete(self, service: "Service", col_id: "UUID") -> Model:
+    async def delete(self, service: "Service", row_id: "UUID") -> Model:
         """Delete Author by ID."""
-        return await service.delete(col_id)
+        return await service.delete(row_id)
