@@ -42,4 +42,4 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
 
 
 WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created", "updated", "backlogs"})]]
-ReadDTO = SQLAlchemyDTO[Project]
+ReadDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"backlogs"})]]

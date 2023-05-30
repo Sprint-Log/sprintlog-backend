@@ -89,7 +89,7 @@ EXPOSE 8000
 ARG ENV_SECRETS="runtime-secrets"
 # TODO: it would be great if chipset was autodetected as x86 or arm for better M1 support
 ENV PATH="/workspace/app/.venv/bin:$PATH" \
-    ENV_SECRETS="${ENV_SECRETS}" 
+    ENV_SECRETS="${ENV_SECRETS}"
 
 ENV PIP_DEFAULT_TIMEOUT=100 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \

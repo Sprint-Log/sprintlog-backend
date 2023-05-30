@@ -20,6 +20,5 @@ services:
 
   localmail:
     image: mailhog/mailhog:v1.0.0
-    container_name: localmail
     ports:
       - "8025:8025"
