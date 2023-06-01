@@ -27,6 +27,8 @@ class Project(orm.TimestampedDatabaseModel):
     slug: Mapped[str] = m_col(unique=True)
     name: Mapped[str]
     description: Mapped[str]
+    pin: Mapped[bool] = m_col(default=False, server_default="false")
+    labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
     documents: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
     start_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())

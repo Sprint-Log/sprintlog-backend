@@ -4,14 +4,14 @@ ARG PYTHON_RUN_IMAGE=gcr.io/distroless/cc:nonroot
 ## ---------------------------------------------------------------------------------- ##
 ## ------------------------- UI image ----------------------------------------------- ##
 ## ---------------------------------------------------------------------------------- ##
-FROM node:${NODE_BUILDER_IMAGE} as ui-image
-ARG STATIC_URL=/static/
-ENV STATIC_URL="${STATIC_URL}"
-WORKDIR /workspace/app
-RUN npm install -g npm@9.6.5 --quiet
-COPY package.json package-lock.json  vite.config.ts tsconfig.json LICENSE Makefile ./
-COPY src src
-RUN npm ci --quiet && npm cache clean --force --quiet && npm run build
+# FROM node:${NODE_BUILDER_IMAGE} as ui-image
+# ARG STATIC_URL=/static/
+# ENV STATIC_URL="${STATIC_URL}"
+# WORKDIR /workspace/app
+# RUN npm install -g npm@9.6.5 --quiet
+# COPY package.json package-lock.json  vite.config.ts tsconfig.json LICENSE Makefile ./
+# COPY src src
+# RUN npm ci --quiet && npm cache clean --force --quiet && npm run build
 
 ## ---------------------------------------------------------------------------------- ##
 ## ------------------------- Python base -------------------------------------------- ##
@@ -80,7 +80,7 @@ COPY --chown=65532:65532 docs ./docs/
 COPY --chown=65532:65532 tests ./tests/
 COPY --chown=65532:65532 src ./src
 RUN chown -R 65532:65532 /workspace && . /workspace/app/.venv/bin/activate  && poetry install $POETRY_INSTALL_ARGS
-COPY --from=ui-image --chown=65532:65532 /workspace/app/src/app/domain/web/public /workspace/app/src/app/domain/web/public
+# COPY --from=ui-image --chown=65532:65532 /workspace/app/src/app/domain/web/public /workspace/app/src/app/domain/web/public
 EXPOSE 8000
 
 

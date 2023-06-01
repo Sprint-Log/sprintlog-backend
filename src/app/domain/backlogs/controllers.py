@@ -34,7 +34,7 @@ class ApiController(Controller):
     dependencies = {"service": Provide(provides_service, sync_to_thread=False)}
     tags = ["Backlogs"]
     detail_route = "/detail/{row_id:uuid}"
-    project_route = "/project/{prj_slug:str}"
+    project_route = "/project/{project_type:str}"
     slug_route = "/slug/{slug:str}"
     guards = [requires_active_user]
 
@@ -62,9 +62,9 @@ class ApiController(Controller):
         return await service.delete(row_id)
 
     @get(project_route)
-    async def retrieve_by_project(self, service: "Service", prj_slug: str) -> list[Model]:
-        return await service.get_by_project_slug(prj_slug)
+    async def retrieve_by_project_type(self, service: "Service", project_type: str) -> list[Model]:
+        return await service.filter_by_project_type(project_type)
 
     @get(slug_route)
-    async def retrieve_by_slug(self, service: "Service", slug: str) -> Model:
-        return await service.get_one_or_none(slug=slug)  # type: ignore
+    async def retrieve_by_slug(self, service: "Service", slug: str) -> Model | None:
+        return await service.get_one_or_none(slug=slug)
