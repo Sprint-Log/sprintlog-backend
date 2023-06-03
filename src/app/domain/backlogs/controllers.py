@@ -44,7 +44,8 @@ class ApiController(Controller):
 
     @post()
     async def create(self, data: Model, current_user: User, service: "Service") -> Model:
-        data.owner_id = current_user.id
+        if not data.owner_id:
+            data.owner_id = current_user.id
         if not data.assignee_id:
             data.assignee_id = current_user.id
         return await service.create(data)

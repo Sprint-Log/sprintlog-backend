@@ -14,6 +14,8 @@ from litestar.di import Provide
 from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 
+from app.domain.accounts.guards import requires_active_user
+
 if TYPE_CHECKING:
     from uuid import UUID
 
@@ -37,6 +39,7 @@ class ApiController(Controller):
     dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
     tags = ["Projects API"]
     DETAIL_ROUTE = "/{row_id:uuid}"
+    guards = [requires_active_user]
 
     @get()
     async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:

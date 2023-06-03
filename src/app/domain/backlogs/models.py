@@ -186,4 +186,4 @@ WriteDTO = SQLAlchemyDTO[
         DTOConfig(exclude={"id", "created", "updated", "_project_type_expression"}),
     ]
 ]
-ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig()]]
+ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"_project_type_expression"})]]
