@@ -43,9 +43,9 @@ class ProgressEnum(str, Enum):
 
 
 class StatusEnum(str, Enum):
-    new = "🔅"
-    started = "🚧"
-    checked_in = "✔️"
+    new = "🆕"
+    started = "🛠️"
+    checked_in = "🕛"
     completed = "✅"
     cancelled = "🚫"
 

@@ -68,4 +68,7 @@ class ApiController(Controller):
 
     @get(slug_route)
     async def retrieve_by_slug(self, service: "Service", slug: str) -> Model | None:
-        return await service.get_one_or_none(slug=slug)
+        result: Model | None = await service.repository.get_by_slug(slug)
+        if result:
+            return result
+        return None

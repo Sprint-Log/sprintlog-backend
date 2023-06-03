@@ -1,5 +1,5 @@
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
@@ -33,6 +33,9 @@ class Project(orm.TimestampedDatabaseModel):
     start_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
+
+    def __init__(self, **kw: Any):
+        super().__init__(**kw)
 
 
 class Repository(SQLAlchemyAsyncRepository[Project]):
