@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from litestar import Controller, delete, get, post, put
 from litestar.di import Provide
+from litestar.exceptions import HTTPException
 from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 
@@ -65,3 +66,10 @@ class ApiController(Controller):
     @get(project_route)
     async def retrieve_by_project_type(self, service: "Service", project_type: str) -> list[Model]:
         return await service.filter_by_project_type(project_type)
+
+    @get(slug_route)
+    async def retrieve_by_slug(self, service: "Service", slug: str) -> Model:
+        obj = await service.repository.get_by_slug(slug)
+        if obj:
+            return obj
+        raise HTTPException(status_code=404, detail=f"Backlog.slug {slug} not available")

@@ -15,7 +15,6 @@ from sqlalchemy.orm import mapped_column as m_col
 
 from app.domain.accounts.models import User
 from app.domain.projects.models import Project
-from app.domain.projects.models import Repository as ProjectRepository
 from app.lib.db import orm
 from app.lib.repository import SQLAlchemyAsyncSlugRepository
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
@@ -77,9 +76,9 @@ class ItemType(str, Enum):
 
 
 class Backlog(orm.TimestampedDatabaseModel):
-    title: Mapped[str]
+    title: Mapped[str] = m_col(String(length=200), index=True)
     description: Mapped[str | None]
-    slug: Mapped[str] = m_col(unique=True, index=True, info=dto_field(Mark.READ_ONLY))
+    slug: Mapped[str] = m_col(String(length=50), unique=True, index=True, info=dto_field(Mark.READ_ONLY))
     progress: Mapped[ProgressEnum] = m_col(String(length=50), default=ProgressEnum.empty, index=True)
     sprint_number: Mapped[int]
     priority: Mapped[PriorityEnum] = m_col(String(length=50), default=PriorityEnum.med, index=True)
@@ -92,11 +91,11 @@ class Backlog(orm.TimestampedDatabaseModel):
     beg_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
-    labels: Mapped[list[str] | None] = m_col(ARRAY(String), nullable=True)
+    labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
-    project_id: Mapped[str] = m_col(ForeignKey(Project.id))
+    project_slug: Mapped[str] = m_col(ForeignKey(Project.slug), nullable=True)
     project: Mapped["Project"] = relationship(
         "Project", uselist=False, back_populates="backlogs", lazy="selectin", info=dto_field(Mark.READ_ONLY)
     )
@@ -115,7 +114,7 @@ class Backlog(orm.TimestampedDatabaseModel):
         info=dto_field(Mark.PRIVATE),
     )
     audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", lazy="selectin", info=dto_field(Mark.READ_ONLY))
-    project_slug: AssociationProxy[str] = association_proxy("project", "slug", info=dto_field(Mark.READ_ONLY))
+    project_name: AssociationProxy[str] = association_proxy("project", "name", info=dto_field(Mark.READ_ONLY))
     assignee_name: AssociationProxy[str] = association_proxy("assignee", "name", info=dto_field(Mark.READ_ONLY))
     owner_name: AssociationProxy[str] = association_proxy("owner", "name", info=dto_field(Mark.READ_ONLY))
 
@@ -146,9 +145,6 @@ class Repository(SQLAlchemyAsyncSlugRepository[Backlog]):
 
     async def get_available_backlog_slug(self, backlog: Backlog) -> str | None:
         project_slug: str | None = backlog.project_slug
-        if not project_slug:
-            project: Project = await ProjectRepository(session=self.session).get(backlog.project_id)
-            project_slug = project.slug
         if not backlog.slug:
             token = secrets.token_hex(2)
             slug = f"{project_slug}-S{backlog.sprint_number}-{token}"
