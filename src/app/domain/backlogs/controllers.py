@@ -65,10 +65,3 @@ class ApiController(Controller):
     @get(project_route)
     async def retrieve_by_project_type(self, service: "Service", project_type: str) -> list[Model]:
         return await service.filter_by_project_type(project_type)
-
-    @get(slug_route)
-    async def retrieve_by_slug(self, service: "Service", slug: str) -> Model | None:
-        result: Model | None = await service.repository.get_by_slug(slug)
-        if result:
-            return result
-        return None
