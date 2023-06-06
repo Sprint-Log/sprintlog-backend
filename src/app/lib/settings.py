@@ -208,19 +208,19 @@ class LogSettings(BaseSettings):
     REQUEST_FIELDS: list[RequestExtractorField] = [
         "path",
         "method",
-        "headers",
-        "cookies",
+        # "headers",
+        # "cookies",
         "query",
         "path_params",
-        "body",
+        # "body",
     ]
     """Attributes of the [Request][litestar.connection.request.Request] to be
     logged."""
     RESPONSE_FIELDS: list[ResponseExtractorField] = [
         "status_code",
-        "cookies",
-        "headers",
-        "body",
+        # "cookies",
+        # "headers",
+        # "body",
     ]
     """Attributes of the [Response][litestar.response.Response] to be
     logged."""

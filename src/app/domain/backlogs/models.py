@@ -1,6 +1,6 @@
 import secrets
 from datetime import UTC, date, datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from typing import Annotated, Any, cast
 from uuid import UUID
 
@@ -28,28 +28,28 @@ __all__ = [
 ]
 
 
-class PriorityEnum(str, Enum):
+class PriorityEnum(StrEnum):
     low = "🟢"
     med = "🟡"
     hi = "🔴"
 
 
-class ProgressEnum(str, Enum):
+class ProgressEnum(StrEnum):
     empty = "🟨🟨🟨"
     a_third = "🟩🟨🟨"
     two_third = "🟩🟩🟨"
     full = "🟩🟩🟩"
 
 
-class StatusEnum(str, Enum):
-    new = "🆕"
+class StatusEnum(StrEnum):
+    new = "☀️"
     started = "🛠️"
-    checked_in = "🕛"
+    checked_in = "📩"
     completed = "✅"
     cancelled = "🚫"
 
 
-class TagEnum(str, Enum):
+class TagEnum(StrEnum):
     ideas = "💡"
     issues = "⚠️"
     maintenance = "🔨"
@@ -69,10 +69,11 @@ class TagEnum(str, Enum):
     automation = "🤖"
 
 
-class ItemType(str, Enum):
+class ItemType(StrEnum):
     backlog = "backlog"
     task = "task"
     draft = "draft"
+    self = "self"
 
 
 class Backlog(orm.TimestampedDatabaseModel):
@@ -176,10 +177,5 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
         return await self.repository.list(CollectionFilter(field_name="project_type", values=[project_type]))
 
 
-WriteDTO = SQLAlchemyDTO[
-    Annotated[
-        Backlog,
-        DTOConfig(exclude={"id", "created", "updated", "_project_type_expression"}),
-    ]
-]
-ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"_project_type_expression"})]]
+WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]
+ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig()]]
