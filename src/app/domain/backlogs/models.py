@@ -4,7 +4,7 @@ from enum import StrEnum
 from typing import Annotated, Any, cast
 from uuid import UUID
 
-from litestar.contrib.repository.filters import CollectionFilter
+from litestar.contrib.repository.filters import CollectionFilter, LimitOffset
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.dto.factory import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
@@ -173,8 +173,10 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
 
         return await super().to_model(data, operation)
 
-    async def filter_by_project_type(self, project_type: str) -> list[Backlog]:
-        return await self.repository.list(CollectionFilter(field_name="project_type", values=[project_type]))
+    async def filter_by_project_type(self, project_type: str, page: int) -> list[Backlog]:
+        return await self.repository.list(
+            CollectionFilter(field_name="project_type", values=[project_type]), LimitOffset(5, page)
+        )
 
 
 WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]

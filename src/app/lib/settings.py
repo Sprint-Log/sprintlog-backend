@@ -58,7 +58,7 @@ class ServerSettings(BaseSettings):
     """Server port."""
     RELOAD: bool | None = None
     """Turn on hot reloading."""
-    RELOAD_DIRS: list[str] = [f"{BASE_DIR}"]
+    RELOAD_DIRS: str = f"{BASE_DIR}"
     """Directories to watch for reloading."""
     HTTP_WORKERS: int | None = None
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
@@ -429,7 +429,7 @@ def load_settings() -> (
     try:
         """Override Application reload dir."""
         server: ServerSettings = ServerSettings.parse_obj(
-            {"HOST": "0.0.0.0", "RELOAD_DIRS": [str(BASE_DIR)]},  # noqa: S104
+            {"HOST": "0.0.0.0", "RELOAD_DIRS": str(BASE_DIR)},  # noqa: S104
         )
         app: AppSettings = AppSettings.parse_obj({})
         api: APISettings = APISettings.parse_obj({})
