@@ -12,13 +12,14 @@ from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.models import User
 from app.domain.backlogs.dependencies import provides_service
 from app.domain.backlogs.models import Backlog as Model
-from app.domain.backlogs.models import PriorityEnum, ProgressEnum, ReadDTO, Service, StatusEnum, WriteDTO
+from app.domain.backlogs.models import PriorityEnum, ProgressEnum, ReadDTO, Schema, Service, StatusEnum, WriteDTO
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     from litestar.contrib.repository.abc import FilterTypes
-
+    from litestar.contrib.repository.filters import LimitOffset
+    from litestar.pagination import OffsetPagination
 
 __all__ = [
     "ApiController",
@@ -35,7 +36,7 @@ class ApiController(Controller):
     dependencies = {"service": Provide(provides_service, sync_to_thread=False)}
     tags = ["Backlogs"]
     detail_route = "/detail/{row_id:uuid}"
-    project_route = "/project/{project_type:str}/{page:int}"
+    project_route = "/project/{project_type:str}"
     slug_route = "/slug/{slug:str}"
     guards = [requires_active_user]
 
@@ -63,9 +64,12 @@ class ApiController(Controller):
     async def delete(self, service: "Service", row_id: "UUID") -> Model:
         return await service.delete(row_id)
 
-    @get(project_route)
-    async def retrieve_by_project_type(self, service: "Service", project_type: str, page: int) -> list[Model]:
-        return await service.filter_by_project_type(project_type, page)
+    @get(project_route, return_dto=None)
+    async def filter_by_project_type(
+        self, service: "Service", project_type: str, limit_offset: "LimitOffset"
+    ) -> "OffsetPagination[Schema]":
+        results, total = await service.list_and_count(limit_offset, project_type=project_type)
+        return service.to_dto(Schema, results, total, *[limit_offset])
 
     @get(slug_route)
     async def retrieve_by_slug(self, service: "Service", slug: str) -> Model:

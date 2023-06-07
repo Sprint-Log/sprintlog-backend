@@ -4,7 +4,6 @@ from enum import StrEnum
 from typing import Annotated, Any, cast
 from uuid import UUID
 
-from litestar.contrib.repository.filters import CollectionFilter, LimitOffset
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.dto.factory import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
@@ -17,6 +16,7 @@ from app.domain.accounts.models import User
 from app.domain.projects.models import Project
 from app.lib.db import orm
 from app.lib.repository import SQLAlchemyAsyncSlugRepository
+from app.lib.schema import BaseModel
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
 
 __all__ = [
@@ -141,6 +141,38 @@ class BacklogAudit(orm.TimestampedDatabaseModel):
     new_value: Mapped[str]
 
 
+class Schema(BaseModel):
+    id: UUID | None
+    title: str
+    description: str | None
+    slug: str
+    progress: ProgressEnum
+    sprint_number: int
+    priority: PriorityEnum
+    status: StatusEnum
+    type: ItemType
+    category: TagEnum
+    order: int
+    est_days: float
+    points: int
+    beg_date: date
+    end_date: date
+    due_date: date
+    labels: list[str] | None
+    assignee_id: UUID | None
+    owner_id: UUID | None
+    project_slug: str | None
+    created: date | None
+    updated: date | None
+    project_name: str | None
+    assignee_name: str | None
+    owner_name: str | None
+
+
+WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]
+ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig()]]
+
+
 class Repository(SQLAlchemyAsyncSlugRepository[Backlog]):
     model_type = Backlog
 
@@ -172,12 +204,3 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
             data.due_date = await self.repository._get_due_date(data.beg_date, data.est_days)
 
         return await super().to_model(data, operation)
-
-    async def filter_by_project_type(self, project_type: str, page: int) -> list[Backlog]:
-        return await self.repository.list(
-            CollectionFilter(field_name="project_type", values=[project_type]), LimitOffset(5, page)
-        )
-
-
-WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]
-ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig()]]
