@@ -35,16 +35,16 @@ class PriorityEnum(StrEnum):
 
 
 class ProgressEnum(StrEnum):
-    empty = "🟨🟨🟨"
-    a_third = "🟩🟨🟨"
-    two_third = "🟩🟩🟨"
+    empty = "⬜⬜⬜"
+    a_third = "🟩⬜⬜"
+    two_third = "🟩🟩⬜"
     full = "🟩🟩🟩"
 
 
 class StatusEnum(StrEnum):
     new = "☀️"
     started = "🛠️"
-    checked_in = "📩"
+    checked_in = "🔳"
     completed = "✅"
     cancelled = "🚫"
 
