@@ -7,7 +7,7 @@ from uuid import UUID
 
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.dto.factory import DTOConfig, Mark, dto_field
-from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
+from sqlalchemy import ARRAY, JSON, ForeignKey, SQLColumnExpression, String
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
@@ -95,6 +95,7 @@ class Backlog(orm.TimestampedDatabaseModel):
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
+    plugin_meta: Mapped[dict[str, Any]] = m_col(JSON, nullable=True)
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
@@ -193,7 +194,7 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
     async def create(self, data: Backlog | dict[str, Any]) -> Backlog:
         # Call the before_create hook for each registered plugin
         for plugin in self.plugins:
-            await plugin.before_create(data)
+            data = await plugin.before_create(data)
 
         obj: Backlog = await super().create(data)
 
@@ -206,7 +207,7 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
     async def update(self, item_id: Any, data: Backlog | dict[str, Any]) -> Backlog:
         # Call the before_update hook for each registered plugin
         for plugin in self.plugins:
-            await plugin.before_update(item_id, data)
+            data = await plugin.before_update(item_id, data)
 
         obj: Backlog = await super().update(item_id, data)
 
