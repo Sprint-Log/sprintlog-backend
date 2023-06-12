@@ -32,6 +32,10 @@ class Project(orm.TimestampedDatabaseModel):
     documents: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
     start_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
+    sprint_weeks: Mapped[int | None] = m_col(default=2, server_default="2")
+    sprint_amount: Mapped[int | None] = m_col(default=3, server_default="3")
+    sprint_checkup_day: Mapped[int | None] = m_col(default=1, server_default="1")
+    repo_urls: Mapped[list[str]] = m_col(ARRAY(String), server_default="[]")
     backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
 
     def __init__(self, **kw: Any):

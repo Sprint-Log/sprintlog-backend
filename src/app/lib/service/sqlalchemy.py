@@ -233,7 +233,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         self,
         *filters: FilterTypes,
         **kwargs: Any,
-    ) -> tuple[Sequence[ModelT], int]:
+    ) -> tuple[list[ModelT], int]:
         """List of records and total count returned by query.
 
         Args:

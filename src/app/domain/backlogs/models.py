@@ -16,7 +16,6 @@ from app.domain.accounts.models import User
 from app.domain.projects.models import Project
 from app.lib.db import orm
 from app.lib.repository import SQLAlchemyAsyncSlugRepository
-from app.lib.schema import BaseModel
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
 
 __all__ = [
@@ -141,36 +140,8 @@ class BacklogAudit(orm.TimestampedDatabaseModel):
     new_value: Mapped[str]
 
 
-class Schema(BaseModel):
-    id: UUID | None
-    title: str
-    description: str | None
-    slug: str
-    progress: ProgressEnum
-    sprint_number: int
-    priority: PriorityEnum
-    status: StatusEnum
-    type: ItemType
-    category: TagEnum
-    order: int
-    est_days: float
-    points: int
-    beg_date: date
-    end_date: date
-    due_date: date
-    labels: list[str] | None
-    assignee_id: UUID | None
-    owner_id: UUID | None
-    project_slug: str | None
-    created: date | None
-    updated: date | None
-    project_name: str | None
-    assignee_name: str | None
-    owner_name: str | None
-
-
 WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]
-ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig()]]
+ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"project", "audits"})]]
 
 
 class Repository(SQLAlchemyAsyncSlugRepository[Backlog]):
@@ -204,3 +175,18 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
             data.due_date = await self.repository._get_due_date(data.beg_date, data.est_days)
 
         return await super().to_model(data, operation)
+
+    async def create(self, data: Backlog | dict[str, Any]) -> Backlog:
+        return await super().create(data)
+
+    async def update(self, item_id: UUID, data: Backlog | dict[str, Any]) -> Backlog:
+        return await super().update(item_id, data)
+
+    async def delete(self, item_id: UUID) -> Backlog:
+        return await super().delete(item_id)
+
+    async def _backlog_create_zulip(self, data: Backlog | dict[str, Any]) -> None:
+        ...
+
+    async def _backlog_update_zulip(self, data: Backlog | dict[str, Any]) -> None:
+        ...

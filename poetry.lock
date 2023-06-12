@@ -1382,8 +1382,8 @@ tortoise-orm = []
 [package.source]
 type = "git"
 url = "https://github.com/litestar-org/litestar.git"
-reference = "main"
-resolved_reference = "d94717eef5b8a1bdf399e9af2239a586656cda67"
+reference = "1798-dto-pagination"
+resolved_reference = "f035b67473306c3e26780896a6b5d02bec5641d5"
 
 [[package]]
 name = "mako"
@@ -3277,4 +3277,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "cd9d45cd0451f839d4b991c61196b380cbfc54bca06ab827ef3e1942664b6685"
+content-hash = "29306a77401b9fe526b3f6615e80792696b134f062fe199ab4dbb8ed07867706"

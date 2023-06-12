@@ -51,7 +51,7 @@ worker = "app.cli:worker_management_app"
 aiosql = "*"
 asyncpg = "*"
 greenlet = { version = ">=2.0.1", platform = "darwin" }
-litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "main", extras = [
+litestar = { git = "https://github.com/litestar-org/litestar.git", branch = "1798-dto-pagination", extras = [
     "jwt",
     'cli',
     'redis',

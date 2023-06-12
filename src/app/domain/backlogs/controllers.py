@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from litestar import Controller, delete, get, post, put
+from litestar.contrib.repository.filters import OrderBy
 from litestar.di import Provide
 from litestar.exceptions import HTTPException
 from litestar.params import Dependency
@@ -12,14 +13,15 @@ from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.models import User
 from app.domain.backlogs.dependencies import provides_service
 from app.domain.backlogs.models import Backlog as Model
-from app.domain.backlogs.models import PriorityEnum, ProgressEnum, ReadDTO, Schema, Service, StatusEnum, WriteDTO
+from app.domain.backlogs.models import PriorityEnum, ProgressEnum, ReadDTO, Service, StatusEnum, WriteDTO
 
 if TYPE_CHECKING:
     from uuid import UUID
 
     from litestar.contrib.repository.abc import FilterTypes
     from litestar.contrib.repository.filters import LimitOffset
-    from litestar.pagination import OffsetPagination
+
+from litestar.pagination import OffsetPagination
 
 __all__ = [
     "ApiController",
@@ -64,12 +66,14 @@ class ApiController(Controller):
     async def delete(self, service: "Service", row_id: "UUID") -> Model:
         return await service.delete(row_id)
 
-    @get(project_route, return_dto=None)
+    @get(project_route)
     async def filter_by_project_type(
         self, service: "Service", project_type: str, limit_offset: "LimitOffset"
-    ) -> "OffsetPagination[Schema]":
-        results, total = await service.list_and_count(limit_offset, project_type=project_type)
-        return service.to_dto(Schema, results, total, *[limit_offset])
+    ) -> "OffsetPagination[Model]":
+        results, total = await service.list_and_count(
+            limit_offset, OrderBy("updated", "desc"), project_type=project_type
+        )
+        return OffsetPagination(items=results, total=total, limit=limit_offset.limit, offset=limit_offset.offset)
 
     @get(slug_route)
     async def retrieve_by_slug(self, service: "Service", slug: str) -> Model:
