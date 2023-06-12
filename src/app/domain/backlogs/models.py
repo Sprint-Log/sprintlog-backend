@@ -1,3 +1,4 @@
+import pkgutil
 import secrets
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
@@ -12,9 +13,11 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
+import app.lib.plugins
 from app.domain.accounts.models import User
 from app.domain.projects.models import Project
 from app.lib.db import orm
+from app.lib.plugin import BacklogPlugin
 from app.lib.repository import SQLAlchemyAsyncSlugRepository
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
 
@@ -162,10 +165,21 @@ class Repository(SQLAlchemyAsyncSlugRepository[Backlog]):
 
 class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
     repository_type = Repository
+    plugins: list[BacklogPlugin] = []
 
     def __init__(self, **repo_kwargs: Any) -> None:
         self.repository: Repository = self.repository_type(**repo_kwargs)
         self.model_type = self.repository.model_type
+
+        super().__init__(**repo_kwargs)
+        for _, name, _ in pkgutil.iter_modules([app.lib.plugins.__path__[0]]):
+            module = __import__(f"{app.lib.plugins.__name__}.{name}", fromlist=["*"])
+            for obj_name in dir(module):
+                obj = getattr(module, obj_name)
+                if isinstance(obj, type) and issubclass(obj, BacklogPlugin) and obj is not BacklogPlugin:
+                    self.register_plugin(obj())
+
+        super().__init__(**repo_kwargs)
 
     async def to_model(self, data: Backlog | dict[str, Any], operation: str | None = None) -> Backlog:
         if isinstance(data, Backlog):
@@ -177,16 +191,43 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
         return await super().to_model(data, operation)
 
     async def create(self, data: Backlog | dict[str, Any]) -> Backlog:
-        return await super().create(data)
+        # Call the before_create hook for each registered plugin
+        for plugin in self.plugins:
+            await plugin.before_create(data)
 
-    async def update(self, item_id: UUID, data: Backlog | dict[str, Any]) -> Backlog:
-        return await super().update(item_id, data)
+        obj: Backlog = await super().create(data)
 
-    async def delete(self, item_id: UUID) -> Backlog:
-        return await super().delete(item_id)
+        # Call the after_create hook for each registered plugin
+        for plugin in self.plugins:
+            await plugin.after_create(obj)
 
-    async def _backlog_create_zulip(self, data: Backlog | dict[str, Any]) -> None:
-        ...
+        return obj
 
-    async def _backlog_update_zulip(self, data: Backlog | dict[str, Any]) -> None:
-        ...
+    async def update(self, item_id: Any, data: Backlog | dict[str, Any]) -> Backlog:
+        # Call the before_update hook for each registered plugin
+        for plugin in self.plugins:
+            await plugin.before_update(item_id, data)
+
+        obj: Backlog = await super().update(item_id, data)
+
+        # Call the after_update hook for each registered plugin
+        for plugin in self.plugins:
+            await plugin.after_update(obj)
+
+        return obj
+
+    async def delete(self, item_id: Any) -> Backlog:
+        # Call the before_delete hook for each registered plugin
+        for plugin in self.plugins:
+            await plugin.before_delete(item_id)
+
+        obj: Backlog = await super().delete(item_id)
+
+        # Call the after_delete hook for each registered plugin
+        for plugin in self.plugins:
+            await plugin.after_delete(obj)
+
+        return obj
+
+    def register_plugin(self, plugin: BacklogPlugin) -> None:
+        self.plugins.append(plugin)
