@@ -10,7 +10,7 @@ import contextlib
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast, overload
 
-from litestar.contrib.repository.abc import FilterTypes
+from litestar.contrib.repository import FilterTypes
 from litestar.contrib.repository.filters import (
     LimitOffset,
 )
@@ -70,10 +70,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository instance creation.
 
         Args:
-            data: Representation to be created.
+            data: Representation to be created_at.
 
         Returns:
-            Representation of created instance.
+            Representation of created_at instance.
         """
         data = await self.to_model(data, "create")
         return await self.repository.add(data)
@@ -84,10 +84,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository bulk instance creation.
 
         Args:
-            data: Representations to be created.
+            data: Representations to be created_at.
 
         Returns:
-            Representation of created instances.
+            Representation of created_at instances.
         """
         data = [(await self.to_model(datum, "create")) for datum in data]
         return await self.repository.add_many(data)
@@ -96,14 +96,14 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository update operation.
 
         Args:
-            item_id: Identifier of item to be updated.
-            data: Representation to be updated.
+            item_id: Identifier of item to be updated_at.
+            data: Representation to be updated_at.
 
         Returns:
             Updated representation.
         """
         data = await self.to_model(data, "update")
-        self.repository.set_id_attribute_value(item_id, data)
+        data = self.repository.set_id_attribute_value(item_id, data)
         return await self.repository.update(data)
 
     async def update_many(
@@ -112,10 +112,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository bulk instance update.
 
         Args:
-            data: Representations to be updated.
+            data: Representations to be updated_at.
 
         Returns:
-            Representation of updated instances.
+            Representation of updated_at instances.
         """
         data = [(await self.to_model(datum, "update")) for datum in data]
         return await self.repository.update_many(data)
@@ -128,7 +128,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
             data: Representation for upsert.
 
         Returns:
-            Updated or created representation.
+            Updated or created_at representation.
         """
         data = await self.to_model(data, "upsert")
         self.repository.set_id_attribute_value(item_id, data)
@@ -165,7 +165,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
             **kwargs: Keyword arguments for attribute based filtering.
 
         Returns:
-            Representation of created instance.
+            Representation of created_at instance.
         """
         match_fields = match_fields if match_fields else self.match_fields
         validated_model = await self.to_model(kwargs, "create")
@@ -220,10 +220,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Parse and Convert input into a model.
 
         Args:
-            data: Representations to be created.
+            data: Representations to be created_at.
             operation: Optional operation flag so that you can provide behavior based on CRUD operation
         Returns:
-            Representation of created instances.
+            Representation of created_at instances.
         """
         if isinstance(data, dict):
             return model_from_dict(model=self.repository.model_type, **data)  # type: ignore[type-var,return-value]
@@ -233,7 +233,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         self,
         *filters: FilterTypes,
         **kwargs: Any,
-    ) -> tuple[Sequence[ModelT], int]:
+    ) -> tuple[list[ModelT], int]:
         """List of records and total count returned by query.
 
         Args:

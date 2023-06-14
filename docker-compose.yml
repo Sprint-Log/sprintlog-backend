@@ -48,11 +48,11 @@ services:
       interval: 2s
       timeout: 3s
       retries: 40
-  app:
+  scrumlog:
     build:
       context: .
       dockerfile: Dockerfile.bullseye
-    image: app:latest
+    image: scrumlog:latest
     restart: always
     depends_on:
       db:
@@ -63,14 +63,25 @@ services:
       - "8000:8000"
     env_file:
       - .env.example
-
+  pgweb:
+    container_name: pgweb
+    image: sosedoff/pgweb:latest
+    environment:
+      PGWEB_DATABASE_URL: postgres://app:app@db:5432/app?sslmode=disable
+    ports:
+      - 8081:8081
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "127.0.0.1", "8081"]
+      interval: 5s
   migrator:
-    build:
-      context: .
-      dockerfile: Dockerfile.bullseye
-    image: app:latest
+    image:
+      scrumlog:latest
+      # no_cache: true
     restart: "no"
-    command: manage upgrade-database
+    command: database upgrade-database
     env_file:
       - .env.example
     depends_on:

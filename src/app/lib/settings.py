@@ -58,7 +58,7 @@ class ServerSettings(BaseSettings):
     """Server port."""
     RELOAD: bool | None = None
     """Turn on hot reloading."""
-    RELOAD_DIRS: list[str] = [f"{BASE_DIR}"]
+    RELOAD_DIRS: str = f"{BASE_DIR}"
     """Directories to watch for reloading."""
     HTTP_WORKERS: int | None = None
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
@@ -208,19 +208,19 @@ class LogSettings(BaseSettings):
     REQUEST_FIELDS: list[RequestExtractorField] = [
         "path",
         "method",
-        "headers",
-        "cookies",
+        # "headers",
+        # "cookies",
         "query",
         "path_params",
-        "body",
+        # "body",
     ]
     """Attributes of the [Request][litestar.connection.request.Request] to be
     logged."""
     RESPONSE_FIELDS: list[ResponseExtractorField] = [
         "status_code",
-        "cookies",
-        "headers",
-        "body",
+        # "cookies",
+        # "headers",
+        # "body",
     ]
     """Attributes of the [Response][litestar.response.Response] to be
     logged."""
@@ -429,7 +429,7 @@ def load_settings() -> (
     try:
         """Override Application reload dir."""
         server: ServerSettings = ServerSettings.parse_obj(
-            {"HOST": "0.0.0.0", "RELOAD_DIRS": [str(BASE_DIR)]},  # noqa: S104
+            {"HOST": "0.0.0.0", "RELOAD_DIRS": str(BASE_DIR)},  # noqa: S104
         )
         app: AppSettings = AppSettings.parse_obj({})
         api: APISettings = APISettings.parse_obj({})

@@ -1,12 +1,13 @@
 version: "3.3"
 services:
-  app:
+  scrumlog:
     build:
       context: .
       dockerfile: ./Dockerfile.bullseye
       args:
         # remove this to build for production.
         POETRY_INSTALL_ARGS: --with=dev,docs,lint
+    image: scrumlog:latest
     ports:
       - "8000:8000"
     volumes:
@@ -17,7 +18,25 @@ services:
       - ./pyproject.toml:/workspace/app/pyproject.toml
       - ./poetry.lock:/workspace/app/poetry.lock
       - ./mkdocs.yml:/workspace/app/mkdocs.yml
-
+  migrator:
+    image: scrumlog:latest # no_cache: true
+    restart: "no"
+    command: database upgrade-database
+    env_file:
+      - .env.example
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    volumes:
+      - ./docs:/workspace/app/docs/
+      - ./tests:/workspace/app/tests/
+      - ./src:/workspace/app/src/
+      - ./Makefile:/workspace/app/Makefile
+      - ./pyproject.toml:/workspace/app/pyproject.toml
+      - ./poetry.lock:/workspace/app/poetry.lock
+      - ./mkdocs.yml:/workspace/app/mkdocs.yml
   localmail:
     image: mailhog/mailhog:v1.0.0
     ports:

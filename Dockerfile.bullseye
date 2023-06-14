@@ -102,5 +102,6 @@ ENV PIP_DEFAULT_TIMEOUT=100 \
     LC_ALL=C.UTF-8
 STOPSIGNAL SIGINT
 EXPOSE 8000/tcp
-ENTRYPOINT [ "app" ]
-CMD ["run", "server","-r","-d"]
+ENTRYPOINT ["/workspace/app/.venv/bin/litestar" ]
+CMD ["run-all", "--reload"]
+VOLUME /workspace/app

@@ -1,8 +1,8 @@
-"""pin_type
+"""sprint_defaults
 
-Revision ID: 25c13540dcc4
+Revision ID: 48c4e39b77bb
 Revises:
-Create Date: 2023-05-31 19:23:03.422993
+Create Date: 2023-06-09 20:28:06.991051
 
 """
 import sqlalchemy as sa
@@ -15,7 +15,7 @@ __all__ = ["downgrade", "upgrade"]
 sa.GUID = GUID
 
 # revision identifiers, used by Alembic.
-revision = "25c13540dcc4"
+revision = "48c4e39b77bb"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,8 +33,12 @@ def upgrade():
         sa.Column("documents", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("start_date", sa.Date(), nullable=False),
         sa.Column("end_date", sa.Date(), nullable=False),
-        sa.Column("_sentinel", sa.Integer(), nullable=True),
+        sa.Column("sprint_weeks", sa.Integer(), server_default="2", nullable=True),
+        sa.Column("sprint_amount", sa.Integer(), server_default="3", nullable=True),
+        sa.Column("sprint_checkup_day", sa.Integer(), server_default="1", nullable=True),
+        sa.Column("repo_urls", sa.ARRAY(sa.String()), server_default="{}", nullable=False),
         sa.Column("id", sa.GUID(length=16), nullable=False),
+        sa.Column("_sentinel", sa.Integer(), nullable=True),
         sa.Column("created", sa.DateTime(), nullable=False),
         sa.Column("updated", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_project")),
@@ -63,8 +67,8 @@ def upgrade():
         sa.Column("is_superuser", sa.Boolean(), nullable=False),
         sa.Column("is_verified", sa.Boolean(), nullable=False),
         sa.Column("verified_at", sa.DateTime(), nullable=True),
-        sa.Column("_sentinel", sa.Integer(), nullable=True),
         sa.Column("id", sa.GUID(length=16), nullable=False),
+        sa.Column("_sentinel", sa.Integer(), nullable=True),
         sa.Column("created", sa.DateTime(), nullable=False),
         sa.Column("updated", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_user_account")),
@@ -73,44 +77,15 @@ def upgrade():
     )
     op.create_table(
         "backlog",
-        sa.Column("title", sa.String(), nullable=False),
+        sa.Column("title", sa.String(length=200), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
-        sa.Column("slug", sa.String(), nullable=False),
-        sa.Column("progress", sa.Enum("empty", "a_third", "two_third", "full", name="progressenum"), nullable=False),
+        sa.Column("slug", sa.String(length=50), nullable=False),
+        sa.Column("progress", sa.String(length=50), nullable=False),
         sa.Column("sprint_number", sa.Integer(), nullable=False),
-        sa.Column("priority", sa.Enum("low", "med", "hi", name="priorityenum"), nullable=False),
-        sa.Column(
-            "status",
-            sa.Enum("new", "started", "checked_in", "completed", "cancelled", name="statusenum"),
-            nullable=False,
-        ),
-        sa.Column(
-            "type", sa.Enum("backlog", "task", "draft", name="itemtype"), server_default="backlog", nullable=False
-        ),
-        sa.Column(
-            "category",
-            sa.Enum(
-                "ideas",
-                "issues",
-                "maintenance",
-                "finances",
-                "innovation",
-                "bugs",
-                "features",
-                "security",
-                "attention",
-                "backend",
-                "database",
-                "desktop",
-                "mobile",
-                "intl",
-                "design",
-                "analytics",
-                "automation",
-                name="tagenum",
-            ),
-            nullable=False,
-        ),
+        sa.Column("priority", sa.String(length=50), nullable=False),
+        sa.Column("status", sa.String(length=50), nullable=False),
+        sa.Column("type", sa.String(length=50), server_default="backlog", nullable=False),
+        sa.Column("category", sa.String(length=50), nullable=False),
         sa.Column("order", sa.Integer(), server_default="0", nullable=False),
         sa.Column("est_days", sa.Float(), nullable=False),
         sa.Column("points", sa.Integer(), server_default="0", nullable=False),
@@ -119,18 +94,23 @@ def upgrade():
         sa.Column("due_date", sa.Date(), nullable=False),
         sa.Column("labels", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("assignee_id", sa.GUID(length=16), nullable=True),
-        sa.Column("owner_id", sa.GUID(length=16), nullable=False),
-        sa.Column("project_id", sa.GUID(length=16), nullable=False),
-        sa.Column("_sentinel", sa.Integer(), nullable=True),
+        sa.Column("owner_id", sa.GUID(length=16), nullable=True),
+        sa.Column("project_slug", sa.String(), nullable=True),
         sa.Column("id", sa.GUID(length=16), nullable=False),
+        sa.Column("_sentinel", sa.Integer(), nullable=True),
         sa.Column("created", sa.DateTime(), nullable=False),
         sa.Column("updated", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(["assignee_id"], ["user_account.id"], name=op.f("fk_backlog_assignee_id_user_account")),
         sa.ForeignKeyConstraint(["owner_id"], ["user_account.id"], name=op.f("fk_backlog_owner_id_user_account")),
-        sa.ForeignKeyConstraint(["project_id"], ["project.id"], name=op.f("fk_backlog_project_id_project")),
+        sa.ForeignKeyConstraint(["project_slug"], ["project.slug"], name=op.f("fk_backlog_project_slug_project")),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_backlog")),
     )
+    op.create_index(op.f("ix_backlog_category"), "backlog", ["category"], unique=False)
+    op.create_index(op.f("ix_backlog_priority"), "backlog", ["priority"], unique=False)
+    op.create_index(op.f("ix_backlog_progress"), "backlog", ["progress"], unique=False)
     op.create_index(op.f("ix_backlog_slug"), "backlog", ["slug"], unique=True)
+    op.create_index(op.f("ix_backlog_status"), "backlog", ["status"], unique=False)
+    op.create_index(op.f("ix_backlog_title"), "backlog", ["title"], unique=False)
     op.create_index(op.f("ix_backlog_type"), "backlog", ["type"], unique=False)
     op.create_table(
         "team_invitation",
@@ -180,8 +160,8 @@ def upgrade():
         sa.Column("field_name", sa.String(), nullable=False),
         sa.Column("old_value", sa.String(), nullable=False),
         sa.Column("new_value", sa.String(), nullable=False),
-        sa.Column("_sentinel", sa.Integer(), nullable=True),
         sa.Column("id", sa.GUID(length=16), nullable=False),
+        sa.Column("_sentinel", sa.Integer(), nullable=True),
         sa.Column("created", sa.DateTime(), nullable=False),
         sa.Column("updated", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(["backlog_id"], ["backlog.id"], name=op.f("fk_backlog_audit_backlog_id_backlog")),
@@ -198,7 +178,12 @@ def downgrade():
     op.drop_index(op.f("ix_team_invitation_email"), table_name="team_invitation")
     op.drop_table("team_invitation")
     op.drop_index(op.f("ix_backlog_type"), table_name="backlog")
+    op.drop_index(op.f("ix_backlog_title"), table_name="backlog")
+    op.drop_index(op.f("ix_backlog_status"), table_name="backlog")
     op.drop_index(op.f("ix_backlog_slug"), table_name="backlog")
+    op.drop_index(op.f("ix_backlog_progress"), table_name="backlog")
+    op.drop_index(op.f("ix_backlog_priority"), table_name="backlog")
+    op.drop_index(op.f("ix_backlog_category"), table_name="backlog")
     op.drop_table("backlog")
     op.drop_table("user_account")
     op.drop_index(op.f("ix_team_slug"), table_name="team")
