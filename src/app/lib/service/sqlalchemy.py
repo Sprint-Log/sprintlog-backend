@@ -10,7 +10,7 @@ import contextlib
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast, overload
 
-from litestar.contrib.repository.abc import FilterTypes
+from litestar.contrib.repository import FilterTypes
 from litestar.contrib.repository.filters import (
     LimitOffset,
 )

@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
-from litestar.contrib.repository.abc import FilterTypes
+from litestar.contrib.repository import FilterTypes
 from litestar.contrib.repository.filters import BeforeAfter, CollectionFilter, LimitOffset, OrderBy, SearchFilter
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
