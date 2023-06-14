@@ -1,11 +1,11 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../scrumlog-frontend"
-		}
-	],
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../sprintlog-frontend"
+        }
+    ],
     "settings": {}
 }
