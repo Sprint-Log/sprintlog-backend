@@ -1,4 +1,4 @@
-# Sprintlog: "Streamline, Collaborate, and Automate Your Team's Success, Live!"
+# Sprintlog: "Streamline, Collaborate, and Automate Your Team's Success, In Realtime!"
 
 ## **Project Description:**
 
