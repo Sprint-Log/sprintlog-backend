@@ -29,8 +29,8 @@ class User(CamelizedBaseModel):
     is_superuser: bool
     is_active: bool
     is_verified: bool
-    created: datetime
-    updated: datetime
+    created_at: datetime
+    updated_at: datetime
     teams: list[UserTeam] = []
 
 

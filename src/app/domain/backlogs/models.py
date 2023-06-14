@@ -145,7 +145,7 @@ class BacklogAudit(orm.TimestampedDatabaseModel):
     new_value: Mapped[str]
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created", "updated"})]]
+WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created_at", "updated_at"})]]
 ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"project", "audits"})]]
 
 

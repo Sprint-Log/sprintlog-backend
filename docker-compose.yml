@@ -48,11 +48,11 @@ services:
       interval: 2s
       timeout: 3s
       retries: 40
-  app:
+  scrumlog:
     build:
       context: .
       dockerfile: Dockerfile.bullseye
-    image: app:latest
+    image: scrumlog:latest
     restart: always
     depends_on:
       db:
@@ -77,10 +77,9 @@ services:
       test: ["CMD", "nc", "-vz", "127.0.0.1", "8081"]
       interval: 5s
   migrator:
-    build:
-      context: .
-      dockerfile: Dockerfile.bullseye
-    image: app:latest
+    image:
+      scrumlog:latest
+      # no_cache: true
     restart: "no"
     command: database upgrade-database
     env_file:

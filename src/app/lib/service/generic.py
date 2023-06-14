@@ -55,10 +55,10 @@ class Service(Generic[T]):
         """Create an instance of `T`.
 
         Args:
-            data: Representation to be created.
+            data: Representation to be created_at.
 
         Returns:
-            Representation of created instance.
+            Representation of created_at instance.
         """
         return cast("T", data)
 
@@ -66,10 +66,10 @@ class Service(Generic[T]):
         """Create many instances of `T`.
 
         Args:
-            data: Representation to be created.
+            data: Representation to be created_at.
 
         Returns:
-            Representation of created instance.
+            Representation of created_at instance.
         """
         return cast("Sequence[T]", data)
 
@@ -77,8 +77,8 @@ class Service(Generic[T]):
         """Update existing instance of `T` with `data`.
 
         Args:
-            item_id: Identifier of item to be updated.
-            data: Representation to be updated.
+            item_id: Identifier of item to be updated_at.
+            data: Representation to be updated_at.
 
         Returns:
             Updated representation.
@@ -89,10 +89,10 @@ class Service(Generic[T]):
         """Update many instances of `T`.
 
         Args:
-            data: Representations to be updated.
+            data: Representations to be updated_at.
 
         Returns:
-            Representation of updated instance.
+            Representation of updated_at instance.
         """
         return cast("Sequence[T]", data)
 
@@ -104,7 +104,7 @@ class Service(Generic[T]):
             data: Representation for upsert.
 
         Returns:
-            Updated or created representation.
+            Updated or created_at representation.
         """
         return data
 
@@ -191,11 +191,11 @@ class Service(Generic[T]):
         """Parse and Convert input into a model.
 
         Args:
-            data: Representations to be created.
+            data: Representations to be created_at.
             operation: Optional operation flag so that you can provide behavior based on CRUD operation
 
         Returns:
-            Representation of created instances.
+            Representation of created_at instances.
         """
         return cast("T", data)
 

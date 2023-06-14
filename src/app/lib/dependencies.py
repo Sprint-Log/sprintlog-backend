@@ -69,11 +69,11 @@ def provide_created_filter(
     Parameters
     ----------
     before : datetime | None
-        Filter for records updated before this date/time.
+        Filter for records updated_at before this date/time.
     after : datetime | None
-        Filter for records updated after this date/time.
+        Filter for records updated_at after this date/time.
     """
-    return BeforeAfter("created", before, after)
+    return BeforeAfter("created_at", before, after)
 
 
 def provide_search_filter(
@@ -121,18 +121,18 @@ def provide_updated_filter(
     before: DTorNone = Parameter(query="updatedBefore", default=None, required=False),
     after: DTorNone = Parameter(query="updatedAfter", default=None, required=False),
 ) -> BeforeAfter:
-    """Add updated filter.
+    """Add updated_at filter.
 
     Return type consumed by `Repository.filter_on_datetime_field()`.
 
     Parameters
     ----------
     before : datetime | None
-        Filter for records updated before this date/time.
+        Filter for records updated_at before this date/time.
     after : datetime | None
-        Filter for records updated after this date/time.
+        Filter for records updated_at after this date/time.
     """
-    return BeforeAfter("updated", before, after)
+    return BeforeAfter("updated_at", before, after)
 
 
 def provide_limit_offset_pagination(

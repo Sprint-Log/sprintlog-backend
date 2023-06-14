@@ -71,7 +71,7 @@ class ApiController(Controller):
         self, service: "Service", project_type: str, limit_offset: "LimitOffset"
     ) -> "OffsetPagination[Model]":
         results, total = await service.list_and_count(
-            limit_offset, OrderBy("updated", "desc"), project_type=project_type
+            limit_offset, OrderBy("updated_at", "desc"), project_type=project_type
         )
         return OffsetPagination(items=results, total=total, limit=limit_offset.limit, offset=limit_offset.offset)
 

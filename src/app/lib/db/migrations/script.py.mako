@@ -8,7 +8,7 @@ Create Date: ${create_date}
 import sqlalchemy as sa
 from alembic import op
 import litestar
-from litestar.contrib.sqlalchemy.types import GUID
+from litestar.contrib.sqlalchemy.types import GUID,DateTimeUTC
 
 ${imports if imports else ""}
 

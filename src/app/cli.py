@@ -235,7 +235,7 @@ def create_user(
         async with UserService.new() as users_service:
             user = await users_service.create(data=obj_in.dict(exclude_unset=True, exclude_none=True))
             await users_service.repository.session.commit()
-            logger.info("User created: %s", user.email)
+            logger.info("User created_at: %s", user.email)
 
     email = email or click.prompt("Email")
     name = name or click.prompt("Full Name", show_default=False)

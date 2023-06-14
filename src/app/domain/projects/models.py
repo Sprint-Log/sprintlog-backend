@@ -112,5 +112,5 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
         self.plugins.append(plugin)
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created", "updated", "backlogs"})]]
+WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created_at", "updated_at", "backlogs"})]]
 ReadDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"backlogs"})]]
