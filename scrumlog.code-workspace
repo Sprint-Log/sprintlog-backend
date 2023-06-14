@@ -1,13 +1,11 @@
 {
-    "folders": [
-        {
-            "path": "."
-        },
-        {
-            "path": "../scrumlog-frontend"
-        }
-    ],
-    "settings": {
-        "dotenv.enableAutocloaking": false
-    }
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../scrumlog-frontend"
+		}
+	],
+    "settings": {}
 }

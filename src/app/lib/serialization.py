@@ -33,7 +33,6 @@ def _default(value: Any) -> str:
 
 
 _msgspec_json_encoder = msgspec.json.Encoder(enc_hook=_default)
-_msgspec_json_decoder = msgspec.json.Decoder()
 _msgspec_msgpack_encoder = msgspec.msgpack.Encoder(enc_hook=_default)
 _msgspec_msgpack_decoder = msgspec.msgpack.Decoder()
 
@@ -45,7 +44,7 @@ def to_json(value: Any) -> bytes:
 
 def from_json(value: bytes | str) -> Any:
     """Decode to an object with the optimized msgspec package."""
-    return _msgspec_json_decoder.decode(value)
+    return value
 
 
 def to_msgpack(value: Any) -> bytes:

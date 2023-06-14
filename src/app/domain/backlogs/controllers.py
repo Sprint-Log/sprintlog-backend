@@ -19,8 +19,8 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from litestar.contrib.repository.abc import FilterTypes
-    from litestar.contrib.repository.filters import LimitOffset
 
+from litestar.contrib.repository.filters import LimitOffset
 from litestar.pagination import OffsetPagination
 
 __all__ = [

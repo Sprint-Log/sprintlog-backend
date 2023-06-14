@@ -37,25 +37,25 @@ class BacklogPlugin(ABC):
 
 class ProjectPlugin(ABC):
     @abstractmethod
-    async def before_create(self, data: "Project") -> None:
-        pass
+    async def before_create(self, data: "Project | dict[str, Any]") -> "Project | dict[str, Any]":
+        return data
 
     @abstractmethod
-    async def after_create(self, data: "Project") -> None:
-        pass
+    async def after_create(self, data: "Project") -> "Project":
+        return data
 
     @abstractmethod
-    async def before_update(self, item_id: str, data: "Project") -> None:
-        pass
+    async def before_update(self, item_id: str, data: "Project | dict[str, Any]") -> "Project | dict[str, Any]":
+        return data
 
     @abstractmethod
-    async def after_update(self, data: "Project") -> None:
-        pass
+    async def after_update(self, data: "Project") -> "Project":
+        return data
 
     @abstractmethod
-    async def before_delete(self, item_id: str) -> None:
-        pass
+    async def before_delete(self, item_id: UUID) -> UUID:
+        return item_id
 
     @abstractmethod
-    async def after_delete(self, data: "Project") -> None:
-        pass
+    async def after_delete(self, data: "Project") -> "Project":
+        return data
