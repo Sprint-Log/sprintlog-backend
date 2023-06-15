@@ -71,6 +71,8 @@ tenacity = "*"
 uvicorn = { extras = ["standard"], version = "*" }
 uvloop = "*"
 # litestar = {version = "*", extras = ["jwt", 'cli', 'redis', 'jinja2'], allow-prereleases = true}
+black = "^23.3.0"
+livekit-server-sdk-python = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 asgi-lifespan = "*"
@@ -103,7 +105,6 @@ mypy = "*"
 pre-commit = "*"
 pylint = "*"
 pylint-pydantic = "*"
-ruff = '*'
 slotscheck = "*"
 types-click = "*"
 types-passlib = "*"

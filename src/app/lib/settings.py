@@ -62,6 +62,11 @@ class ServerSettings(BaseSettings):
     """Directories to watch for reloading."""
     HTTP_WORKERS: int | None = None
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
+    LIVE_API_KEY: str = ""
+    """Live API key. for LiveKit server"""
+    LIVE_API_SECRET: str = ""
+    """Live API Secret. for LiveKit server"""
+    LIVE_API_URL: str = ""
 
 
 class AppSettings(BaseSettings):
