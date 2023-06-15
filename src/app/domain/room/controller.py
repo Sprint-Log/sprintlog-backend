@@ -11,11 +11,11 @@ from litestar import (
 from litestar.di import Provide
 from litestar.exceptions import NotFoundException
 from litestar.params import Dependency
+from livekit import models
 
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.schemas import User
 from app.domain.projects.dependencies import provides_service
-from app.domain.room.models import Room
 from app.lib.settings import server
 
 __all__ = ["ApiController"]
@@ -32,9 +32,9 @@ class ApiController(Controller):
     guards = [requires_active_user]
 
     @get(room_route, sync_to_thread=True)
-    async def retrieve(self, room_id: str) -> Room:
+    async def retrieve(self, room_id: str) -> models.Room:
         """Get a list of Models."""
-        rooms: list[Room] = livekit.RoomServiceClient(
+        rooms: list[models.Room] = livekit.RoomServiceClient(
             server.LIVE_API_URL, server.LIVE_API_KEY, server.LIVE_API_SECRET
         ).list_rooms()
         for room in rooms:
@@ -43,9 +43,12 @@ class ApiController(Controller):
         raise NotFoundException()
 
     @get(sync_to_thread=True)
-    async def list_all(self) -> Any:
+    async def list_all(self) -> list[models.Room]:
         """Get a list of Models."""
-        return livekit.RoomServiceClient(server.LIVE_API_URL, server.LIVE_API_KEY, server.LIVE_API_SECRET).list_rooms()
+        rooms: list[models.Room] = livekit.RoomServiceClient(
+            server.LIVE_API_URL, server.LIVE_API_KEY, server.LIVE_API_SECRET
+        ).list_rooms()
+        return rooms
 
     @post(room_route, sync_to_thread=True)
     async def create(self, room_id: str, current_user: User) -> str:
