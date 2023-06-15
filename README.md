@@ -52,7 +52,7 @@ Repo:
 - <https://git.hexcode.tech/hexcode-core/sprintlog-backend>
 - <https://git.hexcode.tech/hexcode-core/sprintlog-frontend>
 
-Preliminary requirements tutorials for development contribution:
+## Preliminary requirements tutorials for development contribution
 
 Backend:
 

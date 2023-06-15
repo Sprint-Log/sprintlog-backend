@@ -52,6 +52,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.bullseye
+      args:
+        # remove this to build for production.
+        POETRY_INSTALL_ARGS: --with=dev,docs,lint
     image: sprintlog:latest
     restart: always
     depends_on:
@@ -61,6 +64,14 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+    volumes:
+      - ./docs:/workspace/app/docs/
+      - ./tests:/workspace/app/tests/
+      - ./src:/workspace/app/src/
+      - ./Makefile:/workspace/app/Makefile
+      - ./pyproject.toml:/workspace/app/pyproject.toml
+      - ./poetry.lock:/workspace/app/poetry.lock
+      - ./mkdocs.yml:/workspace/app/mkdocs.yml
     env_file:
       - .env.example
   pgweb:
@@ -77,9 +88,7 @@ services:
       test: ["CMD", "nc", "-vz", "127.0.0.1", "8081"]
       interval: 5s
   migrator:
-    image:
-      sprintlog:latest
-      # no_cache: true
+    image: sprintlog:latest # no_cache: true
     restart: "no"
     command: database upgrade-database
     env_file:
@@ -89,6 +98,18 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+    volumes:
+      - ./docs:/workspace/app/docs/
+      - ./tests:/workspace/app/tests/
+      - ./src:/workspace/app/src/
+      - ./Makefile:/workspace/app/Makefile
+      - ./pyproject.toml:/workspace/app/pyproject.toml
+      - ./poetry.lock:/workspace/app/poetry.lock
+      - ./mkdocs.yml:/workspace/app/mkdocs.yml
+  localmail:
+    image: mailhog/mailhog:v1.0.0
+    ports:
+      - "8025:8025"
 volumes:
   db-data: {}
   cache-data: {}
