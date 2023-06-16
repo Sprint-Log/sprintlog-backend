@@ -3,7 +3,7 @@ services:
   cache:
     image: redis:latest
     ports:
-      - "16379:6379"
+      - "6379:6379"
     hostname: cache
     command: redis-server --appendonly yes
     volumes:
@@ -52,9 +52,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.bullseye
-      args:
-        # remove this to build for production.
-        POETRY_INSTALL_ARGS: --with=dev,docs,lint
     image: sprintlog:latest
     restart: always
     depends_on:
@@ -74,8 +71,8 @@ services:
       - ./mkdocs.yml:/workspace/app/mkdocs.yml
     env_file:
       - .env.example
+    command: litestar run-all --reload
   pgweb:
-    container_name: pgweb
     image: sosedoff/pgweb:latest
     environment:
       PGWEB_DATABASE_URL: postgres://app:app@db:5432/app?sslmode=disable
@@ -90,7 +87,7 @@ services:
   migrator:
     image: sprintlog:latest # no_cache: true
     restart: "no"
-    command: database upgrade-database
+    command: poetry run litestar database upgrade-database
     env_file:
       - .env.example
     depends_on:

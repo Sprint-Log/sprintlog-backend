@@ -12,7 +12,6 @@ from rich.prompt import Confirm
 
 from app.domain.accounts.schemas import UserCreate, UserUpdate
 from app.domain.accounts.services import UserService
-from app.domain.web.vite import run_vite
 from app.lib import db, log, settings, worker
 
 __all__ = [
@@ -125,11 +124,6 @@ def run_all_app(
         logger.info("starting Background worker processes.")
         worker_process = multiprocessing.Process(target=worker.run_worker)
         worker_process.start()
-
-        if settings.app.DEV_MODE:
-            logger.info("starting Vite")
-            vite_process = multiprocessing.Process(target=run_vite)
-            vite_process.start()
 
         logger.info("Starting HTTP Server.")
         reload_dirs = settings.server.RELOAD_DIRS if settings.server.RELOAD else None

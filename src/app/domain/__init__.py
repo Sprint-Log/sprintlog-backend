@@ -15,7 +15,7 @@ from app.lib import settings, worker
 from app.lib.service.generic import Service
 from app.lib.worker.controllers import WorkerController
 
-from . import accounts, analytics, backlogs, openapi, plugins, projects, security, system, teams, urls, web
+from . import accounts, analytics, backlogs, openapi, plugins, projects, room, security, system, teams, urls
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -30,11 +30,11 @@ routes: list[ControllerRouterHandler] = [
     accounts.controllers.AccessController,
     accounts.controllers.AccountController,
     teams.controllers.TeamController,
+    room.controller.ApiController,
     # teams.controllers.TeamInvitationController,
     # teams.controllers.TeamMemberController,
     analytics.controllers.StatsController,
     system.controllers.SystemController,
-    web.controllers.WebController,
 ]
 
 if settings.worker.WEB_ENABLED:
