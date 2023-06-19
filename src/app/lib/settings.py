@@ -250,11 +250,11 @@ class OpenAPISettings(BaseSettings):
         env_file = ".env"
         env_prefix = "OPENAPI_"
 
-    CONTACT_NAME: str = "Cody"
+    CONTACT_NAME: str = "Hexcode Technologies"
     """Name of contact on document."""
     CONTACT_EMAIL: str = "admin"
     """Email for contact on document."""
-    TITLE: str | None = "Litestar Fullstack"
+    TITLE: str | None = "Sprintlog"
     """Document title."""
     VERSION: str = "v1.0"
     """Document version."""

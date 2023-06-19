@@ -1,7 +1,7 @@
 [tool.poetry]
-authors = ["Cody Fincher <cody.fincher@gmail.com>"]
+authors = ["Hexcode Technologies <info@hexcode.tech>"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 2 - Developing/Alpha",
     "Environment :: Web Environment",
     "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
@@ -14,8 +14,8 @@ classifiers = [
     "Typing :: Typed",
 ]
 description = "Opinionated template for integrating Litestar with a SPA"
-documentation = "https://cofin.github.io/litestar-fullstack"
-homepage = "https://github.com/cofin/litestar-fullstack"
+documentation = "https://sprint-log.github.io/sprintlog/"
+homepage = "https://github.com/sprint-log/sprintlog-backend"
 include = ["CHANGELOG.md"]
 keywords = [
     "api",
@@ -31,11 +31,11 @@ keywords = [
     "spa",
 ]
 license = "MIT"
-maintainers = ["Cody Fincher <cody.fincher@gmail.com>"]
+maintainers = ["Hexcode Technologies <info@hexcode.tech>"]
 name = "app"
 packages = [{ include = "app", from = "src" }]
 readme = "README.md"
-repository = "https://github.com/cofin/litestar-fullstack"
+repository = "https://github.com/sprint-log/sprintlog-backend"
 version = "0.1.0"
 
 [tool.poetry.scripts]

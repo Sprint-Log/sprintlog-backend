@@ -1,5 +1,5 @@
-site_name: Litestar SPA Sample Architecture
-repo_url: https://github.com/cofin/litestar-fullstack
+site_name: Sprintlog
+repo_url: https://github.com/sprint-log/sprintlog-backend
 edit_uri: ./edit/main/docs
 
 # Sticking with readthedocs theme for basic template

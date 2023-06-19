@@ -169,11 +169,13 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
     repository_type = Repository
     plugins: list[BacklogPlugin] = []
 
+    def register_plugin(self, plugin: BacklogPlugin) -> None:
+        self.plugins.append(plugin)
+
     def __init__(self, **repo_kwargs: Any) -> None:
         self.repository: Repository = self.repository_type(**repo_kwargs)
         self.model_type = self.repository.model_type
 
-        super().__init__(**repo_kwargs)
         for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
             module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
             for obj_name in dir(module):
@@ -230,6 +232,3 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
             await plugin.after_delete(data=obj)
 
         return obj
-
-    def register_plugin(self, plugin: BacklogPlugin) -> None:
-        self.plugins.append(plugin)
