@@ -23,5 +23,7 @@ COPY poetry.lock pyproject.toml ./
 # Run your app
 COPY . /app/workspace/
 RUN poetry install
+RUN chown -R 65532:65532 /workspace
+EXPOSE 8000
 ENTRYPOINT ["poetry", "run"]
 VOLUME /app/workspace

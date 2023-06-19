@@ -1333,8 +1333,8 @@ tortoise-orm = []
 [package.source]
 type = "git"
 url = "https://github.com/litestar-org/litestar.git"
-reference = "1798-dto-pagination"
-resolved_reference = "944362909d05619c58931fb90370b18f472fcfc0"
+reference = "main"
+resolved_reference = "4134e59b28333b78b04eaea42a798e71352e3e7f"
 
 [[package]]
 name = "livekit-server-sdk-python"
@@ -2222,13 +2222,13 @@ python-dotenv = ">=0.9.1"
 
 [[package]]
 name = "pytest-mock"
-version = "3.10.0"
+version = "3.11.1"
 description = "Thin-wrapper around the mock package for easier use with pytest"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-mock-3.10.0.tar.gz", hash = "sha256:fbbdb085ef7c252a326fd8cdcac0aa3b1333d8811f131bdcc701002e1be7ed4f"},
-    {file = "pytest_mock-3.10.0-py3-none-any.whl", hash = "sha256:f4c973eeae0282963eb293eb173ce91b091a79c1334455acfac9ddee8a1c784b"},
+    {file = "pytest-mock-3.11.1.tar.gz", hash = "sha256:7f6b125602ac6d743e523ae0bfa71e1a697a2f5534064528c6ff84c2f7c2fc7f"},
+    {file = "pytest_mock-3.11.1-py3-none-any.whl", hash = "sha256:21c279fff83d70763b05f8874cc9cfb3fcacd6d354247a976f9529d19f9acf39"},
 ]
 
 [package.dependencies]
@@ -3199,4 +3199,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "93bec5b03c78ef4d97bf467e503bb68feeef7eb1256eb427decaf1206cc05833"
+content-hash = "ce15846ae6faa3f992211767a0e83efb12a24dce5ae0c984a08169c483dd2f86"

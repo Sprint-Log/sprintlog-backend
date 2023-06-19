@@ -1,5 +1,5 @@
 
-FROM python:3.11
+FROM python:3.11-bullseye
 
 # Configure Poetry
 ENV POETRY_VERSION=1.5.1
