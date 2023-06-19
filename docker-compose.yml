@@ -52,7 +52,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.bullseye
-    image: sprintlog:latest
     restart: always
     depends_on:
       db:
@@ -62,13 +61,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./docs:/workspace/app/docs/
-      - ./tests:/workspace/app/tests/
-      - ./src:/workspace/app/src/
-      - ./Makefile:/workspace/app/Makefile
-      - ./pyproject.toml:/workspace/app/pyproject.toml
-      - ./poetry.lock:/workspace/app/poetry.lock
-      - ./mkdocs.yml:/workspace/app/mkdocs.yml
+      - .:/app/workspace/
     env_file:
       - .env.example
     command: litestar run-all --reload
@@ -85,7 +78,9 @@ services:
       test: ["CMD", "nc", "-vz", "127.0.0.1", "8081"]
       interval: 5s
   migrator:
-    image: sprintlog:latest # no_cache: true
+    build:
+      context: .
+      dockerfile: Dockerfile.bullseye
     restart: "no"
     command: poetry run litestar database upgrade-database
     env_file:

@@ -59,6 +59,7 @@ class ZulipProjectPlugin(ProjectPlugin):
             data.plugin_meta = {"zulip_bot": self.zulip_bot}
         elif isinstance(data, dict):
             data["plugin_meta"] = {"zulip_bot": self.zulip_bot}
+            data["plugin_meta"] = {"zulip_object": self.zulip_bot}
         return data
 
     async def after_create(self, data: "Project") -> "Project":

@@ -19,9 +19,7 @@ WORKDIR /app/workspace
 
 # Install dependencies
 COPY poetry.lock pyproject.toml ./
-
-# Run your app
-COPY . /app/workspace/
+COPY . .
 RUN poetry install
-ENTRYPOINT ["poetry", "run"]
 VOLUME /app/workspace
+ENTRYPOINT ["poetry", "run"]
