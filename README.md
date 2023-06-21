@@ -1,299 +1,186 @@
-# Sprintlog: "Streamline, Collaborate, and Automate Your Team's Success, In Realtime!"
+<p align="center">
+	<a href="https://caddyserver.com">
+		<picture>
+			<source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/1128849/210187358-e2c39003-9a5e-4dd5-a783-6deb6483ee72.svg">
+			<source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/1128849/210187356-dfb7f1c5-ac2e-43aa-bb23-fc014280ae1f.svg">
+			<img src="https://user-images.githubusercontent.com/1128849/210187356-dfb7f1c5-ac2e-43aa-bb23-fc014280ae1f.svg" alt="Caddy" width="550">
+		</picture>
+	</a>
+	<br>
+	<h3 align="center">a <a href="https://zerossl.com"><img src="https://user-images.githubusercontent.com/55066419/208327323-2770dc16-ec09-43a0-9035-c5b872c2ad7f.svg" height="28" style="vertical-align: -7.7px" valign="middle"></a> project</h3>
+</p>
+<hr>
+<h3 align="center">Every site on HTTPS</h3>
+<p align="center">Caddy is an extensible server platform that uses TLS by default.</p>
+<p align="center">
+	<a href="https://github.com/caddyserver/caddy/actions/workflows/ci.yml"><img src="https://github.com/caddyserver/caddy/actions/workflows/ci.yml/badge.svg"></a>
+	<a href="https://pkg.go.dev/github.com/caddyserver/caddy/v2"><img src="https://img.shields.io/badge/godoc-reference-%23007d9c.svg"></a>
+	<br>
+	<a href="https://twitter.com/caddyserver" title="@caddyserver on Twitter"><img src="https://img.shields.io/badge/twitter-@caddyserver-55acee.svg" alt="@caddyserver on Twitter"></a>
+	<a href="https://caddy.community" title="Caddy Forum"><img src="https://img.shields.io/badge/community-forum-ff69b4.svg" alt="Caddy Forum"></a>
+	<br>
+	<a href="https://sourcegraph.com/github.com/caddyserver/caddy?badge" title="Caddy on Sourcegraph"><img src="https://sourcegraph.com/github.com/caddyserver/caddy/-/badge.svg" alt="Caddy on Sourcegraph"></a>
+	<a href="https://cloudsmith.io/~caddy/repos/"><img src="https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith" alt="Cloudsmith"></a>
+</p>
+<p align="center">
+	<a href="https://github.com/caddyserver/caddy/releases">Releases</a> ·
+	<a href="https://caddyserver.com/docs/">Documentation</a> ·
+	<a href="https://caddy.community">Get Help</a>
+</p>
 
-## **Project Description:**
+### Menu
 
-Sprintlog is designed to assist us in getting things done as a team. It enables effective collaboration, transparency, and accountability throughout the development process. Sprintlog is also a highly adaptable and pluggable self-hosted solution designed to optimize your team's productivity and streamline agile project management.
+- [Features](#features)
+- [Install](#install)
+- [Build from source](#build-from-source)
+  - [For development](#for-development)
+  - [With version information and/or plugins](#with-version-information-andor-plugins)
+- [Quick start](#quick-start)
+- [Overview](#overview)
+- [Full documentation](#full-documentation)
+- [Getting help](#getting-help)
+- [About](#about)
 
-## **Highlights**
+<p align="center">
+	<b>Powered by</b>
+	<br>
+	<a href="https://github.com/caddyserver/certmagic">
+		<picture>
+			<source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/55066419/206946718-740b6371-3df3-4d72-a822-47e4c48af999.png">
+			<source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/1128849/49704830-49d37200-fbd5-11e8-8385-767e0cd033c3.png">
+			<img src="https://user-images.githubusercontent.com/1128849/49704830-49d37200-fbd5-11e8-8385-767e0cd033c3.png" alt="CertMagic" width="250">
+		</picture>
+	</a>
+</p>
 
-- Task Management: Sprintlog provides a comprehensive task management system, allowing teams to create, assign, and track tasks effortlessly.
-- Automated Channel Creation: Sprintlog automatically creates dedicated channels for projects, eliminating the need for manual channel setup and ensuring organized communication.
-- Transparency and Visibility: With Sprintlog, teams can easily monitor progress, view project timelines, and access detailed analytics, fostering transparency and providing a clear overview of the project's status.
-- Scaffold Template Generation: Sprintlog provides scaffold template generation capabilities, allowing teams to quickly create project frameworks and boilerplate code based on predefined templates. This helps streamline the initial setup process and promotes consistency across projects.
-- Realtime updates on progress, tasks , deadlines , due-dates , notifications.
-- Project Structure Generation: Sprintlog assists in generating project structures by automatically creating directories, files, and organizational components based on predefined templates. This accelerates project setup and ensures a standardized structure for easier collaboration and maintenance.
+## [Features](https://caddyserver.com/v2)
 
-- Integration with Third-Party Systems: Sprintlog seamlessly integrates with popular third-party chat systems, such as Zulip , Slack or Microsoft Teams. This integration enables automatic notifications and updates within the chat platform, keeping team members informed about task assignments, progress updates, and important project milestones.
+- **Easy configuration** with the [Caddyfile](https://caddyserver.com/docs/caddyfile)
+- **Powerful configuration** with its [native JSON config](https://caddyserver.com/docs/json/)
+- **Dynamic configuration** with the [JSON API](https://caddyserver.com/docs/api)
+- [**Config adapters**](https://caddyserver.com/docs/config-adapters) if you don't like JSON
+- **Automatic HTTPS** by default
+  - [ZeroSSL](https://zerossl.com) and [Let's Encrypt](https://letsencrypt.org) for public names
+  - Fully-managed local CA for internal names & IPs
+  - Can coordinate with other Caddy instances in a cluster
+  - Multi-issuer fallback
+- **Stays up when other servers go down** due to TLS/OCSP/certificate-related issues
+- **Production-ready** after serving trillions of requests and managing millions of TLS certificates
+- **Scales to hundreds of thousands of sites** as proven in production
+- **HTTP/1.1, HTTP/2, and HTTP/3** supported all by default
+- **Highly extensible** [modular architecture](https://caddyserver.com/docs/architecture) lets Caddy do anything without bloat
+- **Runs anywhere** with **no external dependencies** (not even libc)
+- Written in Go, a language with higher **memory safety guarantees** than other servers
+- Actually **fun to use**
+- So much more to [discover](https://caddyserver.com/v2)
 
-- Task Updates in Chat Systems: Sprintlog allows for bidirectional task updates within the integrated chat systems. Team members can receive task-related notifications in the chat system and conveniently update task statuses or provide progress updates directly from the chat interface.
+## Install
 
-## **Features:**
+The simplest, cross-platform way to get started is to download Caddy from [GitHub Releases](https://github.com/caddyserver/caddy/releases) and place the executable file in your PATH.
 
-1. **Git Integration**: Seamlessly integrate Sprintlog with your preferred Git provider, such as Gittea, GitHub, GitLab, or Bitbucket, for effortless project creation, cloning, and management.
+See [our online documentation](https://caddyserver.com/docs/install) for other install instructions.
 
-2. **Chatroom Task Creation and Organization**: Create and manage tasks directly within chatroom channels, streams, or topics. Utilize chat-ops integration to organize, track, and collaborate on tasks in real-time.
+## Build from source
 
-3. **Markdown and Emoji Support**: Enhance task descriptions and comments using markdown formatting and express yourself with emoji support, promoting effective communication within your team.
+Requirements:
 
-4. **AI-Based Backlog Generation**: Leverage AI capabilities to intelligently generate backlogs by analyzing project requirements, user stories, and historical data. Prioritize and plan your work efficiently based on valuable insights provided by Sprintlog.
+- [Go 1.18 or newer](https://golang.org/dl/)
 
-5. **Sprint Planning**: Optimize sprint planning using Sprintlog's AI capabilities. Consider team capacity, estimated effort, and prioritized backlog items to make informed decisions regarding sprint duration, task allocation, and potential bottlenecks.
+### For development
 
-6. **Fully Self-Hosted**: Benefit from the self-hosted nature of Sprintlog, giving you complete control over your data and infrastructure. Host it on your own servers or cloud environment, ensuring security and privacy according to your organization's requirements.
-
-7. **Analytics and Reporting**: Gain valuable insights into your team's performance with comprehensive analytics and reporting features. Evaluate progress, track key metrics, and make data-driven decisions to continuously improve your projects.
-
-8. **Pluggable Architecture**: Extend the functionality of Sprintlog by developing custom plugins. Create plugins for easy integration with third-party systems during backlog creation, project creation, and leverage webhooks for automation.
-
-Sprintlog empowers your team with its pluggable and extensible architecture, providing seamless Git integration, efficient chatroom task management, AI-based planning, and the flexibility of a self-hosted solution. Unlock the full potential of your agile project management with Sprintlog and effortlessly integrate it with your existing tools and systems through custom plugins and webhooks.
-
-Technology stack:
-
-Language :
-
-- Python , Typescript ,Svelte,Tailwind
-
-Framework
-
-- Litestar (2.0) , Sqlalchemy , Sveltekit, TanStackQuery
-
-Repo:
-
-- <https://git.hexcode.tech/hexcode-core/sprintlog-backend>
-- <https://git.hexcode.tech/hexcode-core/sprintlog-frontend>
-
-## Preliminary requirements tutorials for development contribution
-
-Backend:
-
-- <https://docs.litestar.dev/dev/tutorials/todo-app/index.html>
-- <https://docs.litestar.dev/dev/usage/dto.html>
-- <https://docs.litestar.dev/dev/tutorials/dto-tutorial/index.html>
-- <https://docs.litestar.dev/dev/usage/websockets.html>
-- <https://docs.litestar.dev/dev/usage/plugins/sqlalchemy.html>
-
-Frontend
-
-- <https://www.skeleton.dev/elements/chat>
-- <https://tanstack.com/query/latest/docs/svelte/examples/svelte/auto-refetching>
-- <https://flowbite.com/#components>
-
-## App Commands
-
-```bash
-❯ poetry run app
-
- Usage: app [OPTIONS] COMMAND [ARGS]...
-
- Litestar Reference Application
-
-╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --help    Show this message and exit.                                        │
-╰──────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ───────────────────────────────────────────────────────────────────╮
-│ manage         Application Management Commands                               │
-│ run            Run application services.                                     │
-╰──────────────────────────────────────────────────────────────────────────────╯
-
-
-```
-
-## Management Commands
-
-```bash
-❯ poetry run app manage
-
- Usage: app manage [OPTIONS] COMMAND [ARGS]...
-
- Application Management Commands
-
-╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --help    Show this message and exit.                                        │
-╰──────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ───────────────────────────────────────────────────────────────────╮
-│ create-database                 Creates an empty postgres database and       │
-│                                 executes migrations                          │
-│ create-user                     Create a user                                │
-│ export-openapi                  Generate an OpenAPI Schema.                  │
-│ export-typescript-types         Generate TypeScript specs from the OpenAPI   │
-│                                 schema.                                      │
-│ generate-random-key             Admin helper to generate random character    │
-│                                 string.                                      │
-│ promote-to-superuser            Promotes a user to application superuser     │
-│ purge-database                  Drops all tables.                            │
-│ reset-database                  Executes migrations to apply any outstanding │
-│                                 database structures.                         │
-│ show-current-database-revision  Shows the current revision for the database. │
-│ upgrade-database                Executes migrations to apply any outstanding │
-│                                 database structures.                         │
-╰──────────────────────────────────────────────────────────────────────────────╯
-
-```
-
-## Run Commands
+_**Note:** These steps [will not embed proper version information](https://github.com/golang/go/issues/29228). For that, please follow the instructions in the next section._
 
 ```bash
-❯ poetry run app run
-
- Usage: app run [OPTIONS] COMMAND [ARGS]...
-
- Run application services.
-
-╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --help    Show this message and exit.                                        │
-╰──────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ───────────────────────────────────────────────────────────────────╮
-│ server          Starts the application server                                │
-│ worker          Starts the background workers                                │
-╰──────────────────────────────────────────────────────────────────────────────╯
-
+$ git clone "https://github.com/caddyserver/caddy.git"
+$ cd caddy/cmd/caddy/
+$ go build
 ```
+
+When you run Caddy, it may try to bind to low ports unless otherwise specified in your config. If your OS requires elevated privileges for this, you will need to give your new binary permission to do so. On Linux, this can be done easily with: `sudo setcap cap_net_bind_service=+ep ./caddy`
+
+If you prefer to use `go run` which only creates temporary binaries, you can still do this with the included `setcap.sh` like so:
 
 ```bash
-❯ poetry run app run server --help
-
- Usage: app run server [OPTIONS]
-
- Starts the application server
-
-╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --host                    Host interface to listen on.  Use 0.0.0.0 for all  │
-│                           available interfaces.                              │
-│                           (TEXT)                                             │
-│                           [default: 0.0.0.0]                                 │
-│ --port                -p  Port to bind. (INTEGER) [default: 8000]            │
-│ --http-workers            The number of HTTP worker processes for handling   │
-│                           requests.                                          │
-│                           (INTEGER RANGE)                                    │
-│                           [default: 7; 1<=x<=7]                              │
-│ --worker-concurrency      The number of simultaneous jobs a worker process   │
-│                           can execute.                                       │
-│                           (INTEGER RANGE)                                    │
-│                           [default: 10; x>=1]                                │
-│ --reload              -r  Enable reload                                      │
-│ --verbose             -v  Enable verbose logging.                            │
-│ --debug               -d  Enable debugging.                                  │
-│ --help                    Show this message and exit.                        │
-╰──────────────────────────────────────────────────────────────────────────────╯
+$ go run -exec ./setcap.sh main.go
 ```
 
-```bash
-❯ poetry run app run worker --help
+If you don't want to type your password for `setcap`, use `sudo visudo` to edit your sudoers file and allow your user account to run that command without a password, for example:
 
- Usage: app run worker [OPTIONS]
-
- Starts the background workers
-
-╭─ Options ────────────────────────────────────────────────────────────────────╮
-│ --worker-concurrency      The number of simultaneous jobs a worker process   │
-│                           can execute.                                       │
-│                           (INTEGER RANGE)                                    │
-│                           [default: 1; x>=1]                                 │
-│ --verbose             -v  Enable verbose logging.                            │
-│ --debug               -d  Enable debugging.                                  │
-│ --help                    Show this message and exit.                        │
-╰──────────────────────────────────────────────────────────────────────────────╯
+```
+username ALL=(ALL:ALL) NOPASSWD: /usr/sbin/setcap
 ```
 
-## Installation and Configuration
+replacing `username` with your actual username. Please be careful and only do this if you know what you are doing! We are only qualified to document how to use Caddy, not Go tooling or your computer, and we are providing these instructions for convenience only; please learn how to use your own computer at your own risk and make any needful adjustments.
 
-Commands to help you get this repository running.
+### With version information and/or plugins
 
-### Install virtual environment and node packages
+Using [our builder tool, `xcaddy`](https://github.com/caddyserver/xcaddy)...
 
-Most of the development related tasks are included in the `Makefile`. To install an environment with all development packages run:
-
-```bash
-make install
+```
+$ xcaddy build
 ```
 
-This command does the following:
+...the following steps are automated:
 
-- install `poetry` if it is not available in the path.
-- create a virtual environment with all dependencies configured
-- executes `npm ci` to install the node modules into the environment
-- run `npm run build` to generate the static assets
+1. Create a new folder: `mkdir caddy`
+2. Change into it: `cd caddy`
+3. Copy [Caddy's main.go](https://github.com/caddyserver/caddy/blob/master/cmd/caddy/main.go) into the empty folder. Add imports for any custom plugins you want to add.
+4. Initialize a Go module: `go mod init caddy`
+5. (Optional) Pin Caddy version: `go get github.com/caddyserver/caddy/v2@version` replacing `version` with a git tag, commit, or branch name.
+6. (Optional) Add plugins by adding their import: `_ "import/path/here"`
+7. Compile: `go build`
 
-### Edit .env configuration
+## Quick start
 
-There is a sample `.env` file located in the root of the repository.
+The [Caddy website](https://caddyserver.com/docs/) has documentation that includes tutorials, quick-start guides, reference, and more.
 
-```bash
-cp env.example .env
-```
+**We recommend that all users -- regardless of experience level -- do our [Getting Started](https://caddyserver.com/docs/getting-started) guide to become familiar with using Caddy.**
 
-**Note** `SECRET_KEY`, `DATABASE_URI`, and `REDIS_URL` are the most important config settings. Be sure to set this properly.
+If you've only got a minute, [the website has several quick-start tutorials](https://caddyserver.com/docs/quick-starts) to choose from! However, after finishing a quick-start tutorial, please read more documentation to understand how the software works. 🙂
 
-You can generate a `SECRET_KEY` by running:
+## Overview
 
-```bash
-❯ poetry run app manage generate-random-key
-KEY: 5c5f2230767976c332b6f933b63b483a35148b2218e2cdfd0da992d859feae19
-```
+Caddy is most often used as an HTTPS server, but it is suitable for any long-running Go program. First and foremost, it is a platform to run Go applications. Caddy "apps" are just Go programs that are implemented as Caddy modules. Two apps -- `tls` and `http` -- ship standard with Caddy.
 
-### Deploy Database Migrations
+Caddy apps instantly benefit from [automated documentation](https://caddyserver.com/docs/json/), graceful on-line [config changes via API](https://caddyserver.com/docs/api), and unification with other Caddy apps.
 
-You can run most of the database commands with the integrated CLI tool.
+Although [JSON](https://caddyserver.com/docs/json/) is Caddy's native config language, Caddy can accept input from [config adapters](https://caddyserver.com/docs/config-adapters) which can essentially convert any config format of your choice into JSON: Caddyfile, JSON 5, YAML, TOML, NGINX config, and more.
 
-To deploy migration to the database, execute:
-`poetry run app manage upgrade-database`
+The primary way to configure Caddy is through [its API](https://caddyserver.com/docs/api), but if you prefer config files, the [command-line interface](https://caddyserver.com/docs/command-line) supports those too.
 
-### Starting the server
+Caddy exposes an unprecedented level of control compared to any web server in existence. In Caddy, you are usually setting the actual values of the initialized types in memory that power everything from your HTTP handlers and TLS handshakes to your storage medium. Caddy is also ridiculously extensible, with a powerful plugin system that makes vast improvements over other web servers.
 
-#### Starting the server in `DEBUG` mode (development mode)
+To wield the power of this design, you need to know how the config document is structured. Please see [our documentation site](https://caddyserver.com/docs/) for details about [Caddy's config structure](https://caddyserver.com/docs/json/).
 
-if `DEBUG` is set to true, the base template expects that Vite will be running. You'll need to open 2 terminal shells at the moment to get the environment running.
+Nearly all of Caddy's configuration is contained in a single config document, rather than being scattered across CLI flags and env variables and a configuration file as with other web servers. This makes managing your server config more straightforward and reduces hidden variables/factors.
 
-in terminal one, run:
+## Full documentation
 
-```bash
-❯ npm run dev
-> vite
+Our website has complete documentation:
 
-Forced re-optimization of dependencies
+**https://caddyserver.com/docs/**
 
-  VITE v4.1.2  ready in 537 ms
+The docs are also open source. You can contribute to them here: https://github.com/caddyserver/website
 
-  ➜  Local:   http://127.0.0.1:3000/static/
-  ➜  Network: use --host to expose
-  ➜  press h to show help
-```
+## Getting help
 
-in the second terminal, run:
+- We advise companies using Caddy to secure a support contract through [Ardan Labs](https://www.ardanlabs.com/my/contact-us?dd=caddy) before help is needed.
 
-```bash
-❯ poetry run app run server --reload
-2023-02-19 22:51:46 [info     ] starting application.
-2023-02-19 22:51:46 [info     ] starting Background worker processes.
-2023-02-19 22:51:46 [info     ] Starting HTTP Server.
-```
+- A [sponsorship](https://github.com/sponsors/mholt) goes a long way! We can offer private help to sponsors. If Caddy is benefitting your company, please consider a sponsorship. This not only helps fund full-time work to ensure the longevity of the project, it provides your company the resources, support, and discounts you need; along with being a great look for your company to your customers and potential customers!
 
-#### start the server in production mode
+- Individuals can exchange help for free on our community forum at https://caddy.community. Remember that people give help out of their spare time and good will. The best way to get help is to give it first!
 
-if DEBUG is false, the server will look for the static assets that are produced from the `npm run build` command. Please be sure to have run this before starting th server.
+Please use our [issue tracker](https://github.com/caddyserver/caddy/issues) only for bug reports and feature requests, i.e. actionable development items (support questions will usually be referred to the forums).
 
-```bash
-npm run build # generates static assets from vite and
-# files from the above command can be found in `src/app/domain/web/public`.
-poetry run app run server
-```
+## About
 
-Sample output:
+Matthew Holt began developing Caddy in 2014 while studying computer science at Brigham Young University. (The name "Caddy" was chosen because this software helps with the tedious, mundane tasks of serving the Web, and is also a single place for multiple things to be organized together.) It soon became the first web server to use HTTPS automatically and by default, and now has hundreds of contributors and has served trillions of HTTPS requests.
 
-```bash
-❯ npm run build
+**The name "Caddy" is trademarked.** The name of the software is "Caddy", not "Caddy Server" or "CaddyServer". Please call it "Caddy" or, if you wish to clarify, "the Caddy web server". Caddy is a registered trademark of Stack Holdings GmbH.
 
-> litestar-fullstack@0.0.0 build
-> vue-tsc && vite build
+- _Project on Twitter: [@caddyserver](https://twitter.com/caddyserver)_
+- _Author on Twitter: [@mholt6](https://twitter.com/mholt6)_
 
-vite v4.1.2 building for production...
-✓ 15 modules transformed.
-Generated an empty chunk: "vue".
-../public/assets/vue-5532db34.svg    0.50 kB
-../public/manifest.json              0.57 kB
-../public/assets/main-b75adab1.css   1.30 kB │ gzip:  0.67 kB
-../public/assets/vue-4ed993c7.js     0.00 kB │ gzip:  0.02 kB
-../public/assets/main-17f9b70b.js    1.50 kB │ gzip:  0.80 kB
-../public/assets/@vue-5be96905.js   52.40 kB │ gzip: 21.07 kB
-❯ poetry run app run server
-2023-02-19 22:53:08 [info     ] starting application.
-2023-02-19 22:53:08 [info     ] starting Background worker processes.
-2023-02-19 22:53:08 [info     ] Starting HTTP Server.
-^C2023-02-19 22:53:09 [info     ] ⏏️  Shutdown complete
-```
+Caddy is a project of [ZeroSSL](https://zerossl.com), a Stack Holdings company.
 
-## Make Commands
-
-- `make migrations`
-- `make squash-migrations`
-- `make upgrade`
+Debian package repository hosting is graciously provided by [Cloudsmith](https://cloudsmith.com). Cloudsmith is the only fully hosted, cloud-native, universal package management solution, that enables your organization to create, store and share packages in any format, to any place, with total confidence.

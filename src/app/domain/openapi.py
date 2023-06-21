@@ -9,7 +9,9 @@ __all__ = ["LatestSwaggerController"]
 
 
 class LatestSwaggerController(OpenAPIController):
-    swagger_ui_version = "5.0.0-alpha.14"
+    swagger_css_url = f"{settings.openapi.LOCAL_CDN}/swagger-dark-ui.css"
+    swagger_ui_bundle_js_url = f"{settings.openapi.LOCAL_CDN}/swagger-ui-bundle.js"
+    swagger_ui_standalone_preset_js_url = f"{settings.openapi.LOCAL_CDN}/swagger-ui-standalone-preset.min.js"
 
 
 config = OpenAPIConfig(
@@ -20,6 +22,7 @@ config = OpenAPIConfig(
     components=[auth.openapi_components],
     security=[auth.security_requirement],
     use_handler_docstrings=True,
+    enabled_endpoints={"swagger"},
     root_schema_site="swagger",
 )
 """OpenAPI config for app.  See OpenAPISettings for configuration.

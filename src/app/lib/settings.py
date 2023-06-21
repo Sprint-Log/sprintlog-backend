@@ -258,6 +258,7 @@ class OpenAPISettings(BaseSettings):
     """Document title."""
     VERSION: str = "v1.0"
     """Document version."""
+    LOCAL_CDN: str | None
 
 
 class HTTPClientSettings(BaseSettings):

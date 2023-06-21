@@ -102,6 +102,13 @@ services:
     image: mailhog/mailhog:v1.0.0
     ports:
       - "8025:8025"
+  localcdn:
+    image: sigoden/dufs
+    ports:
+      - 8866:5000
+    volumes:
+      - ./src/web:/data
+    command: /data -A --enable-cors  --render-index
 volumes:
   db-data: {}
   cache-data: {}
