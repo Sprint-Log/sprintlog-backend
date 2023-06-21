@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from typing import Any
 
-import structlog
 from litestar import (
     Controller,
     get,  # pylint: disable=unused-import
@@ -31,11 +30,11 @@ class Token:
 class ApiController(Controller):
     path = "/api/live/rooms"
     tags = ["Livekit Room API"]
-    room_route = "open/{room_id:str}"
+    room_open_route = "open/{room_id:str}/{user_id:str}"
     room_list_route = "list/{room_id:str}"
     guards = [requires_active_user]
 
-    @get(room_route, sync_to_thread=True)
+    @get(room_list_route, sync_to_thread=True)
     async def retrieve(self, room_id: str) -> models.Room:
         """Get a list of Models."""
         rooms: list[models.Room] = RoomServiceClient(
@@ -46,7 +45,7 @@ class ApiController(Controller):
                 return room
         raise NotFoundException()
 
-    @get(room_list_route, sync_to_thread=True)
+    @get(sync_to_thread=True)
     async def list_all(self) -> list[models.Room]:
         """Get a list of Models."""
         rooms: list[models.Room] = RoomServiceClient(
@@ -54,17 +53,25 @@ class ApiController(Controller):
         ).list_rooms()
         return rooms
 
-    @get(sync_to_thread=True)
-    async def token(self, room_id: str, current_user: User) -> Token:
-        logg = structlog.get_logger()
-        grant = VideoGrant(room_join=True, room=room_id)
+    @get(room_open_route, sync_to_thread=True)
+    async def token(self, room_id: str, user_id: str, current_user: User) -> Token:
+        grant = VideoGrant(
+            room_join=True,
+            room=room_id,
+            can_publish=True,
+            can_subscribe=True,
+            can_publish_data=True,
+            room_create=True,
+            room_list=True,
+            room_admin=True,
+        )
+
         access_token = AccessToken(
             server.LIVE_API_KEY,
             server.LIVE_API_SECRET,
             grant=grant,
-            identity=str(current_user.id),
-            name=current_user.email,
+            identity=user_id,
+            name=user_id,
         )
-        logg.error("access token", access_token=access_token)
 
         return Token(room=room_id, token=access_token.to_jwt())
