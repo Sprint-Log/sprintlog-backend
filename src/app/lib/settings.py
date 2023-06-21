@@ -67,6 +67,16 @@ class ServerSettings(BaseSettings):
     LIVE_API_SECRET: str = ""
     """Live API Secret. for LiveKit server"""
     LIVE_API_URL: str = ""
+    """Zulip API URL. for zulip server"""
+    ZULIP_API_URL: str = ""
+    """Zulip Send Message API URL. for zulip server"""
+    ZULIP_SEND_MESSAGE_URL: str = ""
+    """Zulip Bot Email Address. for zulip server"""
+    ZULIP_EMAIL_ADDRESS: str = ""
+    """Zulip Bot API key. for zulip server"""
+    ZULIP_API_KEY: str = ""
+    """Zulip Stream name. for zulip server"""
+    ZULIP_STREAM_NAME: str = ""
 
 
 class AppSettings(BaseSettings):
