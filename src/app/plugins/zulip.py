@@ -17,15 +17,18 @@ def log_info(message: str) -> None:
     return logger.info(message)
 
 
-def send_msg_to_zulip(title: str, description: str) -> dict[str:str]:
-    url: str = server.ZULIP_API_URL+server.ZULIP_SEND_MESSAGE_URL
+def send_msg_to_zulip(data: "Backlog | dict[str, Any]") -> dict[str:str]:
+    log_info("sending message to zulip")
+    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_SEND_MESSAGE_URL}"
     auth: str = (server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     log_info(url)
+    content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
+    log_info(content)
     data: dict[str:str] = {
         "type": "stream",
         "to": server.ZULIP_STREAM_NAME,
-        "topic": title,
-        "content": description
+        "topic": data.title,
+        "content": content
     }
 
     response = httpx.post(url, auth=auth, data=data)
@@ -42,15 +45,15 @@ class ZulipBacklogPlugin(BacklogPlugin):
             data.plugin_meta = {"zulip_bot": self.zulip_bot}
         elif isinstance(data, dict):
             data["plugin_meta"] = {"zulip_bot": self.zulip_bot}
-        response = send_msg_to_zulip(data.title, data.description)
-        if response["result"] != "success":
-            log_info(response)
-        else:
-            log_info("successfully sent message to zulip")
         return data
 
     async def after_create(self, data: "Backlog") -> "Backlog":
         log_info(self.zulip_bot)
+        response = send_msg_to_zulip(data)
+        if response["result"] != "success":
+            log_info(response)
+        else:
+            log_info("successfully sent message to zulip")
         return data
 
     async def before_update(self, item_id: str, data: "Backlog | dict[str, Any]") -> "Backlog | dict[str, Any]":
