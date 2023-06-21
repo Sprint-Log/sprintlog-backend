@@ -63,7 +63,7 @@ services:
     volumes:
       - .:/app/workspace/
     env_file:
-      - .env.example
+      - .env
     command: poetry run litestar run-all --reload
   pgweb:
     image: sosedoff/pgweb:latest

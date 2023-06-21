@@ -9295,58 +9295,58 @@ _______|_______/__/ ____ \__\__|___\__\__|___\__\____
 
 /* User-Agent Style */
 html {
-  background-color: #1f1f28 !important;
+  background-color: #282b36 !important;
 }
 html {
   color-scheme: dark !important;
 }
 html,
 body {
-  background-color: #1f1f28;
+  background-color: #282b36;
 }
 html,
 body {
-  border-color: #8b8146;
-  color: #dcd7ba;
+  border-color: #736b5e;
+  color: #e8e6e3;
 }
 a {
   color: #3391ff;
 }
 table {
-  border-color: #4e4e64;
+  border-color: #4c5266;
 }
 ::placeholder {
-  color: #c0b682;
+  color: #b2aba1;
 }
 input:-webkit-autofill,
 textarea:-webkit-autofill,
 select:-webkit-autofill {
-  background-color: #4b4f00 !important;
-  color: #dcd7ba !important;
+  background-color: #575c00 !important;
+  color: #e8e6e3 !important;
 }
 ::-webkit-scrollbar {
-  background-color: hsl(210, 70%, 0%);
-  color: hsl(210, 70%, 69%);
+  background-color: #2d313d;
+  color: #aba499;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: hsl(210, 70%, 29%);
+  background-color: #454a5d;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: hsl(210, 70%, 39%);
+  background-color: #51576d;
 }
 ::-webkit-scrollbar-thumb:active {
-  background-color: hsl(210, 70%, 49%);
+  background-color: #414658;
 }
 ::-webkit-scrollbar-corner {
-  background-color: hsl(210, 70%, 0%);
+  background-color: #282b36;
 }
 ::selection {
   background-color: #004daa !important;
-  color: #dcd7ba !important;
+  color: #e8e6e3 !important;
 }
 ::-moz-selection {
   background-color: #004daa !important;
-  color: #dcd7ba !important;
+  color: #e8e6e3 !important;
 }
 
 /* Text Style */
@@ -9381,15 +9381,15 @@ select:-webkit-autofill {
 
 /* Variables Style */
 :root {
-  --darkreader-neutral-background: #191920;
-  --darkreader-neutral-text: #cbc398;
+  --darkreader-neutral-background: #20222b;
+  --darkreader-neutral-text: #d8d4cf;
   --darkreader-selection-background: #004daa;
-  --darkreader-selection-text: #dcd7ba;
+  --darkreader-selection-text: #e8e6e3;
 }
 
 /* Modified CSS */
 .swagger-ui {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui a {
   background-color: transparent;
@@ -9400,7 +9400,7 @@ select:-webkit-autofill {
 }
 .swagger-ui mark {
   background-color: rgb(153, 153, 0);
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui legend {
   color: inherit;
@@ -9409,10 +9409,10 @@ select:-webkit-autofill {
   outline-color: rgb(179, 151, 0);
 }
 .swagger-ui .debug-white * {
-  outline-color: rgb(45, 45, 57);
+  outline-color: rgb(43, 47, 59);
 }
 .swagger-ui .debug-black * {
-  outline-color: rgb(169, 157, 86);
+  outline-color: rgb(140, 130, 115);
 }
 .swagger-ui .debug-grid {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyhpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTExIDc5LjE1ODMyNSwgMjAxNS8wOS8xMC0wMToxMDoyMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MTRDOTY4N0U2N0VFMTFFNjg2MzZDQjkwNkQ4MjgwMEIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MTRDOTY4N0Q2N0VFMTFFNjg2MzZDQjkwNkQ4MjgwMEIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo3NjcyQkQ3NjY3QzUxMUU2QjJCQ0UyNDA4MTAwMjE3MSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo3NjcyQkQ3NzY3QzUxMUU2QjJCQ0UyNDA4MTAwMjE3MSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PsBS+GMAAAAjSURBVHjaYvz//z8DLsD4gcGXiYEAGBIKGBne//fFpwAgwAB98AaF2pjlUQAAAABJRU5ErkJggg==");
@@ -9424,11 +9424,11 @@ select:-webkit-autofill {
 }
 .swagger-ui .debug-grid-8-solid {
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iOCIgaGVpZ2h0PSI4Ij48ZGVmcz48ZmlsdGVyIGlkPSJkYXJrcmVhZGVyLWltYWdlLWZpbHRlciI+PGZlQ29sb3JNYXRyaXggdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAuMzMzIC0wLjY2NyAtMC42NjcgMC4wMDAgMS4wMDAgLTAuNjY3IDAuMzMzIC0wLjY2NyAwLjAwMCAxLjAwMCAtMC42NjcgLTAuNjY3IDAuMzMzIDAuMDAwIDEuMDAwIDAuMDAwIDAuMDAwIDAuMDAwIDEuMDAwIDAuMDAwIiAvPjwvZmlsdGVyPjwvZGVmcz48aW1hZ2Ugd2lkdGg9IjgiIGhlaWdodD0iOCIgZmlsdGVyPSJ1cmwoI2RhcmtyZWFkZXItaW1hZ2UtZmlsdGVyKSIgeGxpbms6aHJlZj0iZGF0YTppbWFnZS9qcGVnO2Jhc2U2NCwvOWovNFFBWVJYaHBaZ0FBU1VrcUFBZ0FBQUFBQUFBQUFBQUFBUC9zQUJGRWRXTnJlUUFCQUFRQUFBQUFBQUQvNFFNeGFIUjBjRG92TDI1ekxtRmtiMkpsTG1OdmJTOTRZWEF2TVM0d0x3QThQM2h3WVdOclpYUWdZbVZuYVc0OUl1Kzd2eUlnYVdROUlsYzFUVEJOY0VObGFHbEllbkpsVTNwT1ZHTjZhMk01WkNJL1BpQThlRHA0YlhCdFpYUmhJSGh0Ykc1ek9uZzlJbUZrYjJKbE9tNXpPbTFsZEdFdklpQjRPbmh0Y0hSclBTSkJaRzlpWlNCWVRWQWdRMjl5WlNBMUxqWXRZekV4TVNBM09TNHhOVGd6TWpVc0lESXdNVFV2TURrdk1UQXRNREU2TVRBNk1qQWdJQ0FnSUNBZ0lDSStJRHh5WkdZNlVrUkdJSGh0Ykc1ek9uSmtaajBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TVRrNU9TOHdNaTh5TWkxeVpHWXRjM2x1ZEdGNExXNXpJeUkrSUR4eVpHWTZSR1Z6WTNKcGNIUnBiMjRnY21SbU9tRmliM1YwUFNJaUlIaHRiRzV6T25odGNEMGlhSFIwY0RvdkwyNXpMbUZrYjJKbExtTnZiUzk0WVhBdk1TNHdMeUlnZUcxc2JuTTZlRzF3VFUwOUltaDBkSEE2THk5dWN5NWhaRzlpWlM1amIyMHZlR0Z3THpFdU1DOXRiUzhpSUhodGJHNXpPbk4wVW1WbVBTSm9kSFJ3T2k4dmJuTXVZV1J2WW1VdVkyOXRMM2hoY0M4eExqQXZjMVI1Y0dVdlVtVnpiM1Z5WTJWU1pXWWpJaUI0YlhBNlEzSmxZWFJ2Y2xSdmIydzlJa0ZrYjJKbElGQm9iM1J2YzJodmNDQkRReUF5TURFMUlDaE5ZV05wYm5SdmMyZ3BJaUI0YlhCTlRUcEpibk4wWVc1alpVbEVQU0o0YlhBdWFXbGtPa0l4TWpJME9UY3pOamRDTXpFeFJUWkNNa0pEUlRJME1EZ3hNREF5TVRjeElpQjRiWEJOVFRwRWIyTjFiV1Z1ZEVsRVBTSjRiWEF1Wkdsa09rSXhNakkwT1RjME5qZENNekV4UlRaQ01rSkRSVEkwTURneE1EQXlNVGN4SWo0Z1BIaHRjRTFOT2tSbGNtbDJaV1JHY205dElITjBVbVZtT21sdWMzUmhibU5sU1VROUluaHRjQzVwYVdRNlFqRXlNalE1TnpFMk4wSXpNVEZGTmtJeVFrTkZNalF3T0RFd01ESXhOekVpSUhOMFVtVm1PbVJ2WTNWdFpXNTBTVVE5SW5odGNDNWthV1E2UWpFeU1qUTVOekkyTjBJek1URkZOa0l5UWtORk1qUXdPREV3TURJeE56RWlMejRnUEM5eVpHWTZSR1Z6WTNKcGNIUnBiMjQrSUR3dmNtUm1PbEpFUmo0Z1BDOTRPbmh0Y0cxbGRHRStJRHcvZUhCaFkydGxkQ0JsYm1ROUluSWlQejcvN2dBT1FXUnZZbVVBWk1BQUFBQUIvOXNBaEFBYkdob3BIU2xCSmlaQlFpOHZMMEpIUHo0K1AwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSEFSMHBLVFFtTkQ4b0tEOUhQelUvUjBkSFIwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSFIwZEhSMGRIUjBkSFIwZi93QUFSQ0FBSUFBZ0RBU0lBQWhFQkF4RUIvOFFBV1FBQkFRQUFBQUFBQUFBQUFBQUFBQUFBQUFZQkFRRUFBQUFBQUFBQUFBQUFBQUFBQUFJRUVBRUJBQU1CQUFBQUFBQUFBQUFBQUFBQkFERUNBMEVSQUFFREJRQUFBQUFBQUFBQUFBQUFBQUFSSVRGQlVXRVNJdi9hQUF3REFRQUNFUU1SQUQ4QW9PblRWMVFURDdKSnNoUDN2U00zUC8vWiIgLz48L3N2Zz4=");
-  background-color: rgb(31, 31, 40);
+  background-color: rgb(40, 43, 54);
 }
 .swagger-ui .debug-grid-16-solid {
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiPjxkZWZzPjxmaWx0ZXIgaWQ9ImRhcmtyZWFkZXItaW1hZ2UtZmlsdGVyIj48ZmVDb2xvck1hdHJpeCB0eXBlPSJtYXRyaXgiIHZhbHVlcz0iMC4zMzMgLTAuNjY3IC0wLjY2NyAwLjAwMCAxLjAwMCAtMC42NjcgMC4zMzMgLTAuNjY3IDAuMDAwIDEuMDAwIC0wLjY2NyAtMC42NjcgMC4zMzMgMC4wMDAgMS4wMDAgMC4wMDAgMC4wMDAgMC4wMDAgMS4wMDAgMC4wMDAiIC8+PC9maWx0ZXI+PC9kZWZzPjxpbWFnZSB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIGZpbHRlcj0idXJsKCNkYXJrcmVhZGVyLWltYWdlLWZpbHRlcikiIHhsaW5rOmhyZWY9ImRhdGE6aW1hZ2UvcG5nO2Jhc2U2NCxpVkJPUncwS0dnb0FBQUFOU1VoRVVnQUFBQkFBQUFBUUNBSUFBQUNRa1dnMkFBQUFHWFJGV0hSVGIyWjBkMkZ5WlFCQlpHOWlaU0JKYldGblpWSmxZV1I1Y2NsbFBBQUFBeWhwVkZoMFdFMU1PbU52YlM1aFpHOWlaUzU0YlhBQUFBQUFBRHcvZUhCaFkydGxkQ0JpWldkcGJqMGk3N3UvSWlCcFpEMGlWelZOTUUxd1EyVm9hVWg2Y21WVGVrNVVZM3ByWXpsa0lqOCtJRHg0T25odGNHMWxkR0VnZUcxc2JuTTZlRDBpWVdSdlltVTZibk02YldWMFlTOGlJSGc2ZUcxd2RHczlJa0ZrYjJKbElGaE5VQ0JEYjNKbElEVXVOaTFqTVRFeElEYzVMakUxT0RNeU5Td2dNakF4TlM4d09TOHhNQzB3TVRveE1Eb3lNQ0FnSUNBZ0lDQWdJajRnUEhKa1pqcFNSRVlnZUcxc2JuTTZjbVJtUFNKb2RIUndPaTh2ZDNkM0xuY3pMbTl5Wnk4eE9UazVMekF5THpJeUxYSmtaaTF6ZVc1MFlYZ3Ribk1qSWo0Z1BISmtaanBFWlhOamNtbHdkR2x2YmlCeVpHWTZZV0p2ZFhROUlpSWdlRzFzYm5NNmVHMXdQU0pvZEhSd09pOHZibk11WVdSdlltVXVZMjl0TDNoaGNDOHhMakF2SWlCNGJXeHVjenA0YlhCTlRUMGlhSFIwY0RvdkwyNXpMbUZrYjJKbExtTnZiUzk0WVhBdk1TNHdMMjF0THlJZ2VHMXNibk02YzNSU1pXWTlJbWgwZEhBNkx5OXVjeTVoWkc5aVpTNWpiMjB2ZUdGd0x6RXVNQzl6Vkhsd1pTOVNaWE52ZFhKalpWSmxaaU1pSUhodGNEcERjbVZoZEc5eVZHOXZiRDBpUVdSdlltVWdVR2h2ZEc5emFHOXdJRU5ESURJd01UVWdLRTFoWTJsdWRHOXphQ2tpSUhodGNFMU5Pa2x1YzNSaGJtTmxTVVE5SW5odGNDNXBhV1E2TnpZM01rSkVOMFUyTjBNMU1URkZOa0l5UWtORk1qUXdPREV3TURJeE56RWlJSGh0Y0UxTk9rUnZZM1Z0Wlc1MFNVUTlJbmh0Y0M1a2FXUTZOelkzTWtKRU4wWTJOME0xTVRGRk5rSXlRa05GTWpRd09ERXdNREl4TnpFaVBpQThlRzF3VFUwNlJHVnlhWFpsWkVaeWIyMGdjM1JTWldZNmFXNXpkR0Z1WTJWSlJEMGllRzF3TG1scFpEbzNOamN5UWtRM1F6WTNRelV4TVVVMlFqSkNRMFV5TkRBNE1UQXdNakUzTVNJZ2MzUlNaV1k2Wkc5amRXMWxiblJKUkQwaWVHMXdMbVJwWkRvM05qY3lRa1EzUkRZM1F6VXhNVVUyUWpKQ1EwVXlOREE0TVRBd01qRTNNU0l2UGlBOEwzSmtaanBFWlhOamNtbHdkR2x2Ymo0Z1BDOXlaR1k2VWtSR1BpQThMM2c2ZUcxd2JXVjBZVDRnUEQ5NGNHRmphMlYwSUdWdVpEMGljaUkvUHZlNkoza0FBQUF6U1VSQlZIamFZdnovL3o4RDBVRHNNd01qU1JvWVA1R3E0U1BOYlJqVk1FUTFmQ1JEZytpbi82K0oxQUpVeHNnQUVHQUEzMUJBSk1TMEdZRUFBQUFBU1VWT1JLNUNZSUk9IiAvPjwvc3ZnPg==");
-  background-color: rgb(31, 31, 40);
+  background-color: rgb(40, 43, 54);
 }
 .swagger-ui .outline {
   outline-color: initial;
@@ -9473,109 +9473,109 @@ select:-webkit-autofill {
   }
 }
 .swagger-ui .b--black {
-  border-color: rgb(169, 157, 86);
+  border-color: rgb(140, 130, 115);
 }
 .swagger-ui .b--near-black {
-  border-color: rgb(162, 151, 82);
+  border-color: rgb(134, 125, 110);
 }
 .swagger-ui .b--dark-gray {
-  border-color: rgb(149, 138, 76);
+  border-color: rgb(123, 114, 101);
 }
 .swagger-ui .b--mid-gray {
-  border-color: rgb(135, 126, 69);
+  border-color: rgb(112, 104, 92);
 }
 .swagger-ui .b--gray {
-  border-color: rgb(122, 113, 62);
+  border-color: rgb(101, 94, 83);
 }
 .swagger-ui .b--silver {
-  border-color: rgb(71, 71, 92);
+  border-color: rgb(69, 75, 94);
 }
 .swagger-ui .b--light-silver {
-  border-color: rgb(67, 67, 86);
+  border-color: rgb(65, 70, 88);
 }
 .swagger-ui .b--moon-gray {
-  border-color: rgb(58, 58, 75);
+  border-color: rgb(56, 61, 76);
 }
 .swagger-ui .b--light-gray {
-  border-color: rgb(49, 49, 63);
+  border-color: rgb(48, 51, 64);
 }
 .swagger-ui .b--near-white {
-  border-color: rgb(47, 47, 61);
+  border-color: rgb(46, 50, 62);
 }
 .swagger-ui .b--white {
-  border-color: rgb(45, 45, 57);
+  border-color: rgb(43, 47, 59);
 }
 .swagger-ui .b--white-90 {
-  border-color: rgba(45, 45, 57, 0.9);
+  border-color: rgba(43, 47, 59, 0.9);
 }
 .swagger-ui .b--white-80 {
-  border-color: rgba(45, 45, 57, 0.8);
+  border-color: rgba(43, 47, 59, 0.8);
 }
 .swagger-ui .b--white-70 {
-  border-color: rgba(45, 45, 57, 0.7);
+  border-color: rgba(43, 47, 59, 0.7);
 }
 .swagger-ui .b--white-60 {
-  border-color: rgba(45, 45, 57, 0.6);
+  border-color: rgba(43, 47, 59, 0.6);
 }
 .swagger-ui .b--white-50 {
-  border-color: rgba(45, 45, 57, 0.5);
+  border-color: rgba(43, 47, 59, 0.5);
 }
 .swagger-ui .b--white-40 {
-  border-color: rgba(45, 45, 57, 0.4);
+  border-color: rgba(43, 47, 59, 0.4);
 }
 .swagger-ui .b--white-30 {
-  border-color: rgba(45, 45, 57, 0.3);
+  border-color: rgba(43, 47, 59, 0.3);
 }
 .swagger-ui .b--white-20 {
-  border-color: rgba(45, 45, 57, 0.2);
+  border-color: rgba(43, 47, 59, 0.2);
 }
 .swagger-ui .b--white-10 {
-  border-color: rgba(45, 45, 57, 0.1);
+  border-color: rgba(43, 47, 59, 0.1);
 }
 .swagger-ui .b--white-05 {
-  border-color: rgba(45, 45, 57, 0.05);
+  border-color: rgba(43, 47, 59, 0.05);
 }
 .swagger-ui .b--white-025 {
-  border-color: rgba(45, 45, 57, 0.02);
+  border-color: rgba(43, 47, 59, 0.02);
 }
 .swagger-ui .b--white-0125 {
-  border-color: rgba(45, 45, 57, 0.01);
+  border-color: rgba(43, 47, 59, 0.01);
 }
 .swagger-ui .b--black-90 {
-  border-color: rgba(169, 157, 86, 0.9);
+  border-color: rgba(140, 130, 115, 0.9);
 }
 .swagger-ui .b--black-80 {
-  border-color: rgba(169, 157, 86, 0.8);
+  border-color: rgba(140, 130, 115, 0.8);
 }
 .swagger-ui .b--black-70 {
-  border-color: rgba(169, 157, 86, 0.7);
+  border-color: rgba(140, 130, 115, 0.7);
 }
 .swagger-ui .b--black-60 {
-  border-color: rgba(169, 157, 86, 0.6);
+  border-color: rgba(140, 130, 115, 0.6);
 }
 .swagger-ui .b--black-50 {
-  border-color: rgba(169, 157, 86, 0.5);
+  border-color: rgba(140, 130, 115, 0.5);
 }
 .swagger-ui .b--black-40 {
-  border-color: rgba(169, 157, 86, 0.4);
+  border-color: rgba(140, 130, 115, 0.4);
 }
 .swagger-ui .b--black-30 {
-  border-color: rgba(169, 157, 86, 0.3);
+  border-color: rgba(140, 130, 115, 0.3);
 }
 .swagger-ui .b--black-20 {
-  border-color: rgba(169, 157, 86, 0.2);
+  border-color: rgba(140, 130, 115, 0.2);
 }
 .swagger-ui .b--black-10 {
-  border-color: rgba(169, 157, 86, 0.1);
+  border-color: rgba(140, 130, 115, 0.1);
 }
 .swagger-ui .b--black-05 {
-  border-color: rgba(169, 157, 86, 0.05);
+  border-color: rgba(140, 130, 115, 0.05);
 }
 .swagger-ui .b--black-025 {
-  border-color: rgba(169, 157, 86, 0.02);
+  border-color: rgba(140, 130, 115, 0.02);
 }
 .swagger-ui .b--black-0125 {
-  border-color: rgba(169, 157, 86, 0.01);
+  border-color: rgba(140, 130, 115, 0.01);
 }
 .swagger-ui .b--dark-red {
   border-color: rgb(181, 3, 12);
@@ -9626,7 +9626,7 @@ select:-webkit-autofill {
   border-color: rgb(23, 114, 81);
 }
 .swagger-ui .b--navy {
-  border-color: rgb(156, 144, 79);
+  border-color: rgb(129, 120, 106);
 }
 .swagger-ui .b--dark-blue {
   border-color: rgb(0, 89, 208);
@@ -9731,103 +9731,103 @@ select:-webkit-autofill {
   outline-color: currentcolor;
 }
 .swagger-ui .black-90 {
-  color: rgba(220, 215, 186, 0.9);
+  color: rgba(232, 230, 227, 0.9);
 }
 .swagger-ui .black-80 {
-  color: rgba(220, 215, 186, 0.8);
+  color: rgba(232, 230, 227, 0.8);
 }
 .swagger-ui .black-70 {
-  color: rgba(220, 215, 186, 0.7);
+  color: rgba(232, 230, 227, 0.7);
 }
 .swagger-ui .black-60 {
-  color: rgba(220, 215, 186, 0.6);
+  color: rgba(232, 230, 227, 0.6);
 }
 .swagger-ui .black-50 {
-  color: rgba(220, 215, 186, 0.5);
+  color: rgba(232, 230, 227, 0.5);
 }
 .swagger-ui .black-40 {
-  color: rgba(220, 215, 186, 0.4);
+  color: rgba(232, 230, 227, 0.4);
 }
 .swagger-ui .black-30 {
-  color: rgba(220, 215, 186, 0.3);
+  color: rgba(232, 230, 227, 0.3);
 }
 .swagger-ui .black-20 {
-  color: rgba(220, 215, 186, 0.2);
+  color: rgba(232, 230, 227, 0.2);
 }
 .swagger-ui .black-10 {
-  color: rgba(220, 215, 186, 0.1);
+  color: rgba(232, 230, 227, 0.1);
 }
 .swagger-ui .black-05 {
-  color: rgba(220, 215, 186, 0.05);
+  color: rgba(232, 230, 227, 0.05);
 }
 .swagger-ui .white-90 {
-  color: rgba(220, 215, 186, 0.9);
+  color: rgba(232, 230, 227, 0.9);
 }
 .swagger-ui .white-80 {
-  color: rgba(220, 215, 186, 0.8);
+  color: rgba(232, 230, 227, 0.8);
 }
 .swagger-ui .white-70 {
-  color: rgba(220, 215, 186, 0.7);
+  color: rgba(232, 230, 227, 0.7);
 }
 .swagger-ui .white-60 {
-  color: rgba(220, 215, 186, 0.6);
+  color: rgba(232, 230, 227, 0.6);
 }
 .swagger-ui .white-50 {
-  color: rgba(220, 215, 186, 0.5);
+  color: rgba(232, 230, 227, 0.5);
 }
 .swagger-ui .white-40 {
-  color: rgba(220, 215, 186, 0.4);
+  color: rgba(232, 230, 227, 0.4);
 }
 .swagger-ui .white-30 {
-  color: rgba(220, 215, 186, 0.3);
+  color: rgba(232, 230, 227, 0.3);
 }
 .swagger-ui .white-20 {
-  color: rgba(220, 215, 186, 0.2);
+  color: rgba(232, 230, 227, 0.2);
 }
 .swagger-ui .white-10 {
-  color: rgba(220, 215, 186, 0.1);
+  color: rgba(232, 230, 227, 0.1);
 }
 .swagger-ui .black {
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .near-black {
-  color: rgb(214, 209, 175);
+  color: rgb(221, 218, 214);
 }
 .swagger-ui .dark-gray {
-  color: rgb(203, 196, 153);
+  color: rgb(200, 195, 188);
 }
 .swagger-ui .mid-gray {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui .gray {
-  color: rgb(181, 170, 108);
+  color: rgb(157, 148, 136);
 }
 .swagger-ui .silver {
-  color: rgb(186, 176, 119);
+  color: rgb(168, 160, 149);
 }
 .swagger-ui .light-silver {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui .moon-gray {
-  color: rgb(203, 196, 153);
+  color: rgb(200, 195, 188);
 }
 .swagger-ui .light-gray {
-  color: rgb(214, 209, 175);
+  color: rgb(221, 218, 214);
 }
 .swagger-ui .near-white {
-  color: rgb(216, 211, 179);
+  color: rgb(225, 222, 219);
 }
 .swagger-ui .white {
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .dark-red {
-  color: rgb(251, 39, 49);
+  color: rgb(251, 43, 53);
 }
 .swagger-ui .red {
-  color: rgb(255, 63, 52);
+  color: rgb(255, 74, 63);
 }
 .swagger-ui .light-red {
-  color: rgb(255, 96, 71);
+  color: rgb(255, 112, 90);
 }
 .swagger-ui .orange {
   color: rgb(255, 115, 26);
@@ -9839,61 +9839,61 @@ select:-webkit-autofill {
   color: rgb(255, 219, 26);
 }
 .swagger-ui .light-yellow {
-  color: rgb(248, 232, 113);
+  color: rgb(250, 237, 146);
 }
 .swagger-ui .purple {
-  color: rgb(141, 92, 211);
+  color: rgb(146, 99, 213);
 }
 .swagger-ui .light-purple {
-  color: rgb(154, 82, 241);
+  color: rgb(164, 99, 242);
 }
 .swagger-ui .dark-pink {
-  color: rgb(255, 46, 186);
+  color: rgb(255, 55, 189);
 }
 .swagger-ui .hot-pink {
-  color: rgb(255, 57, 177);
+  color: rgb(255, 71, 182);
 }
 .swagger-ui .pink {
-  color: rgb(255, 88, 188);
+  color: rgb(255, 115, 199);
 }
 .swagger-ui .light-pink {
-  color: rgb(255, 106, 190);
+  color: rgb(255, 140, 205);
 }
 .swagger-ui .dark-green {
-  color: rgb(107, 231, 185);
+  color: rgb(128, 235, 195);
 }
 .swagger-ui .green {
-  color: rgb(81, 229, 175);
+  color: rgb(92, 231, 180);
 }
 .swagger-ui .light-green {
-  color: rgb(121, 227, 189);
+  color: rgb(145, 232, 200);
 }
 .swagger-ui .navy {
-  color: rgb(209, 202, 164);
+  color: rgb(211, 207, 201);
 }
 .swagger-ui .dark-blue {
-  color: rgb(89, 176, 255);
+  color: rgb(109, 186, 255);
 }
 .swagger-ui .blue {
-  color: rgb(67, 149, 223);
+  color: rgb(70, 151, 224);
 }
 .swagger-ui .light-blue {
-  color: rgb(99, 186, 255);
+  color: rgb(131, 200, 255);
 }
 .swagger-ui .lightest-blue {
-  color: rgb(126, 206, 255);
+  color: rgb(169, 222, 255);
 }
 .swagger-ui .washed-blue {
-  color: rgb(147, 255, 243);
+  color: rgb(198, 255, 249);
 }
 .swagger-ui .washed-green {
-  color: rgb(148, 246, 208);
+  color: rgb(192, 250, 228);
 }
 .swagger-ui .washed-yellow {
-  color: rgb(255, 238, 141);
+  color: rgb(255, 245, 190);
 }
 .swagger-ui .washed-red {
-  color: rgb(255, 135, 135);
+  color: rgb(255, 182, 182);
 }
 .swagger-ui .color-inherit {
   color: inherit;
@@ -9929,64 +9929,64 @@ select:-webkit-autofill {
   background-color: rgba(0, 0, 0, 0.05);
 }
 .swagger-ui .bg-white-90 {
-  background-color: rgba(31, 31, 40, 0.9);
+  background-color: rgba(40, 43, 54, 0.9);
 }
 .swagger-ui .bg-white-80 {
-  background-color: rgba(31, 31, 40, 0.8);
+  background-color: rgba(40, 43, 54, 0.8);
 }
 .swagger-ui .bg-white-70 {
-  background-color: rgba(31, 31, 40, 0.7);
+  background-color: rgba(40, 43, 54, 0.7);
 }
 .swagger-ui .bg-white-60 {
-  background-color: rgba(31, 31, 40, 0.6);
+  background-color: rgba(40, 43, 54, 0.6);
 }
 .swagger-ui .bg-white-50 {
-  background-color: rgba(31, 31, 40, 0.5);
+  background-color: rgba(40, 43, 54, 0.5);
 }
 .swagger-ui .bg-white-40 {
-  background-color: rgba(31, 31, 40, 0.4);
+  background-color: rgba(40, 43, 54, 0.4);
 }
 .swagger-ui .bg-white-30 {
-  background-color: rgba(31, 31, 40, 0.3);
+  background-color: rgba(40, 43, 54, 0.3);
 }
 .swagger-ui .bg-white-20 {
-  background-color: rgba(31, 31, 40, 0.2);
+  background-color: rgba(40, 43, 54, 0.2);
 }
 .swagger-ui .bg-white-10 {
-  background-color: rgba(31, 31, 40, 0.1);
+  background-color: rgba(40, 43, 54, 0.1);
 }
 .swagger-ui .bg-black {
   background-color: rgb(0, 0, 0);
 }
 .swagger-ui .bg-near-black {
-  background-color: rgb(12, 12, 15);
+  background-color: rgb(12, 12, 16);
 }
 .swagger-ui .bg-dark-gray {
-  background-color: rgb(36, 36, 46);
+  background-color: rgb(35, 37, 47);
 }
 .swagger-ui .bg-mid-gray {
-  background-color: rgb(59, 59, 77);
+  background-color: rgb(58, 62, 78);
 }
 .swagger-ui .bg-gray {
-  background-color: rgb(83, 83, 107);
+  background-color: rgb(81, 87, 109);
 }
 .swagger-ui .bg-silver {
-  background-color: rgb(77, 77, 100);
+  background-color: rgb(77, 83, 105);
 }
 .swagger-ui .bg-light-silver {
-  background-color: rgb(70, 70, 90);
+  background-color: rgb(71, 77, 96);
 }
 .swagger-ui .bg-moon-gray {
-  background-color: rgb(54, 54, 70);
+  background-color: rgb(59, 63, 79);
 }
 .swagger-ui .bg-light-gray {
-  background-color: rgb(39, 39, 50);
+  background-color: rgb(46, 50, 62);
 }
 .swagger-ui .bg-near-white {
-  background-color: rgb(36, 36, 46);
+  background-color: rgb(44, 47, 59);
 }
 .swagger-ui .bg-white {
-  background-color: rgb(31, 31, 40);
+  background-color: rgb(40, 43, 54);
 }
 .swagger-ui .bg-transparent {
   background-color: transparent;
@@ -9995,10 +9995,10 @@ select:-webkit-autofill {
   background-color: rgb(185, 3, 12);
 }
 .swagger-ui .bg-red {
-  background-color: rgb(176, 10, 0);
+  background-color: rgb(181, 10, 0);
 }
 .swagger-ui .bg-light-red {
-  background-color: rgb(156, 21, 0);
+  background-color: rgb(164, 22, 0);
 }
 .swagger-ui .bg-orange {
   background-color: rgb(204, 79, 0);
@@ -10010,25 +10010,25 @@ select:-webkit-autofill {
   background-color: rgb(153, 129, 0);
 }
 .swagger-ui .bg-light-yellow {
-  background-color: rgb(85, 75, 4);
+  background-color: rgb(95, 84, 4);
 }
 .swagger-ui .bg-purple {
   background-color: rgb(75, 35, 132);
 }
 .swagger-ui .bg-light-purple {
-  background-color: rgb(73, 12, 147);
+  background-color: rgb(77, 13, 154);
 }
 .swagger-ui .bg-dark-pink {
   background-color: rgb(170, 0, 114);
 }
 .swagger-ui .bg-hot-pink {
-  background-color: rgb(170, 0, 103);
+  background-color: rgb(176, 0, 107);
 }
 .swagger-ui .bg-pink {
-  background-color: rgb(137, 0, 82);
+  background-color: rgb(149, 0, 89);
 }
 .swagger-ui .bg-light-pink {
-  background-color: rgb(119, 0, 67);
+  background-color: rgb(134, 0, 76);
 }
 .swagger-ui .bg-dark-green {
   background-color: rgb(15, 95, 66);
@@ -10037,7 +10037,7 @@ select:-webkit-autofill {
   background-color: rgb(20, 135, 93);
 }
 .swagger-ui .bg-light-green {
-  background-color: rgb(23, 109, 86);
+  background-color: rgb(25, 120, 94);
 }
 .swagger-ui .bg-navy {
   background-color: rgb(0, 22, 54);
@@ -10046,144 +10046,144 @@ select:-webkit-autofill {
   background-color: rgb(0, 54, 126);
 }
 .swagger-ui .bg-blue {
-  background-color: rgb(28, 88, 166);
+  background-color: rgb(28, 89, 168);
 }
 .swagger-ui .bg-light-blue {
-  background-color: rgb(0, 65, 126);
+  background-color: rgb(0, 72, 139);
 }
 .swagger-ui .bg-lightest-blue {
-  background-color: rgb(42, 42, 55);
+  background-color: rgb(49, 53, 66);
 }
 .swagger-ui .bg-washed-blue {
-  background-color: rgb(0, 76, 69);
+  background-color: rgb(0, 98, 90);
 }
 .swagger-ui .bg-washed-green {
-  background-color: rgb(7, 77, 57);
+  background-color: rgb(8, 96, 71);
 }
 .swagger-ui .bg-washed-yellow {
-  background-color: rgb(61, 52, 0);
+  background-color: rgb(77, 65, 0);
 }
 .swagger-ui .bg-washed-red {
-  background-color: rgb(88, 0, 0);
+  background-color: rgb(108, 0, 0);
 }
 .swagger-ui .bg-inherit {
   background-color: inherit;
 }
 .swagger-ui .hover-black:focus,
 .swagger-ui .hover-black:hover {
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .hover-near-black:focus,
 .swagger-ui .hover-near-black:hover {
-  color: rgb(214, 209, 175);
+  color: rgb(221, 218, 214);
 }
 .swagger-ui .hover-dark-gray:focus,
 .swagger-ui .hover-dark-gray:hover {
-  color: rgb(203, 196, 153);
+  color: rgb(200, 195, 188);
 }
 .swagger-ui .hover-mid-gray:focus,
 .swagger-ui .hover-mid-gray:hover {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui .hover-gray:focus,
 .swagger-ui .hover-gray:hover {
-  color: rgb(181, 170, 108);
+  color: rgb(157, 148, 136);
 }
 .swagger-ui .hover-silver:focus,
 .swagger-ui .hover-silver:hover {
-  color: rgb(186, 176, 119);
+  color: rgb(168, 160, 149);
 }
 .swagger-ui .hover-light-silver:focus,
 .swagger-ui .hover-light-silver:hover {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui .hover-moon-gray:focus,
 .swagger-ui .hover-moon-gray:hover {
-  color: rgb(203, 196, 153);
+  color: rgb(200, 195, 188);
 }
 .swagger-ui .hover-light-gray:focus,
 .swagger-ui .hover-light-gray:hover {
-  color: rgb(214, 209, 175);
+  color: rgb(221, 218, 214);
 }
 .swagger-ui .hover-near-white:focus,
 .swagger-ui .hover-near-white:hover {
-  color: rgb(216, 211, 179);
+  color: rgb(225, 222, 219);
 }
 .swagger-ui .hover-white:focus,
 .swagger-ui .hover-white:hover {
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .hover-black-90:focus,
 .swagger-ui .hover-black-90:hover {
-  color: rgba(220, 215, 186, 0.9);
+  color: rgba(232, 230, 227, 0.9);
 }
 .swagger-ui .hover-black-80:focus,
 .swagger-ui .hover-black-80:hover {
-  color: rgba(220, 215, 186, 0.8);
+  color: rgba(232, 230, 227, 0.8);
 }
 .swagger-ui .hover-black-70:focus,
 .swagger-ui .hover-black-70:hover {
-  color: rgba(220, 215, 186, 0.7);
+  color: rgba(232, 230, 227, 0.7);
 }
 .swagger-ui .hover-black-60:focus,
 .swagger-ui .hover-black-60:hover {
-  color: rgba(220, 215, 186, 0.6);
+  color: rgba(232, 230, 227, 0.6);
 }
 .swagger-ui .hover-black-50:focus,
 .swagger-ui .hover-black-50:hover {
-  color: rgba(220, 215, 186, 0.5);
+  color: rgba(232, 230, 227, 0.5);
 }
 .swagger-ui .hover-black-40:focus,
 .swagger-ui .hover-black-40:hover {
-  color: rgba(220, 215, 186, 0.4);
+  color: rgba(232, 230, 227, 0.4);
 }
 .swagger-ui .hover-black-30:focus,
 .swagger-ui .hover-black-30:hover {
-  color: rgba(220, 215, 186, 0.3);
+  color: rgba(232, 230, 227, 0.3);
 }
 .swagger-ui .hover-black-20:focus,
 .swagger-ui .hover-black-20:hover {
-  color: rgba(220, 215, 186, 0.2);
+  color: rgba(232, 230, 227, 0.2);
 }
 .swagger-ui .hover-black-10:focus,
 .swagger-ui .hover-black-10:hover {
-  color: rgba(220, 215, 186, 0.1);
+  color: rgba(232, 230, 227, 0.1);
 }
 .swagger-ui .hover-white-90:focus,
 .swagger-ui .hover-white-90:hover {
-  color: rgba(220, 215, 186, 0.9);
+  color: rgba(232, 230, 227, 0.9);
 }
 .swagger-ui .hover-white-80:focus,
 .swagger-ui .hover-white-80:hover {
-  color: rgba(220, 215, 186, 0.8);
+  color: rgba(232, 230, 227, 0.8);
 }
 .swagger-ui .hover-white-70:focus,
 .swagger-ui .hover-white-70:hover {
-  color: rgba(220, 215, 186, 0.7);
+  color: rgba(232, 230, 227, 0.7);
 }
 .swagger-ui .hover-white-60:focus,
 .swagger-ui .hover-white-60:hover {
-  color: rgba(220, 215, 186, 0.6);
+  color: rgba(232, 230, 227, 0.6);
 }
 .swagger-ui .hover-white-50:focus,
 .swagger-ui .hover-white-50:hover {
-  color: rgba(220, 215, 186, 0.5);
+  color: rgba(232, 230, 227, 0.5);
 }
 .swagger-ui .hover-white-40:focus,
 .swagger-ui .hover-white-40:hover {
-  color: rgba(220, 215, 186, 0.4);
+  color: rgba(232, 230, 227, 0.4);
 }
 .swagger-ui .hover-white-30:focus,
 .swagger-ui .hover-white-30:hover {
-  color: rgba(220, 215, 186, 0.3);
+  color: rgba(232, 230, 227, 0.3);
 }
 .swagger-ui .hover-white-20:focus,
 .swagger-ui .hover-white-20:hover {
-  color: rgba(220, 215, 186, 0.2);
+  color: rgba(232, 230, 227, 0.2);
 }
 .swagger-ui .hover-white-10:focus,
 .swagger-ui .hover-white-10:hover {
-  color: rgba(220, 215, 186, 0.1);
+  color: rgba(232, 230, 227, 0.1);
 }
 .swagger-ui .hover-inherit:focus,
 .swagger-ui .hover-inherit:hover {
@@ -10195,43 +10195,43 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-near-black:focus,
 .swagger-ui .hover-bg-near-black:hover {
-  background-color: rgb(12, 12, 15);
+  background-color: rgb(12, 12, 16);
 }
 .swagger-ui .hover-bg-dark-gray:focus,
 .swagger-ui .hover-bg-dark-gray:hover {
-  background-color: rgb(36, 36, 46);
+  background-color: rgb(35, 37, 47);
 }
 .swagger-ui .hover-bg-mid-gray:focus,
 .swagger-ui .hover-bg-mid-gray:hover {
-  background-color: rgb(59, 59, 77);
+  background-color: rgb(58, 62, 78);
 }
 .swagger-ui .hover-bg-gray:focus,
 .swagger-ui .hover-bg-gray:hover {
-  background-color: rgb(83, 83, 107);
+  background-color: rgb(81, 87, 109);
 }
 .swagger-ui .hover-bg-silver:focus,
 .swagger-ui .hover-bg-silver:hover {
-  background-color: rgb(77, 77, 100);
+  background-color: rgb(77, 83, 105);
 }
 .swagger-ui .hover-bg-light-silver:focus,
 .swagger-ui .hover-bg-light-silver:hover {
-  background-color: rgb(70, 70, 90);
+  background-color: rgb(71, 77, 96);
 }
 .swagger-ui .hover-bg-moon-gray:focus,
 .swagger-ui .hover-bg-moon-gray:hover {
-  background-color: rgb(54, 54, 70);
+  background-color: rgb(59, 63, 79);
 }
 .swagger-ui .hover-bg-light-gray:focus,
 .swagger-ui .hover-bg-light-gray:hover {
-  background-color: rgb(39, 39, 50);
+  background-color: rgb(46, 50, 62);
 }
 .swagger-ui .hover-bg-near-white:focus,
 .swagger-ui .hover-bg-near-white:hover {
-  background-color: rgb(36, 36, 46);
+  background-color: rgb(44, 47, 59);
 }
 .swagger-ui .hover-bg-white:focus,
 .swagger-ui .hover-bg-white:hover {
-  background-color: rgb(31, 31, 40);
+  background-color: rgb(40, 43, 54);
 }
 .swagger-ui .hover-bg-transparent:focus,
 .swagger-ui .hover-bg-transparent:hover {
@@ -10275,51 +10275,51 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-white-90:focus,
 .swagger-ui .hover-bg-white-90:hover {
-  background-color: rgba(31, 31, 40, 0.9);
+  background-color: rgba(40, 43, 54, 0.9);
 }
 .swagger-ui .hover-bg-white-80:focus,
 .swagger-ui .hover-bg-white-80:hover {
-  background-color: rgba(31, 31, 40, 0.8);
+  background-color: rgba(40, 43, 54, 0.8);
 }
 .swagger-ui .hover-bg-white-70:focus,
 .swagger-ui .hover-bg-white-70:hover {
-  background-color: rgba(31, 31, 40, 0.7);
+  background-color: rgba(40, 43, 54, 0.7);
 }
 .swagger-ui .hover-bg-white-60:focus,
 .swagger-ui .hover-bg-white-60:hover {
-  background-color: rgba(31, 31, 40, 0.6);
+  background-color: rgba(40, 43, 54, 0.6);
 }
 .swagger-ui .hover-bg-white-50:focus,
 .swagger-ui .hover-bg-white-50:hover {
-  background-color: rgba(31, 31, 40, 0.5);
+  background-color: rgba(40, 43, 54, 0.5);
 }
 .swagger-ui .hover-bg-white-40:focus,
 .swagger-ui .hover-bg-white-40:hover {
-  background-color: rgba(31, 31, 40, 0.4);
+  background-color: rgba(40, 43, 54, 0.4);
 }
 .swagger-ui .hover-bg-white-30:focus,
 .swagger-ui .hover-bg-white-30:hover {
-  background-color: rgba(31, 31, 40, 0.3);
+  background-color: rgba(40, 43, 54, 0.3);
 }
 .swagger-ui .hover-bg-white-20:focus,
 .swagger-ui .hover-bg-white-20:hover {
-  background-color: rgba(31, 31, 40, 0.2);
+  background-color: rgba(40, 43, 54, 0.2);
 }
 .swagger-ui .hover-bg-white-10:focus,
 .swagger-ui .hover-bg-white-10:hover {
-  background-color: rgba(31, 31, 40, 0.1);
+  background-color: rgba(40, 43, 54, 0.1);
 }
 .swagger-ui .hover-dark-red:focus,
 .swagger-ui .hover-dark-red:hover {
-  color: rgb(251, 39, 49);
+  color: rgb(251, 43, 53);
 }
 .swagger-ui .hover-red:focus,
 .swagger-ui .hover-red:hover {
-  color: rgb(255, 63, 52);
+  color: rgb(255, 74, 63);
 }
 .swagger-ui .hover-light-red:focus,
 .swagger-ui .hover-light-red:hover {
-  color: rgb(255, 96, 71);
+  color: rgb(255, 112, 90);
 }
 .swagger-ui .hover-orange:focus,
 .swagger-ui .hover-orange:hover {
@@ -10335,79 +10335,79 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-light-yellow:focus,
 .swagger-ui .hover-light-yellow:hover {
-  color: rgb(248, 232, 113);
+  color: rgb(250, 237, 146);
 }
 .swagger-ui .hover-purple:focus,
 .swagger-ui .hover-purple:hover {
-  color: rgb(141, 92, 211);
+  color: rgb(146, 99, 213);
 }
 .swagger-ui .hover-light-purple:focus,
 .swagger-ui .hover-light-purple:hover {
-  color: rgb(154, 82, 241);
+  color: rgb(164, 99, 242);
 }
 .swagger-ui .hover-dark-pink:focus,
 .swagger-ui .hover-dark-pink:hover {
-  color: rgb(255, 46, 186);
+  color: rgb(255, 55, 189);
 }
 .swagger-ui .hover-hot-pink:focus,
 .swagger-ui .hover-hot-pink:hover {
-  color: rgb(255, 57, 177);
+  color: rgb(255, 71, 182);
 }
 .swagger-ui .hover-pink:focus,
 .swagger-ui .hover-pink:hover {
-  color: rgb(255, 88, 188);
+  color: rgb(255, 115, 199);
 }
 .swagger-ui .hover-light-pink:focus,
 .swagger-ui .hover-light-pink:hover {
-  color: rgb(255, 106, 190);
+  color: rgb(255, 140, 205);
 }
 .swagger-ui .hover-dark-green:focus,
 .swagger-ui .hover-dark-green:hover {
-  color: rgb(107, 231, 185);
+  color: rgb(128, 235, 195);
 }
 .swagger-ui .hover-green:focus,
 .swagger-ui .hover-green:hover {
-  color: rgb(81, 229, 175);
+  color: rgb(92, 231, 180);
 }
 .swagger-ui .hover-light-green:focus,
 .swagger-ui .hover-light-green:hover {
-  color: rgb(121, 227, 189);
+  color: rgb(145, 232, 200);
 }
 .swagger-ui .hover-navy:focus,
 .swagger-ui .hover-navy:hover {
-  color: rgb(209, 202, 164);
+  color: rgb(211, 207, 201);
 }
 .swagger-ui .hover-dark-blue:focus,
 .swagger-ui .hover-dark-blue:hover {
-  color: rgb(89, 176, 255);
+  color: rgb(109, 186, 255);
 }
 .swagger-ui .hover-blue:focus,
 .swagger-ui .hover-blue:hover {
-  color: rgb(67, 149, 223);
+  color: rgb(70, 151, 224);
 }
 .swagger-ui .hover-light-blue:focus,
 .swagger-ui .hover-light-blue:hover {
-  color: rgb(99, 186, 255);
+  color: rgb(131, 200, 255);
 }
 .swagger-ui .hover-lightest-blue:focus,
 .swagger-ui .hover-lightest-blue:hover {
-  color: rgb(126, 206, 255);
+  color: rgb(169, 222, 255);
 }
 .swagger-ui .hover-washed-blue:focus,
 .swagger-ui .hover-washed-blue:hover {
-  color: rgb(147, 255, 243);
+  color: rgb(198, 255, 249);
 }
 .swagger-ui .hover-washed-green:focus,
 .swagger-ui .hover-washed-green:hover {
-  color: rgb(148, 246, 208);
+  color: rgb(192, 250, 228);
 }
 .swagger-ui .hover-washed-yellow:focus,
 .swagger-ui .hover-washed-yellow:hover {
-  color: rgb(255, 238, 141);
+  color: rgb(255, 245, 190);
 }
 .swagger-ui .hover-washed-red:focus,
 .swagger-ui .hover-washed-red:hover {
-  color: rgb(255, 135, 135);
+  color: rgb(255, 182, 182);
 }
 .swagger-ui .hover-bg-dark-red:focus,
 .swagger-ui .hover-bg-dark-red:hover {
@@ -10415,11 +10415,11 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-red:focus,
 .swagger-ui .hover-bg-red:hover {
-  background-color: rgb(176, 10, 0);
+  background-color: rgb(181, 10, 0);
 }
 .swagger-ui .hover-bg-light-red:focus,
 .swagger-ui .hover-bg-light-red:hover {
-  background-color: rgb(156, 21, 0);
+  background-color: rgb(164, 22, 0);
 }
 .swagger-ui .hover-bg-orange:focus,
 .swagger-ui .hover-bg-orange:hover {
@@ -10435,7 +10435,7 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-light-yellow:focus,
 .swagger-ui .hover-bg-light-yellow:hover {
-  background-color: rgb(85, 75, 4);
+  background-color: rgb(95, 84, 4);
 }
 .swagger-ui .hover-bg-purple:focus,
 .swagger-ui .hover-bg-purple:hover {
@@ -10443,7 +10443,7 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-light-purple:focus,
 .swagger-ui .hover-bg-light-purple:hover {
-  background-color: rgb(73, 12, 147);
+  background-color: rgb(77, 13, 154);
 }
 .swagger-ui .hover-bg-dark-pink:focus,
 .swagger-ui .hover-bg-dark-pink:hover {
@@ -10451,15 +10451,15 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-hot-pink:focus,
 .swagger-ui .hover-bg-hot-pink:hover {
-  background-color: rgb(170, 0, 103);
+  background-color: rgb(176, 0, 107);
 }
 .swagger-ui .hover-bg-pink:focus,
 .swagger-ui .hover-bg-pink:hover {
-  background-color: rgb(137, 0, 82);
+  background-color: rgb(149, 0, 89);
 }
 .swagger-ui .hover-bg-light-pink:focus,
 .swagger-ui .hover-bg-light-pink:hover {
-  background-color: rgb(119, 0, 67);
+  background-color: rgb(134, 0, 76);
 }
 .swagger-ui .hover-bg-dark-green:focus,
 .swagger-ui .hover-bg-dark-green:hover {
@@ -10471,7 +10471,7 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-light-green:focus,
 .swagger-ui .hover-bg-light-green:hover {
-  background-color: rgb(23, 109, 86);
+  background-color: rgb(25, 120, 94);
 }
 .swagger-ui .hover-bg-navy:focus,
 .swagger-ui .hover-bg-navy:hover {
@@ -10483,50 +10483,50 @@ select:-webkit-autofill {
 }
 .swagger-ui .hover-bg-blue:focus,
 .swagger-ui .hover-bg-blue:hover {
-  background-color: rgb(28, 88, 166);
+  background-color: rgb(28, 89, 168);
 }
 .swagger-ui .hover-bg-light-blue:focus,
 .swagger-ui .hover-bg-light-blue:hover {
-  background-color: rgb(0, 65, 126);
+  background-color: rgb(0, 72, 139);
 }
 .swagger-ui .hover-bg-lightest-blue:focus,
 .swagger-ui .hover-bg-lightest-blue:hover {
-  background-color: rgb(42, 42, 55);
+  background-color: rgb(49, 53, 66);
 }
 .swagger-ui .hover-bg-washed-blue:focus,
 .swagger-ui .hover-bg-washed-blue:hover {
-  background-color: rgb(0, 76, 69);
+  background-color: rgb(0, 98, 90);
 }
 .swagger-ui .hover-bg-washed-green:focus,
 .swagger-ui .hover-bg-washed-green:hover {
-  background-color: rgb(7, 77, 57);
+  background-color: rgb(8, 96, 71);
 }
 .swagger-ui .hover-bg-washed-yellow:focus,
 .swagger-ui .hover-bg-washed-yellow:hover {
-  background-color: rgb(61, 52, 0);
+  background-color: rgb(77, 65, 0);
 }
 .swagger-ui .hover-bg-washed-red:focus,
 .swagger-ui .hover-bg-washed-red:hover {
-  background-color: rgb(88, 0, 0);
+  background-color: rgb(108, 0, 0);
 }
 .swagger-ui .hover-bg-inherit:focus,
 .swagger-ui .hover-bg-inherit:hover {
   background-color: inherit;
 }
 .swagger-ui .striped--light-silver:nth-child(2n + 1) {
-  background-color: rgb(70, 70, 90);
+  background-color: rgb(71, 77, 96);
 }
 .swagger-ui .striped--moon-gray:nth-child(2n + 1) {
-  background-color: rgb(54, 54, 70);
+  background-color: rgb(59, 63, 79);
 }
 .swagger-ui .striped--light-gray:nth-child(2n + 1) {
-  background-color: rgb(39, 39, 50);
+  background-color: rgb(46, 50, 62);
 }
 .swagger-ui .striped--near-white:nth-child(2n + 1) {
-  background-color: rgb(36, 36, 46);
+  background-color: rgb(44, 47, 59);
 }
 .swagger-ui .stripe-light:nth-child(2n + 1) {
-  background-color: rgba(31, 31, 40, 0.1);
+  background-color: rgba(40, 43, 54, 0.1);
 }
 .swagger-ui .stripe-dark:nth-child(2n + 1) {
   background-color: rgba(0, 0, 0, 0.1);
@@ -10581,107 +10581,107 @@ select:-webkit-autofill {
   box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 16px 2px;
 }
 .swagger-ui .nested-links a {
-  color: rgb(67, 149, 223);
+  color: rgb(70, 151, 224);
 }
 .swagger-ui .nested-links a:focus,
 .swagger-ui .nested-links a:hover {
-  color: rgb(99, 186, 255);
+  color: rgb(131, 200, 255);
 }
 .swagger-ui .opblock-tag {
-  border-bottom-color: rgba(141, 131, 72, 0.3);
+  border-bottom-color: rgba(117, 109, 96, 0.3);
 }
 .swagger-ui .opblock-tag:hover {
   background-image: initial;
   background-color: rgba(0, 0, 0, 0.02);
 }
 .swagger-ui .opblock-tag {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock-tag small {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .parameter__type {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock {
-  border-color: rgb(169, 157, 86);
+  border-color: rgb(140, 130, 115);
   box-shadow: rgba(0, 0, 0, 0.19) 0px 0px 3px;
 }
 .swagger-ui .opblock .tab-header .tab-item.active h4 span::after {
   background-image: initial;
-  background-color: rgb(89, 89, 115);
+  background-color: rgb(87, 93, 117);
 }
 .swagger-ui .opblock.is-open .opblock-summary {
-  border-bottom-color: rgb(169, 157, 86);
+  border-bottom-color: rgb(140, 130, 115);
 }
 .swagger-ui .opblock .opblock-section-header {
   background-image: initial;
-  background-color: rgba(31, 31, 40, 0.8);
+  background-color: rgba(40, 43, 54, 0.8);
   box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px;
 }
 .swagger-ui .opblock .opblock-section-header > label {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock .opblock-section-header h4 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock .opblock-summary-method {
   background-image: initial;
   background-color: rgb(0, 0, 0);
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
   text-shadow: rgba(0, 0, 0, 0.1) 0px 1px 0px;
 }
 .swagger-ui .opblock .opblock-summary-operation-id,
 .swagger-ui .opblock .opblock-summary-path,
 .swagger-ui .opblock .opblock-summary-path__deprecated {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock .opblock-summary-path__deprecated {
   text-decoration-color: initial;
 }
 .swagger-ui .opblock .opblock-summary-description {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock.opblock-post {
   background-image: initial;
-  background-color: rgba(42, 150, 113, 0.1);
+  background-color: rgba(43, 152, 114, 0.1);
   border-color: rgb(38, 134, 90);
 }
 .swagger-ui .opblock.opblock-post .opblock-summary-method {
   background-image: initial;
-  background-color: rgb(42, 150, 113);
+  background-color: rgb(43, 152, 114);
 }
 .swagger-ui .opblock.opblock-post .opblock-summary {
   border-color: rgb(38, 134, 90);
 }
 .swagger-ui .opblock.opblock-post .tab-header .tab-item.active h4 span::after {
   background-image: initial;
-  background-color: rgb(42, 150, 113);
+  background-color: rgb(43, 152, 114);
 }
 .swagger-ui .opblock.opblock-put {
   background-image: initial;
-  background-color: rgba(178, 100, 3, 0.1);
+  background-color: rgba(182, 102, 3, 0.1);
   border-color: rgb(163, 91, 2);
 }
 .swagger-ui .opblock.opblock-put .opblock-summary-method {
   background-image: initial;
-  background-color: rgb(178, 100, 3);
+  background-color: rgb(182, 102, 3);
 }
 .swagger-ui .opblock.opblock-put .opblock-summary {
   border-color: rgb(163, 91, 2);
 }
 .swagger-ui .opblock.opblock-put .tab-header .tab-item.active h4 span::after {
   background-image: initial;
-  background-color: rgb(178, 100, 3);
+  background-color: rgb(182, 102, 3);
 }
 .swagger-ui .opblock.opblock-delete {
   background-image: initial;
-  background-color: rgba(170, 5, 5, 0.1);
+  background-color: rgba(174, 5, 5, 0.1);
   border-color: rgb(157, 5, 5);
 }
 .swagger-ui .opblock.opblock-delete .opblock-summary-method {
   background-image: initial;
-  background-color: rgb(170, 5, 5);
+  background-color: rgb(174, 5, 5);
 }
 .swagger-ui .opblock.opblock-delete .opblock-summary {
   border-color: rgb(157, 5, 5);
@@ -10693,55 +10693,55 @@ select:-webkit-autofill {
   h4
   span::after {
   background-image: initial;
-  background-color: rgb(170, 5, 5);
+  background-color: rgb(174, 5, 5);
 }
 .swagger-ui .opblock.opblock-get {
   background-image: initial;
-  background-color: rgba(1, 76, 153, 0.1);
+  background-color: rgba(1, 81, 162, 0.1);
   border-color: rgb(1, 74, 149);
 }
 .swagger-ui .opblock.opblock-get .opblock-summary-method {
   background-image: initial;
-  background-color: rgb(1, 76, 153);
+  background-color: rgb(1, 81, 162);
 }
 .swagger-ui .opblock.opblock-get .opblock-summary {
   border-color: rgb(1, 74, 149);
 }
 .swagger-ui .opblock.opblock-get .tab-header .tab-item.active h4 span::after {
   background-image: initial;
-  background-color: rgb(1, 76, 153);
+  background-color: rgb(1, 81, 162);
 }
 .swagger-ui .opblock.opblock-patch {
   background-image: initial;
-  background-color: rgba(24, 152, 131, 0.1);
+  background-color: rgba(25, 157, 134, 0.1);
   border-color: rgb(22, 140, 114);
 }
 .swagger-ui .opblock.opblock-patch .opblock-summary-method {
   background-image: initial;
-  background-color: rgb(24, 152, 131);
+  background-color: rgb(25, 157, 134);
 }
 .swagger-ui .opblock.opblock-patch .opblock-summary {
   border-color: rgb(22, 140, 114);
 }
 .swagger-ui .opblock.opblock-patch .tab-header .tab-item.active h4 span::after {
   background-image: initial;
-  background-color: rgb(24, 152, 131);
+  background-color: rgb(25, 157, 134);
 }
 .swagger-ui .opblock.opblock-head {
   background-image: initial;
-  background-color: rgba(104, 1, 194, 0.1);
+  background-color: rgba(105, 1, 196, 0.1);
   border-color: rgb(93, 1, 173);
 }
 .swagger-ui .opblock.opblock-head .opblock-summary-method {
   background-image: initial;
-  background-color: rgb(104, 1, 194);
+  background-color: rgb(105, 1, 196);
 }
 .swagger-ui .opblock.opblock-head .opblock-summary {
   border-color: rgb(93, 1, 173);
 }
 .swagger-ui .opblock.opblock-head .tab-header .tab-item.active h4 span::after {
   background-image: initial;
-  background-color: rgb(104, 1, 194);
+  background-color: rgb(105, 1, 196);
 }
 .swagger-ui .opblock.opblock-options {
   background-image: initial;
@@ -10766,15 +10766,15 @@ select:-webkit-autofill {
 }
 .swagger-ui .opblock.opblock-deprecated {
   background-image: initial;
-  background-color: rgba(40, 40, 52, 0.1);
-  border-color: rgb(50, 50, 64);
+  background-color: rgba(47, 51, 64, 0.1);
+  border-color: rgb(49, 52, 65);
 }
 .swagger-ui .opblock.opblock-deprecated .opblock-summary-method {
   background-image: initial;
-  background-color: rgb(40, 40, 52);
+  background-color: rgb(47, 51, 64);
 }
 .swagger-ui .opblock.opblock-deprecated .opblock-summary {
-  border-color: rgb(50, 50, 64);
+  border-color: rgb(49, 52, 65);
 }
 .swagger-ui
   .opblock.opblock-deprecated
@@ -10783,10 +10783,10 @@ select:-webkit-autofill {
   h4
   span::after {
   background-image: initial;
-  background-color: rgb(40, 40, 52);
+  background-color: rgb(47, 51, 64);
 }
 .swagger-ui .filter .operation-filter-input {
-  border-color: rgb(53, 53, 68);
+  border-color: rgb(51, 55, 69);
 }
 .swagger-ui .download-url-wrapper .failed,
 .swagger-ui .filter .failed {
@@ -10794,13 +10794,13 @@ select:-webkit-autofill {
 }
 .swagger-ui .download-url-wrapper .loading,
 .swagger-ui .filter .loading {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui .tab {
   list-style-image: initial;
 }
 .swagger-ui .tab li {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .tab li:first-of-type::after {
   background-image: initial;
@@ -10815,70 +10815,70 @@ select:-webkit-autofill {
 .swagger-ui .opblock-description-wrapper,
 .swagger-ui .opblock-external-docs-wrapper,
 .swagger-ui .opblock-title_normal {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock-description-wrapper h4,
 .swagger-ui .opblock-external-docs-wrapper h4,
 .swagger-ui .opblock-title_normal h4 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .opblock-description-wrapper p,
 .swagger-ui .opblock-external-docs-wrapper p,
 .swagger-ui .opblock-title_normal p {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .responses-inner h4,
 .swagger-ui .responses-inner h5 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .response-col_status {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .response-col_status .response-undocumented {
-  color: rgb(183, 173, 114);
+  color: rgb(162, 154, 142);
 }
 .swagger-ui .response-col_links {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .response-col_links .response-undocumented {
-  color: rgb(183, 173, 114);
+  color: rgb(162, 154, 142);
 }
 .swagger-ui .opblock-body pre.microlight {
   background-image: initial;
-  background-color: rgb(36, 36, 46);
-  color: rgb(220, 215, 186);
+  background-color: rgb(35, 37, 47);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .download-contents {
   background-image: initial;
-  background-color: rgb(85, 85, 110);
-  color: rgb(220, 215, 186);
+  background-color: rgb(84, 90, 113);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .scheme-container {
   background-image: initial;
-  background-color: rgb(31, 31, 40);
+  background-color: rgb(40, 43, 54);
   box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 2px 0px;
 }
 .swagger-ui .scheme-container .schemes > label {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .loading-container .loading::after {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .loading-container .loading::before {
-  border-color: rgba(169, 157, 86, 0.6) rgba(135, 126, 69, 0.1)
-    rgba(135, 126, 69, 0.1);
+  border-color: rgba(140, 130, 115, 0.6) rgba(112, 104, 92, 0.1)
+    rgba(112, 104, 92, 0.1);
 }
 .swagger-ui .response-control-media-type--accept-controller select {
   border-color: rgb(0, 217, 0);
 }
 .swagger-ui .response-control-media-type__accept-message {
-  color: rgb(88, 255, 88);
+  color: rgb(114, 255, 114);
 }
 .swagger-ui .no-margin {
   border-color: initial;
 }
 .swagger-ui section h3 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui a.nostyle,
 .swagger-ui a.nostyle:visited {
@@ -10886,23 +10886,23 @@ select:-webkit-autofill {
   text-decoration-color: inherit;
 }
 .swagger-ui .fallback {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui .version-pragma__message code {
-  background-color: rgb(46, 46, 59);
+  background-color: rgb(52, 56, 70);
 }
 .swagger-ui span.token-string {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui span.token-not-formatted {
-  color: rgb(192, 183, 130);
+  color: rgb(178, 172, 162);
 }
 .swagger-ui .btn {
   background-image: initial;
   background-color: transparent;
-  border-color: rgb(78, 78, 100);
+  border-color: rgb(76, 82, 102);
   box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px;
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .btn:hover {
   box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 5px;
@@ -10910,20 +10910,20 @@ select:-webkit-autofill {
 .swagger-ui .btn.cancel {
   background-color: transparent;
   border-color: rgb(150, 0, 0);
-  color: rgb(255, 73, 73);
+  color: rgb(255, 93, 93);
 }
 .swagger-ui .btn.authorize {
   background-color: transparent;
   border-color: rgb(38, 134, 90);
-  color: rgb(84, 207, 151);
+  color: rgb(88, 208, 153);
 }
 .swagger-ui .btn.authorize svg {
-  fill: rgb(84, 207, 151);
+  fill: rgb(88, 208, 153);
 }
 .swagger-ui .btn.execute {
-  background-color: rgb(25, 86, 156);
+  background-color: rgb(25, 88, 160);
   border-color: rgb(23, 78, 143);
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .authorization__btn {
   background-image: none;
@@ -10947,19 +10947,19 @@ select:-webkit-autofill {
   border-color: initial;
 }
 .swagger-ui .expand-methods:hover svg {
-  fill: rgb(199, 191, 144);
+  fill: rgb(192, 186, 178);
 }
 .swagger-ui .expand-methods svg {
-  fill: rgb(183, 173, 113);
+  fill: rgb(161, 153, 141);
 }
 .swagger-ui button.invalid {
   background-image: initial;
-  background-color: rgb(78, 4, 4);
+  background-color: rgb(98, 5, 5);
   border-color: rgb(157, 5, 5);
 }
 .swagger-ui .copy-to-clipboard {
   background-image: initial;
-  background-color: rgb(85, 85, 110);
+  background-color: rgb(84, 90, 113);
   border-color: initial;
 }
 .swagger-ui .copy-to-clipboard button {
@@ -10967,22 +10967,22 @@ select:-webkit-autofill {
   border-color: initial;
 }
 .swagger-ui select {
-  background-color: rgb(35, 35, 45);
-  border-color: rgb(141, 131, 71);
+  background-color: rgb(43, 46, 58);
+  border-color: rgb(116, 108, 96);
   box-shadow: rgba(0, 0, 0, 0.25) 0px 1px 2px 0px;
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui select[multiple] {
   background-image: initial;
-  background-color: rgb(35, 35, 45);
+  background-color: rgb(43, 46, 58);
 }
 .swagger-ui select.invalid {
   background-image: initial;
-  background-color: rgb(78, 4, 4);
+  background-color: rgb(98, 5, 5);
   border-color: rgb(157, 5, 5);
 }
 .swagger-ui label {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui input[type="email"],
 .swagger-ui input[type="file"],
@@ -10991,8 +10991,8 @@ select:-webkit-autofill {
 .swagger-ui input[type="text"],
 .swagger-ui textarea {
   background-image: initial;
-  background-color: rgb(31, 31, 40);
-  border-color: rgb(54, 54, 70);
+  background-color: rgb(40, 43, 54);
+  border-color: rgb(53, 57, 72);
 }
 .swagger-ui input[type="email"].invalid,
 .swagger-ui input[type="file"].invalid,
@@ -11001,27 +11001,27 @@ select:-webkit-autofill {
 .swagger-ui input[type="text"].invalid,
 .swagger-ui textarea.invalid {
   background-image: initial;
-  background-color: rgb(78, 4, 4);
+  background-color: rgb(98, 5, 5);
   border-color: rgb(157, 5, 5);
 }
 .swagger-ui input[disabled],
 .swagger-ui select[disabled],
 .swagger-ui textarea[disabled] {
-  background-color: rgb(33, 33, 43);
-  color: rgb(181, 170, 108);
+  background-color: rgb(42, 45, 56);
+  color: rgb(157, 148, 136);
 }
 .swagger-ui select[disabled] {
-  border-color: rgb(76, 76, 98);
+  border-color: rgb(74, 79, 100);
 }
 .swagger-ui textarea[disabled] {
-  background-color: rgb(50, 50, 64);
-  color: rgb(220, 215, 186);
+  background-color: rgb(49, 52, 66);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui textarea {
   background-image: initial;
-  background-color: rgba(31, 31, 40, 0.8);
+  background-color: rgba(40, 43, 54, 0.8);
   border-color: initial;
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
   outline-color: initial;
 }
 .swagger-ui textarea:focus {
@@ -11029,23 +11029,23 @@ select:-webkit-autofill {
 }
 .swagger-ui textarea.curl {
   background-image: initial;
-  background-color: rgb(50, 50, 64);
-  color: rgb(220, 215, 186);
+  background-color: rgb(49, 52, 66);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .checkbox {
-  color: rgb(204, 197, 155);
+  color: rgb(202, 197, 190);
 }
 .swagger-ui .checkbox p {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .checkbox input[type="checkbox"] + label > .item {
   background-image: initial;
-  background-color: rgb(41, 41, 54);
-  box-shadow: rgb(41, 41, 54) 0px 0px 0px 2px;
+  background-color: rgb(48, 52, 65);
+  box-shadow: rgb(48, 52, 65) 0px 0px 0px 2px;
 }
 .swagger-ui .checkbox input[type="checkbox"]:checked + label > .item {
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMTAiIGhlaWdodD0iOCI+PGRlZnM+PGZpbHRlciBpZD0iZGFya3JlYWRlci1pbWFnZS1maWx0ZXIiPjxmZUNvbG9yTWF0cml4IHR5cGU9Im1hdHJpeCIgdmFsdWVzPSIwLjI0OSAtMC42MTQgLTAuNjcyIDAuMDAwIDEuMDM1IC0wLjY0NiAwLjI4OCAtMC42NjQgMC4wMDAgMS4wMjAgLTAuNjM2IC0wLjYwOSAwLjI1MCAwLjAwMCAwLjk5NCAwLjAwMCAwLjAwMCAwLjAwMCAxLjAwMCAwLjAwMCIgLz48L2ZpbHRlcj48L2RlZnM+PGltYWdlIHdpZHRoPSIxMCIgaGVpZ2h0PSI4IiBmaWx0ZXI9InVybCgjZGFya3JlYWRlci1pbWFnZS1maWx0ZXIpIiB4bGluazpocmVmPSJkYXRhOmltYWdlL3N2Zyt4bWw7Y2hhcnNldD11dGYtOCw8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwIiBoZWlnaHQ9IjgiIHZpZXdCb3g9IjMgNyAxMCA4Ij48cGF0aCBmaWxsPSIlMjM0MTQ3NEUiIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTYuMzMzIDE1IDMgMTEuNjY3bDEuMzMzLTEuMzM0IDIgMkwxMS42NjcgNyAxMyA4LjMzM3oiLz48L3N2Zz4iIC8+PC9zdmc+");
-  background-color: rgb(41, 41, 54);
+  background-color: rgb(48, 52, 65);
 }
 .swagger-ui .dialog-ux .backdrop-ux {
   background-image: initial;
@@ -11053,18 +11053,18 @@ select:-webkit-autofill {
 }
 .swagger-ui .dialog-ux .modal-ux {
   background-image: initial;
-  background-color: rgb(31, 31, 40);
-  border-color: rgb(50, 50, 64);
+  background-color: rgb(40, 43, 54);
+  border-color: rgb(49, 52, 65);
   box-shadow: rgba(0, 0, 0, 0.2) 0px 10px 30px 0px;
 }
 .swagger-ui .dialog-ux .modal-ux-content p {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .dialog-ux .modal-ux-content h4 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .dialog-ux .modal-ux-header {
-  border-bottom-color: rgb(50, 50, 64);
+  border-bottom-color: rgb(49, 52, 65);
 }
 .swagger-ui .dialog-ux .modal-ux-header .close-modal {
   background-image: none;
@@ -11072,14 +11072,14 @@ select:-webkit-autofill {
   border-color: initial;
 }
 .swagger-ui .dialog-ux .modal-ux-header h3 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .model {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .model .deprecated span,
 .swagger-ui .model .deprecated td {
-  color: rgb(189, 179, 124) !important;
+  color: rgb(172, 165, 154) !important;
 }
 .swagger-ui .model .deprecated > td:first-of-type {
   text-decoration-color: initial;
@@ -11091,39 +11091,39 @@ select:-webkit-autofill {
 .swagger-ui .model-hint {
   background-image: initial;
   background-color: rgba(0, 0, 0, 0.7);
-  color: rgb(213, 207, 173);
+  color: rgb(219, 216, 212);
 }
 .swagger-ui .model .property {
-  color: rgb(186, 176, 119);
+  color: rgb(168, 160, 149);
 }
 .swagger-ui .model .property.primitive {
-  color: rgb(185, 174, 116);
+  color: rgb(164, 157, 145);
 }
 .swagger-ui .model .external-docs,
 .swagger-ui table.model tr.description {
-  color: rgb(186, 176, 119);
+  color: rgb(168, 160, 149);
 }
 .swagger-ui table.model tr.property-row .star {
   color: rgb(255, 26, 26);
 }
 .swagger-ui table.model tr.extension {
-  color: rgb(181, 170, 108);
+  color: rgb(157, 148, 136);
 }
 .swagger-ui section.models {
-  border-color: rgba(141, 131, 72, 0.3);
+  border-color: rgba(117, 109, 96, 0.3);
 }
 .swagger-ui section.models.is-open h4 {
-  border-bottom-color: rgba(141, 131, 72, 0.3);
+  border-bottom-color: rgba(117, 109, 96, 0.3);
 }
 .swagger-ui section.models h4 {
-  color: rgb(188, 179, 123);
+  color: rgb(171, 164, 153);
 }
 .swagger-ui section.models h4:hover {
   background-image: initial;
   background-color: rgba(0, 0, 0, 0.02);
 }
 .swagger-ui section.models h5 {
-  color: rgb(183, 173, 113);
+  color: rgb(161, 153, 141);
 }
 .swagger-ui section.models .model-container {
   background-image: initial;
@@ -11142,33 +11142,33 @@ select:-webkit-autofill {
   background-color: rgba(0, 0, 0, 0.1);
 }
 .swagger-ui .model-title {
-  color: rgb(193, 185, 134);
+  color: rgb(181, 175, 166);
 }
 .swagger-ui .model-deprecated-warning {
-  color: rgb(249, 59, 59);
+  color: rgb(249, 70, 70);
 }
 .swagger-ui .prop-type {
   color: rgb(119, 144, 187);
 }
 .swagger-ui .prop-format {
-  color: rgb(188, 179, 123);
+  color: rgb(171, 164, 153);
 }
 .swagger-ui .servers > label {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui table.headers td {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui table.headers .header-example {
-  color: rgb(186, 176, 119);
+  color: rgb(168, 160, 149);
 }
 .swagger-ui table thead tr td,
 .swagger-ui table thead tr th {
-  border-bottom-color: rgba(141, 131, 72, 0.2);
-  color: rgb(197, 188, 140);
+  border-bottom-color: rgba(117, 109, 96, 0.2);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .parameter__name {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .parameter__name.required span {
   color: rgb(255, 26, 26);
@@ -11178,19 +11178,19 @@ select:-webkit-autofill {
 }
 .swagger-ui .parameter__extension,
 .swagger-ui .parameter__in {
-  color: rgb(178, 167, 103);
+  color: rgb(152, 143, 129);
 }
 .swagger-ui .parameter__deprecated {
   color: rgb(255, 26, 26);
 }
 .swagger-ui .response__extension {
-  color: rgb(178, 167, 103);
+  color: rgb(152, 143, 129);
 }
 .swagger-ui .topbar {
-  background-color: rgb(19, 19, 24);
+  background-color: rgb(18, 20, 25);
 }
 .swagger-ui .topbar a {
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
   text-decoration-color: initial;
 }
 .swagger-ui .topbar .download-url-wrapper input[type="text"] {
@@ -11198,7 +11198,7 @@ select:-webkit-autofill {
   outline-color: initial;
 }
 .swagger-ui .topbar .download-url-wrapper .select-label {
-  color: rgb(215, 209, 176);
+  color: rgb(223, 220, 215);
 }
 .swagger-ui .topbar .download-url-wrapper .select-label select {
   border-color: rgb(83, 135, 53);
@@ -11209,87 +11209,87 @@ select:-webkit-autofill {
   background-image: initial;
   background-color: rgb(78, 128, 50);
   border-color: initial;
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .info li,
 .swagger-ui .info p,
 .swagger-ui .info table {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .info h1,
 .swagger-ui .info h2,
 .swagger-ui .info h3,
 .swagger-ui .info h4,
 .swagger-ui .info h5 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .info a {
-  color: rgb(76, 157, 226);
+  color: rgb(84, 161, 228);
 }
 .swagger-ui .info a:hover {
-  color: rgb(90, 164, 228);
+  color: rgb(96, 168, 229);
 }
 .swagger-ui .info .base-url {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .info .title {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .info .title small {
   background-image: initial;
-  background-color: rgb(85, 85, 110);
+  background-color: rgb(84, 90, 113);
 }
 .swagger-ui .info .title small.version-stamp {
   background-color: rgb(110, 153, 3);
 }
 .swagger-ui .info .title small pre {
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .auth-container {
-  border-bottom-color: rgb(50, 50, 64);
+  border-bottom-color: rgb(49, 52, 65);
 }
 .swagger-ui .auth-container:last-of-type {
   border-color: initial;
 }
 .swagger-ui .auth-container .errors {
-  background-color: rgb(80, 0, 0);
-  color: rgb(197, 188, 140);
+  background-color: rgb(101, 0, 0);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .scopes h2 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .scopes h2 a {
-  color: rgb(76, 157, 226);
+  color: rgb(84, 161, 228);
   text-decoration-color: initial;
 }
 .swagger-ui .errors-wrapper {
   background-image: initial;
-  background-color: rgba(170, 5, 5, 0.1);
+  background-color: rgba(174, 5, 5, 0.1);
   border-color: rgb(157, 5, 5);
 }
 .swagger-ui .errors-wrapper .errors h4 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .errors-wrapper .errors small {
-  color: rgb(188, 179, 123);
+  color: rgb(171, 164, 153);
 }
 .swagger-ui .errors-wrapper .errors .error-line {
   text-decoration-color: initial;
 }
 .swagger-ui .errors-wrapper hgroup h4 {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .markdown pre,
 .swagger-ui .renderedMarkdown pre {
   background-image: none;
   background-color: initial;
-  color: rgb(220, 215, 186);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .markdown code,
 .swagger-ui .renderedMarkdown code {
   background-image: initial;
   background-color: rgba(0, 0, 0, 0.05);
-  color: rgb(152, 35, 254);
+  color: rgb(154, 38, 254);
 }
 .swagger-ui .json-schema-2020-12 {
   background-color: rgba(0, 0, 0, 0.05);
@@ -11298,7 +11298,7 @@ select:-webkit-autofill {
   background-color: inherit;
 }
 .swagger-ui .json-schema-2020-12-body {
-  border-left-color: rgba(169, 157, 86, 0.1);
+  border-left-color: rgba(140, 130, 115, 0.1);
 }
 .swagger-ui .json-schema-2020-12-accordion {
   border-color: initial;
@@ -11306,61 +11306,61 @@ select:-webkit-autofill {
 }
 .swagger-ui .json-schema-2020-12-expand-deep-button {
   border-color: initial;
-  color: rgb(193, 185, 133);
+  color: rgb(181, 175, 165);
 }
 .swagger-ui .json-schema-2020-12-keyword__children {
-  border-left-color: rgba(169, 157, 86, 0.1);
+  border-left-color: rgba(140, 130, 115, 0.1);
 }
 .swagger-ui .json-schema-2020-12-keyword__name--primary {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .json-schema-2020-12-keyword__name--secondary {
-  color: rgb(185, 174, 116);
+  color: rgb(164, 157, 145);
 }
 .swagger-ui .json-schema-2020-12-keyword__value {
-  color: rgb(185, 174, 116);
+  color: rgb(164, 157, 145);
 }
 .swagger-ui .json-schema-2020-12-keyword__value--primary {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .json-schema-2020-12-keyword__value--secondary {
-  color: rgb(185, 174, 116);
+  color: rgb(164, 157, 145);
 }
 .swagger-ui .json-schema-2020-12-keyword__value--const,
 .swagger-ui .json-schema-2020-12-keyword__value--warning {
-  border-color: rgb(127, 117, 64);
-  color: rgb(185, 174, 116);
+  border-color: rgb(105, 97, 86);
+  color: rgb(164, 157, 145);
 }
 .swagger-ui .json-schema-2020-12-keyword__value--warning {
   border-color: rgb(179, 0, 0);
   color: rgb(255, 26, 26);
 }
 .swagger-ui .json-schema-2020-12__attribute {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .json-schema-2020-12__attribute--primary {
   color: rgb(119, 144, 187);
 }
 .swagger-ui .json-schema-2020-12__attribute--muted {
-  color: rgb(178, 167, 103);
+  color: rgb(152, 143, 129);
 }
 .swagger-ui .json-schema-2020-12__attribute--warning {
   color: rgb(255, 26, 26);
 }
 .swagger-ui .json-schema-2020-12-keyword--\$vocabulary ul {
-  border-left-color: rgba(169, 157, 86, 0.1);
+  border-left-color: rgba(140, 130, 115, 0.1);
 }
 .swagger-ui .json-schema-2020-12-\$vocabulary-uri--disabled {
   text-decoration-color: initial;
 }
 .swagger-ui .json-schema-2020-12-keyword--description {
-  color: rgb(185, 174, 116);
+  color: rgb(164, 157, 145);
 }
 .swagger-ui .json-schema-2020-12__title {
-  color: rgb(193, 185, 134);
+  color: rgb(181, 175, 166);
 }
 .swagger-ui .json-schema-2020-12-property .json-schema-2020-12__title {
-  color: rgb(197, 188, 140);
+  color: rgb(188, 182, 173);
 }
 .swagger-ui .json-schema-2020-12-keyword--properties > ul {
   border-color: initial;
@@ -11384,12 +11384,12 @@ select:-webkit-autofill {
   color: rgb(119, 144, 187);
 }
 .swagger-ui .json-schema-2020-12__constraint {
-  background-color: rgb(69, 36, 143);
-  color: rgb(220, 215, 186);
+  background-color: rgb(71, 37, 146);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .json-schema-2020-12__constraint--string {
-  background-color: rgb(168, 123, 33);
-  color: rgb(220, 215, 186);
+  background-color: rgb(169, 124, 33);
+  color: rgb(232, 230, 227);
 }
 .swagger-ui .model-box .json-schema-2020-12 {
   background-color: transparent;

@@ -9,7 +9,7 @@ __all__ = ["LatestSwaggerController"]
 
 
 class LatestSwaggerController(OpenAPIController):
-    swagger_css_url = f"{settings.openapi.LOCAL_CDN}/swagger-dark-ui.css"
+    swagger_css_url = f"{settings.openapi.LOCAL_CDN}/swagger-ui.css"
     swagger_ui_bundle_js_url = f"{settings.openapi.LOCAL_CDN}/swagger-ui-bundle.js"
     swagger_ui_standalone_preset_js_url = f"{settings.openapi.LOCAL_CDN}/swagger-ui-standalone-preset.min.js"
 
