@@ -43,7 +43,7 @@ def run_migrations_offline() -> None:
     script output.
     """
     context.configure(
-        url=settings.db.URL,
+        url=settings.db.EXT_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -74,7 +74,7 @@ async def run_migrations_online() -> None:
     connection with the context.
     """
     configuration = config.get_section(config.config_ini_section) or {}
-    configuration["sqlalchemy.url"] = settings.db.URL
+    configuration["sqlalchemy.url"] = settings.db.EXT_URL
     connectable = async_engine_from_config(
         configuration,
         prefix="sqlalchemy.",

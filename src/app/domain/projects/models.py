@@ -1,16 +1,18 @@
 import pkgutil
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Annotated, Any
+from uuid import UUID
 
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
-from litestar.dto.factory import DTOConfig
-from sqlalchemy import ARRAY, String
+from litestar.dto.factory import DTOConfig, Mark, dto_field
+from sqlalchemy import ARRAY, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
 import app.plugins
+from app.domain.accounts.models import User
 from app.lib.db import orm
 from app.lib.plugin import ProjectPlugin
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
@@ -42,6 +44,14 @@ class Project(orm.TimestampedDatabaseModel):
     repo_urls: Mapped[list[str]] = m_col(ARRAY(String), server_default="[]")
     backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
     plugin_meta: Mapped[dict[str, Any]] = m_col(JSONB, default={})
+    owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
+    owner: Mapped["User"] = relationship(
+        "User",
+        uselist=False,
+        foreign_keys="Project.owner_id",
+        lazy="joined",
+        info=dto_field(Mark.PRIVATE),
+    )
 
     def __init__(self, **kw: Any):
         super().__init__(**kw)
