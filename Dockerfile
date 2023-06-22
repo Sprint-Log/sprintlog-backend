@@ -25,5 +25,5 @@ COPY . /app/workspace/
 RUN poetry install
 RUN chown -R 65532:65532 /workspace
 EXPOSE 8000
-# VOLUME /app/workspace
-# ENTRYPOINT ["poetry", "run"]
+ENTRYPOINT ["poetry", "run"]
+VOLUME /app/workspace

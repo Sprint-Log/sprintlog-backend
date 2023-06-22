@@ -44,11 +44,10 @@ class Project(orm.TimestampedDatabaseModel):
     repo_urls: Mapped[list[str]] = m_col(ARRAY(String), server_default="[]")
     backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
     plugin_meta: Mapped[dict[str, Any]] = m_col(JSONB, default={})
-    owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
+    owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id), nullable=True)
     owner: Mapped["User"] = relationship(
         "User",
         uselist=False,
-        foreign_keys="Project.owner_id",
         lazy="joined",
         info=dto_field(Mark.PRIVATE),
     )
@@ -69,7 +68,6 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
         self.repository: Repository = self.repository_type(**repo_kwargs)
         self.model_type = self.repository.model_type
 
-        super().__init__(**repo_kwargs)
         for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
             module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
             for obj_name in dir(module):
@@ -83,7 +81,6 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
         # Call the before_create hook for each registered plugin
         for plugin in self.plugins:
             data = await plugin.before_create(data=data)
-
         obj: Project = await super().create(data)
 
         # Call the after_create hook for each registered plugin
