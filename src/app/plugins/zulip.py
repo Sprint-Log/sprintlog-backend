@@ -24,15 +24,11 @@ def send_msg_to_zulip(data: "Backlog | dict[str, Any]") -> dict[str:str]:
     log_info(url)
     content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
     log_info(content)
-    data: dict[str:str] = {
-        "type": "stream",
-        "to": server.ZULIP_STREAM_NAME,
-        "topic": data.title,
-        "content": content
-    }
+    data: dict[str:str] = {"type": "stream", "to": server.ZULIP_STREAM_NAME, "topic": data.title, "content": content}
 
     response = httpx.post(url, auth=auth, data=data)
     return response.json()
+
 
 class ZulipBacklogPlugin(BacklogPlugin):
     def __init__(self, zulip_bot: str = "pipo") -> None:
@@ -49,11 +45,14 @@ class ZulipBacklogPlugin(BacklogPlugin):
 
     async def after_create(self, data: "Backlog") -> "Backlog":
         log_info(self.zulip_bot)
-        response = send_msg_to_zulip(data)
-        if response["result"] != "success":
-            log_info(response)
-        else:
-            log_info("successfully sent message to zulip")
+        try:
+            response = send_msg_to_zulip(data)
+            if response["result"] != "success":
+                log_info(response)
+            else:
+                log_info("successfully sent message to zulip")
+        except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError) as e:
+            log_info(f"failed to send message to zulip: {e!s}")
         return data
 
     async def before_update(self, item_id: str, data: "Backlog | dict[str, Any]") -> "Backlog | dict[str, Any]":
