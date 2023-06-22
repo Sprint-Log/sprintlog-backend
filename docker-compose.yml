@@ -84,7 +84,7 @@ services:
     restart: "no"
     command: poetry run litestar database upgrade-database
     env_file:
-      - .env.example
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -105,7 +105,7 @@ services:
     restart: "no"
     command: poetry run alembic -c src/app/lib/db/alembic.ini revision --autogenerate
     env_file:
-      - .env.example
+      - .env
     depends_on:
       db:
         condition: service_healthy
