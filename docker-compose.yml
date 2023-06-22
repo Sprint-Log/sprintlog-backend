@@ -90,6 +90,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      # migration-gen:
+      #   condition: service_completed_successfully
     volumes:
       - ./docs:/workspace/app/docs/
       - ./tests:/workspace/app/tests/
@@ -98,27 +100,28 @@ services:
       - ./pyproject.toml:/workspace/app/pyproject.toml
       - ./poetry.lock:/workspace/app/poetry.lock
       - ./mkdocs.yml:/workspace/app/mkdocs.yml
-  migration-gen:
-    build:
-      context: .
-      dockerfile: Dockerfile.bullseye
-    restart: "no"
-    command: poetry run alembic -c src/app/lib/db/alembic.ini revision --autogenerate
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-    volumes:
-      - ./docs:/workspace/app/docs/
-      - ./tests:/workspace/app/tests/
-      - ./src:/workspace/app/src/
-      - ./Makefile:/workspace/app/Makefile
-      - ./pyproject.toml:/workspace/app/pyproject.toml
-      - ./poetry.lock:/workspace/app/poetry.lock
-      - ./mkdocs.yml:/workspace/app/mkdocs.yml
+
+  # migration-gen:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.bullseye
+  #   restart: "no"
+  #   command: poetry run alembic -c src/app/lib/db/alembic.ini revision --autogenerate
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     cache:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./docs:/workspace/app/docs/
+  #     - ./tests:/workspace/app/tests/
+  #     - ./src:/workspace/app/src/
+  #     - ./Makefile:/workspace/app/Makefile
+  #     - ./pyproject.toml:/workspace/app/pyproject.toml
+  #     - ./poetry.lock:/workspace/app/poetry.lock
+  #     - ./mkdocs.yml:/workspace/app/mkdocs.yml
   localmail:
     image: mailhog/mailhog:v1.0.0
     ports:
