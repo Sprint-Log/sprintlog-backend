@@ -187,8 +187,7 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
         for plugin in self.plugins:
             data = await plugin.before_create(data=data)
 
-        data = await self.to_model(data, "create")
-        obj = await self.repository.add(data)
+        obj = await super().create(data)
         # Call the after_create hook for each
         for plugin in self.plugins:
             await plugin.after_create(data=obj)

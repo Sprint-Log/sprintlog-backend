@@ -1,4 +1,3 @@
-import pkgutil
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Annotated, Any
 from uuid import UUID
@@ -11,7 +10,6 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
-import app.plugins
 from app.domain.accounts.models import User
 from app.lib.db import orm
 from app.lib.plugin import ProjectPlugin
@@ -62,18 +60,11 @@ class Repository(SQLAlchemyAsyncRepository[Project]):
 
 class Service(SQLAlchemyAsyncRepositoryService[Project]):
     repository_type = Repository
-    plugins: list[ProjectPlugin] = []
+    plugins: set[ProjectPlugin] = set()
 
     def __init__(self, **repo_kwargs: Any) -> None:
         self.repository: Repository = self.repository_type(**repo_kwargs)
         self.model_type = self.repository.model_type
-
-        for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-            module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
-            for obj_name in dir(module):
-                obj = getattr(module, obj_name)
-                if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:
-                    self.register_plugin(obj())
 
         super().__init__(**repo_kwargs)
 
@@ -114,9 +105,6 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
             await plugin.after_delete(data=obj)
 
         return obj
-
-    def register_plugin(self, plugin: ProjectPlugin) -> None:
-        self.plugins.append(plugin)
 
 
 WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created_at", "updated_at", "backlogs"})]]
