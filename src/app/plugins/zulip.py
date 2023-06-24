@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Any
 from uuid import UUID
@@ -11,6 +12,7 @@ from app.lib.settings import server
 
 __all__ = ["ZulipBacklogPlugin"]
 logger = logging.getLogger(__name__)
+backlog_topic: str = "📑 [BACKLOG] "
 
 
 def log_info(message: str) -> None:
@@ -22,20 +24,16 @@ async def send_msg(backlog_data: "Backlog | dict[str, Any]") -> Any:
     url = f"{server.ZULIP_API_URL}{server.ZULIP_SEND_MESSAGE_URL}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     log_info(url)
-    topic: str
     content: str
     if isinstance(backlog_data, Backlog):
-        topic = backlog_data.title
         content = f"{backlog_data.status} {backlog_data.priority} {backlog_data.progress} **[{backlog_data.slug}]** {backlog_data.title}  **:time::{backlog_data.due_date.strftime('%d-%m-%Y')}** @**{backlog_data.assignee_name}** {backlog_data.category}"
     elif isinstance(backlog_data, dict):
-        topic = backlog_data.get("title") or ""
         content = f"{backlog_data['status']} {backlog_data['priority']} {backlog_data['progress']} **[{backlog_data['slug']}]** {backlog_data['title']}  **:time::{backlog_data['due_date'].strftime('%d-%m-%Y')}** @**{backlog_data['assignee_name']}** {backlog_data['category']}"
-        backlog_data["title"]
     log_info(content)
     data = {
         "type": "stream",
         "to": server.ZULIP_STREAM_NAME,
-        "topic": topic,
+        "topic": backlog_topic,
         "content": content,
     }
     async with httpx.AsyncClient() as client:
@@ -43,14 +41,14 @@ async def send_msg(backlog_data: "Backlog | dict[str, Any]") -> Any:
     return response.json()
 
 
-async def update_message(msg_id: int, topic: str, content: str) -> dict[str, str]:
+async def update_message(msg_id: int, content: str) -> dict[str, str]:
     log_info("updaing message")
-    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_SEND_MESSAGE_URL}{msg_id}"
+    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_SEND_MESSAGE_URL}/{msg_id}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
 
     data = {
-        "topic": topic,
-        "propagate_mode": "change_all",
+        "topic": backlog_topic,
+        "propagate_mode": "change_one",
         "send_notification_to_old_thread": "true",
         "send_notification_to_new_thread": "true",
         "content": content,
@@ -63,15 +61,18 @@ async def update_message(msg_id: int, topic: str, content: str) -> dict[str, str
 
 async def create_stream(title: str, description: str, principals: list[str]) -> dict[str, str]:
     log_info("creating zulip stream")
-    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_SEND_MESSAGE_URL}"
+    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
-
+    subscription: list[dict[str, str]] = [{"description": description, "name": f"📌PRJ/{title}"}]
+    data = {
+        "subscriptions": json.dumps(subscription),
+        "principals": json.dumps(principals),
+        "invite_only": True,
+        "history_public_to_subscribers": True,
+    }
     async with httpx.AsyncClient() as client:
-        response = await client.post(
-            url,
-            auth=auth,
-            data={"subscriptions": [{"description": description, "name": title}], "principals": principals},
-        )
+        response = await client.post(url, auth=auth, data=data)
+        log_info(str(response))
         return dict(response.json())
 
 
@@ -96,10 +97,7 @@ class ZulipBacklogPlugin(BacklogPlugin):
                 log_info(response)
             else:
                 log_info("successfully sent message to zulip")
-                plugin_meta: dict[str, str] = data.plugin_meta
-                plugin_meta["msg_id"] = response["id"]
-
-                # TODO update msg id into database
+                data.plugin_meta = {"msg_id": response["id"]}
 
         except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError) as e:
             log_info(f"failed to send message to zulip: {e!s}")
@@ -109,8 +107,18 @@ class ZulipBacklogPlugin(BacklogPlugin):
         return await super().before_update(item_id, data)
 
     async def after_update(self, data: "Backlog") -> "Backlog":
-        # TODO Call update_message function
-        return await super().after_update(data)
+        log_info(self.zulip_bot)
+        data = await super().after_update(data)
+        content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
+        try:
+            response = await update_message(msg_id=data.plugin_meta["msg_id"], content=content)
+            if response["result"] != "success":
+                log_info(str(response))
+            else:
+                log_info(f"successfully sent message to zulip {response}")
+        except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError) as e:
+            log_info(f"failed to update message: {e!s}")
+        return data
 
     async def before_delete(self, item_id: UUID) -> "UUID":
         log_info(self.zulip_bot)
@@ -141,9 +149,9 @@ class ZulipProjectPlugin(ProjectPlugin):
         log_info(self.zulip_bot)
         try:
             principals: list[str] = server.ZULIP_ADMIN_EMAIL
-            name: str
-            name = "" if data.owner.name is None else data.owner.name
-            principals.append(name)
+            email: str
+            email = "" if data.owner.email is None else data.owner.email
+            principals.append(email)
             log_info(str(principals))
             response = await create_stream(data.name, data.description, principals)
             if response["result"] != "success":

@@ -192,6 +192,8 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
         for plugin in self.plugins:
             await plugin.after_create(data=obj)
 
+        obj = await super().update(obj.id, obj)
+
         return obj
 
     async def update(self, item_id: Any, data: Backlog | dict[str, Any]) -> Backlog:
