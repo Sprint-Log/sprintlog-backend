@@ -79,8 +79,6 @@ class ServerSettings(BaseSettings):
     ZULIP_EMAIL_ADDRESS: str = ""
     """Zulip Bot API key. for zulip server"""
     ZULIP_API_KEY: str = ""
-    """Zulip Stream name. for zulip server"""
-    ZULIP_STREAM_NAME: str = ""
     """Zulip admins. for zulip server"""
     ZULIP_ADMIN_EMAIL: list[str]
 

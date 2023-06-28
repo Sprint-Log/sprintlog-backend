@@ -25,14 +25,17 @@ async def send_msg(backlog_data: "Backlog | dict[str, Any]") -> Any:
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     log_info(url)
     content: str
+    stream_name: str
     if isinstance(backlog_data, Backlog):
         content = f"{backlog_data.status} {backlog_data.priority} {backlog_data.progress} **[{backlog_data.slug}]** {backlog_data.title}  **:time::{backlog_data.due_date.strftime('%d-%m-%Y')}** @**{backlog_data.assignee_name}** {backlog_data.category}"
+        stream_name = f"📌PRJ/{backlog_data.project_name}"
     elif isinstance(backlog_data, dict):
         content = f"{backlog_data['status']} {backlog_data['priority']} {backlog_data['progress']} **[{backlog_data['slug']}]** {backlog_data['title']}  **:time::{backlog_data['due_date'].strftime('%d-%m-%Y')}** @**{backlog_data['assignee_name']}** {backlog_data['category']}"
+        stream_name = f"📌PRJ/{backlog_data['project_name']}"
     log_info(content)
     data = {
         "type": "stream",
-        "to": server.ZULIP_STREAM_NAME,
+        "to": stream_name,
         "topic": backlog_topic,
         "content": content,
     }
