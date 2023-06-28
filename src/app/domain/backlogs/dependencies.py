@@ -33,7 +33,7 @@ async def provides_service(db_session: AsyncSession) -> AsyncGenerator[Service, 
                 plugins.append(obj())
     async with Service.new(
         session=db_session,
-        statement=select(Backlog).order_by(Backlog.assignee_id).options(joinedload(Backlog.project)),
+        statement=select(Backlog).order_by(Backlog.due_date).options(joinedload(Backlog.project)),
     ) as service:
         service.plugins = set(plugins)
         try:
