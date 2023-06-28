@@ -3,7 +3,6 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 from litestar import Controller, delete, get, post, put
-from litestar.contrib.repository.filters import OrderBy
 from litestar.di import Provide
 from litestar.exceptions import HTTPException
 from litestar.params import Dependency
@@ -19,8 +18,7 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from litestar.contrib.repository import FilterTypes
-
-from litestar.contrib.repository.filters import LimitOffset
+    from litestar.contrib.repository.filters import LimitOffset
 from litestar.pagination import OffsetPagination
 
 __all__ = [
@@ -70,9 +68,7 @@ class ApiController(Controller):
     async def filter_by_project_type(
         self, service: "Service", project_type: str, limit_offset: "LimitOffset"
     ) -> "OffsetPagination[Model]":
-        results, total = await service.list_and_count(
-            limit_offset, OrderBy("updated_at", "desc"), project_type=project_type
-        )
+        results, total = await service.list_and_count(limit_offset, project_type=project_type)
         return OffsetPagination(items=results, total=total, limit=limit_offset.limit, offset=limit_offset.offset)
 
     @get(slug_route)
@@ -97,7 +93,7 @@ class ApiController(Controller):
                 obj.status = StatusEnum.started
             else:
                 obj.status = StatusEnum.checked_in
-            return await service.repository.update(obj)
+            return await service.update(obj.id, obj)
         raise HTTPException(status_code=404, detail=f"Backlog.slug {slug} not available")
 
     @put(f"progress/up{slug_route}")
@@ -123,7 +119,7 @@ class ApiController(Controller):
             elif next_idx >= len(priority_list):
                 next_idx = len(priority_list) - 1
             obj.priority = PriorityEnum(priority_list[next_idx])
-            return await service.repository.update(obj)
+            return await service.update(obj.id, obj)
         raise HTTPException(status_code=404, detail=f"Backlog.slug {slug} not available")
 
     @put(f"priority/circle{slug_route}")
@@ -141,7 +137,7 @@ class ApiController(Controller):
             elif next_idx >= len(status_list):
                 next_idx = len(status_list) - 1
             obj.status = StatusEnum(status_list[next_idx])
-            return await service.repository.update(obj)
+            return await service.update(obj.id, obj)
         raise HTTPException(status_code=404, detail=f"Backlog.slug {slug} not available")
 
     @put(f"status/circle{slug_route}")

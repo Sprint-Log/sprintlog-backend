@@ -94,7 +94,7 @@ class Backlog(orm.TimestampedDatabaseModel):
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
-    plugin_meta: Mapped[dict[str, Any]] = m_col(JSONB, default={})
+    plugin_meta: Mapped[dict[str, Any]] = m_col(JSONB, default={}, info=dto_field(Mark.READ_ONLY))
     # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
@@ -190,9 +190,8 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
         obj = await super().create(data)
         # Call the after_create hook for each
         for plugin in self.plugins:
-            await plugin.after_create(data=obj)
-
-        obj = await super().update(obj.id, obj)
+            after = await plugin.after_create(data=obj)
+            obj = await super().update(obj.id, after)
 
         return obj
 

@@ -36,7 +36,7 @@ async def send_msg(backlog_data: "Backlog | dict[str, Any]") -> Any:
         "topic": backlog_topic,
         "content": content,
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=1) as client:
         response = await client.post(url, auth=auth, data=data)
     return response.json()
 
@@ -54,7 +54,7 @@ async def update_message(msg_id: int, content: str) -> dict[str, str]:
         "content": content,
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=1) as client:
         response = await client.patch(url, auth=auth, data=data)
         return dict(response.json())
 
@@ -70,7 +70,7 @@ async def create_stream(title: str, description: str, principals: list[str]) -> 
         "invite_only": True,
         "history_public_to_subscribers": True,
     }
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=1) as client:
         response = await client.post(url, auth=auth, data=data)
         log_info(str(response))
         return dict(response.json())

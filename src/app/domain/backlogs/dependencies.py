@@ -31,9 +31,9 @@ async def provides_service(db_session: AsyncSession) -> AsyncGenerator[Service, 
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, BacklogPlugin) and obj is not BacklogPlugin:
                 plugins.append(obj())
-    """Construct repository and service objects for the request."""
     async with Service.new(
-        session=db_session, statement=select(Backlog).options(joinedload(Backlog.project))
+        session=db_session,
+        statement=select(Backlog).order_by(Backlog.assignee_id).options(joinedload(Backlog.project)),
     ) as service:
         service.plugins = set(plugins)
         try:
