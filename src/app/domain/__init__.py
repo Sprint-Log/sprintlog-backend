@@ -5,17 +5,23 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from litestar.contrib.jwt import OAuth2Login
-from litestar.contrib.repository import FilterTypes
+from litestar.contrib.repository.filters import FilterTypes
+from litestar.dto.factory import DTOData
 from litestar.pagination import OffsetPagination
-from pydantic import UUID4, EmailStr
+from litestar.types import TypeEncodersMap
+from pydantic import UUID4
 from saq.types import QueueInfo
 
+from app.domain.accounts.dtos import AccountLogin, AccountRegister, UserCreate, UserUpdate
 from app.domain.accounts.models import User
+from app.domain.analytics.dtos import NewUsersByWeek
+from app.domain.tags.models import Tag
+from app.domain.teams.models import Team
 from app.lib import settings, worker
 from app.lib.service.generic import Service
 from app.lib.worker.controllers import WorkerController
 
-from . import accounts, analytics, backlogs, openapi, plugins, projects, room, security, system, teams, urls
+from . import accounts, analytics, backlogs, openapi, plugins, projects, room, security, system, tags, teams, urls, web
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -30,11 +36,13 @@ routes: list[ControllerRouterHandler] = [
     accounts.controllers.AccessController,
     accounts.controllers.AccountController,
     teams.controllers.TeamController,
+    teams.controllers.TeamInvitationController,
+    teams.controllers.TeamMemberController,
     room.controller.ApiController,
-    # teams.controllers.TeamInvitationController,
-    # teams.controllers.TeamMemberController,
     analytics.controllers.StatsController,
+    tags.controllers.TagController,
     system.controllers.SystemController,
+    web.controllers.WebController,
 ]
 
 if settings.worker.WEB_ENABLED:
@@ -48,13 +56,14 @@ __all__ = [
     "teams",
     "web",
     "urls",
+    "tags",
     "security",
     "routes",
     "openapi",
     "analytics",
+    "plugins",
     "backlogs",
     "projects",
-    "plugins",
     "signature_namespace",
 ]
 tasks: dict[worker.Queue, list[worker.WorkerFunction]] = {
@@ -79,17 +88,26 @@ scheduled_tasks: dict[worker.Queue, list[worker.CronJob]] = {
 signature_namespace: Mapping[str, Any] = {
     "Service": Service,
     "FilterTypes": FilterTypes,
-    "UUID4": UUID4,
     "UUID": UUID,
-    "EmailStr": EmailStr,
+    "UUID4": UUID4,
     "User": User,
+    "Team": Team,
+    "UserCreate": UserCreate,
+    "UserUpdate": UserUpdate,
+    "AccountLogin": AccountLogin,
+    "AccountRegister": AccountRegister,
+    "NewUsersByWeek": NewUsersByWeek,
+    "Tag": Tag,
     "OAuth2Login": OAuth2Login,
     "OffsetPagination": OffsetPagination,
     "UserService": accounts.services.UserService,
     "TeamService": teams.services.TeamService,
+    "TagService": tags.services.TagService,
     "TeamInvitationService": teams.services.TeamInvitationService,
     "TeamMemberService": teams.services.TeamMemberService,
     "Queue": worker.Queue,
     "QueueInfo": QueueInfo,
     "Job": worker.Job,
+    "DTOData": DTOData,
+    "TypeEncodersMap": TypeEncodersMap,
 }

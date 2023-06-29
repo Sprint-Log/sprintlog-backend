@@ -57,7 +57,11 @@ class ApiController(Controller):
         return await service.get(row_id)
 
     @put(detail_route)
-    async def update(self, data: Model, service: "Service", row_id: "UUID") -> Model:
+    async def update(self, data: Model, current_user: User, service: "Service", row_id: "UUID") -> Model:
+        if not data.owner_id:
+            data.owner_id = current_user.id
+        if not data.assignee_id:
+            data.assignee_id = current_user.id
         return await service.update(row_id, data)
 
     @delete(detail_route, status_code=HTTP_200_OK)

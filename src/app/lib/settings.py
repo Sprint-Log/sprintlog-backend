@@ -56,7 +56,7 @@ class ServerSettings(BaseSettings):
     """Seconds to hold connections open (65 is > AWS lb idle timeout)."""
     PORT: int = 8000
     """Server port."""
-    RELOAD: bool | None = None
+    RELOAD: bool | None = True
     """Turn on hot reloading."""
     RELOAD_DIRS: str = f"{BASE_DIR}"
     """Directories to watch for reloading."""

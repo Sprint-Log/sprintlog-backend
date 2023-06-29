@@ -7,7 +7,7 @@ from uuid import UUID
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.dto.factory import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
@@ -85,17 +85,16 @@ class Backlog(orm.TimestampedDatabaseModel):
     sprint_number: Mapped[int]
     priority: Mapped[PriorityEnum] = m_col(String(length=50), default=PriorityEnum.med, index=True)
     status: Mapped[StatusEnum] = m_col(String(length=50), default=StatusEnum.new, index=True)
-    type: Mapped[ItemType] = m_col(String(length=50), default=ItemType.draft, index=True, server_default="backlog")
+    type: Mapped[ItemType] = m_col(String(length=50), default=ItemType.draft, index=True)
     category: Mapped[TagEnum] = m_col(String(length=50), default=TagEnum.features, index=True)
-    order: Mapped[int] = m_col(default=0, server_default="0")
+    order: Mapped[int] = m_col(default=0)
     est_days: Mapped[float]
-    points: Mapped[int] = m_col(default=0, server_default="0")
+    points: Mapped[int] = m_col(default=0)
     beg_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
-    plugin_meta: Mapped[dict[str, Any]] = m_col(JSONB, default={}, info=dto_field(Mark.READ_ONLY))
-    # Relationships
+    plugin_meta: Mapped[dict[str, Any]] = m_col(JSON, default=dict, info=dto_field(Mark.READ_ONLY))  # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     project_slug: Mapped[str] = m_col(ForeignKey(Project.slug), nullable=True)

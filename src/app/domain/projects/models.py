@@ -6,7 +6,7 @@ from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.dto.factory import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
@@ -31,17 +31,17 @@ class Project(orm.TimestampedDatabaseModel):
     slug: Mapped[str] = m_col(unique=True)
     name: Mapped[str]
     description: Mapped[str]
-    pin: Mapped[bool] = m_col(default=False, server_default="false")
+    pin: Mapped[bool] = m_col(default=False)
     labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
     documents: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
     start_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
-    sprint_weeks: Mapped[int | None] = m_col(default=2, server_default="2")
-    sprint_amount: Mapped[int | None] = m_col(default=3, server_default="3")
-    sprint_checkup_day: Mapped[int | None] = m_col(default=1, server_default="1")
-    repo_urls: Mapped[list[str]] = m_col(ARRAY(String), server_default="[]")
+    sprint_weeks: Mapped[int | None] = m_col(default=2)
+    sprint_amount: Mapped[int | None] = m_col(default=3)
+    sprint_checkup_day: Mapped[int | None] = m_col(default=1)
+    repo_urls: Mapped[list[str]] = m_col(ARRAY(String))
     backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
-    plugin_meta: Mapped[dict[str, Any]] = m_col(JSONB, default={})
+    plugin_meta: Mapped[dict[str, Any]] = m_col(JSON, default=dict, info=dto_field(Mark.READ_ONLY))  # Relationships
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id), nullable=True)
     owner: Mapped["User"] = relationship(
         "User",
@@ -107,5 +107,7 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
         return obj
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"id", "created_at", "updated_at", "backlogs"})]]
+WriteDTO = SQLAlchemyDTO[
+    Annotated[Project, DTOConfig(exclude={"id", "created_at", "updated_at", "backlogs", "plugin_meta", "owner"})]
+]
 ReadDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"backlogs"})]]

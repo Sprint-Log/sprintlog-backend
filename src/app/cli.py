@@ -6,12 +6,13 @@ from typing import Any
 import anyio
 import click
 from click import echo
-from pydantic import EmailStr, SecretStr
+from pydantic import EmailStr
 from rich import get_console
 from rich.prompt import Confirm
 
-from app.domain.accounts.schemas import UserCreate, UserUpdate
+from app.domain.accounts.dtos import UserCreate, UserUpdate
 from app.domain.accounts.services import UserService
+from app.domain.web.vite import run_vite
 from app.lib import db, log, settings, worker
 
 __all__ = [
@@ -122,8 +123,11 @@ def run_all_app(
 
     try:
         logger.info("starting Background worker processes.")
-        worker_process = multiprocessing.Process(target=worker.run_worker)
-        worker_process.start()
+
+        if settings.app.DEV_MODE:
+            logger.info("starting Vite")
+            vite_process = multiprocessing.Process(target=run_vite)
+            vite_process.start()
 
         logger.info("Starting HTTP Server.")
         reload_dirs = settings.server.RELOAD_DIRS if settings.server.RELOAD else None
@@ -222,14 +226,14 @@ def create_user(
         obj_in = UserCreate(
             email=EmailStr(email),
             name=name,
-            password=SecretStr(password),
+            password=password,
             is_superuser=superuser,
         )
 
         async with UserService.new() as users_service:
-            user = await users_service.create(data=obj_in.dict(exclude_unset=True, exclude_none=True))
+            user = await users_service.create(data=obj_in.__dict__)
             await users_service.repository.session.commit()
-            logger.info("User created_at: %s", user.email)
+            logger.info("User created: %s", user.email)
 
     email = email or click.prompt("Email")
     name = name or click.prompt("Full Name", show_default=False)
@@ -247,25 +251,25 @@ def create_user(
     required=False,
     show_default=False,
 )
-def promote_to_superuser(email: EmailStr) -> None:
+def promote_to_superuser(email: str) -> None:
     """Promote to Superuser.
 
     Args:
-        email (EmailStr): _description_
+        email (str): _description_
     """
 
-    async def _promote_to_superuser(email: EmailStr) -> None:
+    async def _promote_to_superuser(email: str) -> None:
         async with UserService.new() as users_service:
             user = await users_service.get_one_or_none(email=email)
             if user:
                 logger.info("Promoting user: %s", user.email)
                 user_in = UserUpdate(
-                    email=EmailStr(user.email),
+                    email=user.email,
                     is_superuser=True,
                 )
                 user = await users_service.update(
                     item_id=user.id,
-                    data=user_in.dict(exclude_unset=True, exclude_none=True),
+                    data=user_in.__dict__,
                 )
                 await users_service.repository.session.commit()
                 logger.info("Upgraded %s to superuser", email)

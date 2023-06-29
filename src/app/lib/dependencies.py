@@ -4,8 +4,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Literal
 
-from litestar.contrib.repository import FilterTypes
-from litestar.contrib.repository.filters import BeforeAfter, CollectionFilter, LimitOffset, OrderBy, SearchFilter
+from litestar.contrib.repository.filters import (
+    BeforeAfter,
+    CollectionFilter,
+    FilterTypes,
+    LimitOffset,
+    OrderBy,
+    SearchFilter,
+)
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
 
@@ -69,9 +75,9 @@ def provide_created_filter(
     Parameters
     ----------
     before : datetime | None
-        Filter for records updated_at before this date/time.
+        Filter for records updated before this date/time.
     after : datetime | None
-        Filter for records updated_at after this date/time.
+        Filter for records updated after this date/time.
     """
     return BeforeAfter("created_at", before, after)
 
@@ -121,16 +127,16 @@ def provide_updated_filter(
     before: DTorNone = Parameter(query="updatedBefore", default=None, required=False),
     after: DTorNone = Parameter(query="updatedAfter", default=None, required=False),
 ) -> BeforeAfter:
-    """Add updated_at filter.
+    """Add updated filter.
 
     Return type consumed by `Repository.filter_on_datetime_field()`.
 
     Parameters
     ----------
     before : datetime | None
-        Filter for records updated_at before this date/time.
+        Filter for records updated before this date/time.
     after : datetime | None
-        Filter for records updated_at after this date/time.
+        Filter for records updated after this date/time.
     """
     return BeforeAfter("updated_at", before, after)
 

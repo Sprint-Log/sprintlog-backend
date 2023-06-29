@@ -10,8 +10,8 @@ import contextlib
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast, overload
 
-from litestar.contrib.repository import FilterTypes
 from litestar.contrib.repository.filters import (
+    FilterTypes,
     LimitOffset,
 )
 from litestar.contrib.sqlalchemy.repository import ModelT, SQLAlchemyAsyncRepository
@@ -42,7 +42,7 @@ FilterTypeT = TypeVar("FilterTypeT", bound=FilterTypes)
 class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
     """Service object that operates on a repository object."""
 
-    __item_id_ = "dma.lib.service.sqlalchemy.SQLAlchemyAsyncRepositoryService"
+    __item_id_ = "app.lib.service.sqlalchemy.SQLAlchemyAsyncRepositoryService"
     repository_type: type[SQLAlchemyAsyncRepository[ModelT]]
     match_fields: list[str] | None = None
 
@@ -70,10 +70,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository instance creation.
 
         Args:
-            data: Representation to be created_at.
+            data: Representation to be created.
 
         Returns:
-            Representation of created_at instance.
+            Representation of created instance.
         """
         data = await self.to_model(data, "create")
         return await self.repository.add(data)
@@ -84,10 +84,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository bulk instance creation.
 
         Args:
-            data: Representations to be created_at.
+            data: Representations to be created.
 
         Returns:
-            Representation of created_at instances.
+            Representation of created instances.
         """
         data = [(await self.to_model(datum, "create")) for datum in data]
         return await self.repository.add_many(data)
@@ -96,8 +96,8 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository update operation.
 
         Args:
-            item_id: Identifier of item to be updated_at.
-            data: Representation to be updated_at.
+            item_id: Identifier of item to be updated.
+            data: Representation to be updated.
 
         Returns:
             Updated representation.
@@ -112,10 +112,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Wrap repository bulk instance update.
 
         Args:
-            data: Representations to be updated_at.
+            data: Representations to be updated.
 
         Returns:
-            Representation of updated_at instances.
+            Representation of updated instances.
         """
         data = [(await self.to_model(datum, "update")) for datum in data]
         return await self.repository.update_many(data)
@@ -128,7 +128,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
             data: Representation for upsert.
 
         Returns:
-            Updated or created_at representation.
+            Updated or created representation.
         """
         data = await self.to_model(data, "upsert")
         self.repository.set_id_attribute_value(item_id, data)
@@ -165,7 +165,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
             **kwargs: Keyword arguments for attribute based filtering.
 
         Returns:
-            Representation of created_at instance.
+            Representation of created instance.
         """
         match_fields = match_fields if match_fields else self.match_fields
         validated_model = await self.to_model(kwargs, "create")
@@ -220,10 +220,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """Parse and Convert input into a model.
 
         Args:
-            data: Representations to be created_at.
+            data: Representations to be created.
             operation: Optional operation flag so that you can provide behavior based on CRUD operation
         Returns:
-            Representation of created_at instances.
+            Representation of created instances.
         """
         if isinstance(data, dict):
             return model_from_dict(model=self.repository.model_type, **data)  # type: ignore[type-var,return-value]
@@ -246,11 +246,46 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         return await self.repository.list_and_count(*filters, **kwargs)
 
     @overload
-    def to_dto(self, dto: type[ModelDTOT], data: ModelT) -> ModelDTOT:
+    def to_dto(self, data: ModelT) -> ModelT:
         ...
 
     @overload
     def to_dto(
+        self, data: Sequence[ModelT], total: int | None = None, *filters: FilterTypes
+    ) -> OffsetPagination[ModelT]:
+        ...
+
+    def to_dto(
+        self, data: ModelT | Sequence[ModelT], total: int | None = None, *filters: FilterTypes
+    ) -> ModelT | OffsetPagination[ModelT]:
+        """Convert the object to a format expected by the DTO handler
+
+        Args:
+            data: The return from one of the service calls.
+            total: the total number of rows in the data
+            *filters: Collection route filters.
+
+        Returns:
+            The list of instances retrieved from the repository.
+        """
+        if not isinstance(data, Sequence | list):
+            return data
+        limit_offset = self.find_filter(LimitOffset, *filters)
+        total = total if total else len(data)
+        limit_offset = limit_offset if limit_offset is not None else LimitOffset(limit=len(data), offset=0)
+        return OffsetPagination(
+            items=list(data),
+            limit=limit_offset.limit,
+            offset=limit_offset.offset,
+            total=total,
+        )
+
+    @overload
+    def to_schema(self, dto: type[ModelDTOT], data: ModelT) -> ModelDTOT:
+        ...
+
+    @overload
+    def to_schema(
         self,
         dto: type[ModelDTOT],
         data: Sequence[ModelT],
@@ -259,7 +294,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
     ) -> OffsetPagination[ModelDTOT]:
         ...
 
-    def to_dto(
+    def to_schema(
         self,
         dto: type[ModelDTOT],
         data: ModelT | Sequence[ModelT],

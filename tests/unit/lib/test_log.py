@@ -22,7 +22,7 @@ from app.domain import urls
 from app.lib import log, settings
 
 try:
-    import re2 as re  # type: ignore
+    import re2 as re  # pyright: ignore
 except ImportError:
     import re
 
