@@ -6,7 +6,6 @@ from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.dto.factory import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, String
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
@@ -41,7 +40,7 @@ class Project(orm.TimestampedDatabaseModel):
     sprint_checkup_day: Mapped[int | None] = m_col(default=1)
     repo_urls: Mapped[list[str]] = m_col(ARRAY(String))
     backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
-    plugin_meta: Mapped[dict[str, Any]] = m_col(JSON, default=dict, info=dto_field(Mark.READ_ONLY))  # Relationships
+    plugin_meta: Mapped[dict] = m_col(default=lambda: dict, info=dto_field(Mark.READ_ONLY))  # Relationships
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id), nullable=True)
     owner: Mapped["User"] = relationship(
         "User",

@@ -1,8 +1,8 @@
-"""squash
+"""initial
 
-Revision ID: 48258a9030ab
+Revision ID: 13b6784a4aa7
 Revises:
-Create Date: 2023-06-29 19:00:07.802834
+Create Date: 2023-06-30 13:04:18.449918
 
 """
 import sqlalchemy as sa
@@ -18,7 +18,7 @@ sa.DateTimeUTC = DateTimeUTC
 sa.ORA_JSONB = ORA_JSONB
 
 # revision identifiers, used by Alembic.
-revision = "48258a9030ab"
+revision = "13b6784a4aa7"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -82,7 +82,13 @@ def upgrade():
         sa.Column("sprint_amount", sa.Integer(), nullable=True),
         sa.Column("sprint_checkup_day", sa.Integer(), nullable=True),
         sa.Column("repo_urls", sa.ARRAY(sa.String()), nullable=False),
-        sa.Column("plugin_meta", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column(
+            "plugin_meta",
+            sa.JSON()
+            .with_variant(sa.ORA_JSONB(), "oracle")
+            .with_variant(postgresql.JSONB(astext_type=sa.Text()), "postgresql"),
+            nullable=False,
+        ),
         sa.Column("owner_id", sa.GUID(length=16), nullable=True),
         sa.Column("id", sa.GUID(length=16), nullable=False),
         sa.Column("_sentinel", sa.Integer(), nullable=True),
@@ -160,7 +166,13 @@ def upgrade():
         sa.Column("end_date", sa.Date(), nullable=False),
         sa.Column("due_date", sa.Date(), nullable=False),
         sa.Column("labels", sa.ARRAY(sa.String()), nullable=True),
-        sa.Column("plugin_meta", postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column(
+            "plugin_meta",
+            sa.JSON()
+            .with_variant(sa.ORA_JSONB(), "oracle")
+            .with_variant(postgresql.JSONB(astext_type=sa.Text()), "postgresql"),
+            nullable=False,
+        ),
         sa.Column("assignee_id", sa.GUID(length=16), nullable=True),
         sa.Column("owner_id", sa.GUID(length=16), nullable=True),
         sa.Column("project_slug", sa.String(), nullable=True),
