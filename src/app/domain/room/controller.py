@@ -9,7 +9,7 @@ from litestar import (
 )
 from litestar.exceptions import NotFoundException
 from litestar.params import Dependency
-from livekit import AccessToken, RoomServiceClient, VideoGrant, models  # type: ignore
+from livekit import AccessToken, RoomServiceClient, VideoGrant, models
 
 from app.domain.accounts.guards import requires_active_user
 from app.domain.accounts.schemas import User

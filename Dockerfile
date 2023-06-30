@@ -1,5 +1,5 @@
 
-FROM python:3.11
+FROM python:3.11-bullseye
 
 # Configure Poetry
 ENV POETRY_VERSION=1.5.1
@@ -19,11 +19,7 @@ WORKDIR /app/workspace
 
 # Install dependencies
 COPY poetry.lock pyproject.toml ./
-
-# Run your app
-COPY . /app/workspace/
+COPY . .
 RUN poetry install
-RUN chown -R 65532:65532 /workspace
-EXPOSE 8000
 ENTRYPOINT ["poetry", "run"]
 VOLUME /app/workspace

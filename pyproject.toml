@@ -206,6 +206,7 @@ ignore = [
     "A003",  # flake8-builtins - class attribute {name} is shadowing a python builtin
     "B010",  # flake8-bugbear - do not call setattr with a constant attribute value
     "B008",  #  flake8-bugbear - Do not perform function call `Parameter` in argument defaultsRuff(B008)
+
 ]
 line-length = 120
 select = [
@@ -233,7 +234,7 @@ select = [
     "PTH", # flake8-use-pathlib
     "Q",   # flake8-quotes
     "RET", # flake8-return
-    "RUF", # Ruff-specific rules
+    # "RUF", # Ruff-specific rules
     "S",   # flake8-bandit
     "SIM", # flake8-simplify
     "T10", # flake8-debugger

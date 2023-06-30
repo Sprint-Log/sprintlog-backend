@@ -1,4 +1,3 @@
-import pkgutil
 import secrets
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
@@ -8,13 +7,12 @@ from uuid import UUID
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.dto.factory import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
-import app.plugins
 from app.domain.accounts.models import User
 from app.domain.projects.models import Project
 from app.lib.db import orm
@@ -87,17 +85,16 @@ class Backlog(orm.TimestampedDatabaseModel):
     sprint_number: Mapped[int]
     priority: Mapped[PriorityEnum] = m_col(String(length=50), default=PriorityEnum.med, index=True)
     status: Mapped[StatusEnum] = m_col(String(length=50), default=StatusEnum.new, index=True)
-    type: Mapped[ItemType] = m_col(String(length=50), default=ItemType.draft, index=True, server_default="backlog")
+    type: Mapped[ItemType] = m_col(String(length=50), default=ItemType.draft, index=True)
     category: Mapped[TagEnum] = m_col(String(length=50), default=TagEnum.features, index=True)
-    order: Mapped[int] = m_col(default=0, server_default="0")
+    order: Mapped[int] = m_col(default=0)
     est_days: Mapped[float]
-    points: Mapped[int] = m_col(default=0, server_default="0")
+    points: Mapped[int] = m_col(default=0)
     beg_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
-    plugin_meta: Mapped[dict[str, Any]] = m_col(JSONB, default={})
-    # Relationships
+    plugin_meta: Mapped[dict[str, Any]] = m_col(JSON, default=dict, info=dto_field(Mark.READ_ONLY))  # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     project_slug: Mapped[str] = m_col(ForeignKey(Project.slug), nullable=True)
@@ -167,21 +164,11 @@ class Repository(SQLAlchemyAsyncSlugRepository[Backlog]):
 
 class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
     repository_type = Repository
-    plugins: list[BacklogPlugin] = []
-
-    def register_plugin(self, plugin: BacklogPlugin) -> None:
-        self.plugins.append(plugin)
+    plugins: set[BacklogPlugin] = set()
 
     def __init__(self, **repo_kwargs: Any) -> None:
         self.repository: Repository = self.repository_type(**repo_kwargs)
         self.model_type = self.repository.model_type
-
-        for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-            module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
-            for obj_name in dir(module):
-                obj = getattr(module, obj_name)
-                if isinstance(obj, type) and issubclass(obj, BacklogPlugin) and obj is not BacklogPlugin:
-                    self.register_plugin(obj())
 
         super().__init__(**repo_kwargs)
 
@@ -199,11 +186,11 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
         for plugin in self.plugins:
             data = await plugin.before_create(data=data)
 
-        obj: Backlog = await super().create(data)
-
-        # Call the after_create hook for each registered plugin
+        obj = await super().create(data)
+        # Call the after_create hook for each
         for plugin in self.plugins:
-            await plugin.after_create(data=obj)
+            after = await plugin.after_create(data=obj)
+            obj = await super().update(obj.id, after)
 
         return obj
 
@@ -225,7 +212,7 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
         for plugin in self.plugins:
             await plugin.before_delete(item_id=item_id)
 
-        obj: Backlog = await super().delete(item_id)
+        obj: Backlog = await self.repository.delete(item_id)
 
         # Call the after_delete hook for each registered plugin
         for plugin in self.plugins:

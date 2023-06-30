@@ -15,6 +15,7 @@ from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 
 from app.domain.accounts.guards import requires_active_user
+from app.domain.accounts.models import User
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -47,8 +48,10 @@ class ApiController(Controller):
         return await service.list(*filters)
 
     @post()
-    async def create(self, data: Model, service: "Service") -> Model:
+    async def create(self, data: Model, current_user: User, service: "Service") -> Model:
         """Create an `Model`."""
+
+        data.owner_id = current_user.id
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
@@ -57,8 +60,9 @@ class ApiController(Controller):
         return await service.get(row_id)
 
     @put(DETAIL_ROUTE)
-    async def update(self, data: Model, service: "Service", row_id: "UUID") -> Model:
+    async def update(self, data: Model, current_user: User, service: "Service", row_id: "UUID") -> Model:
         """Update an Model."""
+        data.owner_id = current_user.id
         return await service.update(row_id, data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)

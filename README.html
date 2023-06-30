@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>
       Sprintlog&colon; &quot;Streamline&comma; Collaborate&comma; and Automate
-      Your Team&apos;s Success&comma; In Realtime&excl;&quot;
+      Your Team&apos;s Success&comma; Live&excl;&quot;
     </title>
     <style>
       /* From extension vscode.github */
@@ -2096,10 +2096,10 @@ hue-6-2: #e6c07b
   </head>
   <body class="vscode-body vscode-dark">
     <h1
-      id="sprintlog-streamline-collaborate-and-automate-your-teams-success-in-realtime"
+      id="sprintlog-streamline-collaborate-and-automate-your-teams-success-live"
     >
       Sprintlog: &quot;Streamline, Collaborate, and Automate Your Team's
-      Success, In Realtime!&quot;
+      Success, Live!&quot;
     </h1>
     <h2 id="project-description"><strong>Project Description:</strong></h2>
     <p>
@@ -2272,9 +2272,7 @@ hue-6-2: #e6c07b
         >
       </li>
     </ul>
-    <h2 id="preliminary-requirements-tutorials-for-development-contribution">
-      Preliminary requirements tutorials for development contribution
-    </h2>
+    <p>Preliminary requirements tutorials for development contribution:</p>
     <p>Backend:</p>
     <ul>
       <li>
@@ -2473,66 +2471,6 @@ KEY: 5c5f2230767976c332b6f933b63b483a35148b2218e2cdfd0da992d859feae19
       To deploy migration to the database, execute:
       <code>poetry run app manage upgrade-database</code>
     </p>
-    <h3 id="starting-the-server">Starting the server</h3>
-    <h4 id="starting-the-server-in-debug-mode-development-mode">
-      Starting the server in <code>DEBUG</code> mode (development mode)
-    </h4>
-    <p>
-      if <code>DEBUG</code> is set to true, the base template expects that Vite
-      will be running. You'll need to open 2 terminal shells at the moment to
-      get the environment running.
-    </p>
-    <p>in terminal one, run:</p>
-    <pre><code class="language-bash">❯ npm run dev
-&gt; vite
-
-Forced re-optimization of dependencies
-
-  VITE v4.1.2  ready <span class="hljs-keyword">in</span> 537 ms
-
-  ➜  Local:   http://127.0.0.1:3000/static/
-  ➜  Network: use --host to expose
-  ➜  press h to show <span class="hljs-built_in">help</span>
-</code></pre>
-    <p>in the second terminal, run:</p>
-    <pre><code class="language-bash">❯ poetry run app run server --reload
-2023-02-19 22:51:46 [info     ] starting application.
-2023-02-19 22:51:46 [info     ] starting Background worker processes.
-2023-02-19 22:51:46 [info     ] Starting HTTP Server.
-</code></pre>
-    <h4 id="start-the-server-in-production-mode">
-      start the server in production mode
-    </h4>
-    <p>
-      if DEBUG is false, the server will look for the static assets that are
-      produced from the <code>npm run build</code> command. Please be sure to
-      have run this before starting th server.
-    </p>
-    <pre><code class="language-bash">npm run build <span class="hljs-comment"># generates static assets from vite and</span>
-<span class="hljs-comment"># files from the above command can be found in `src/app/domain/web/public`.</span>
-poetry run app run server
-</code></pre>
-    <p>Sample output:</p>
-    <pre><code class="language-bash">❯ npm run build
-
-&gt; litestar-fullstack@0.0.0 build
-&gt; vue-tsc &amp;&amp; vite build
-
-vite v4.1.2 building <span class="hljs-keyword">for</span> production...
-✓ 15 modules transformed.
-Generated an empty chunk: <span class="hljs-string">&quot;vue&quot;</span>.
-../public/assets/vue-5532db34.svg    0.50 kB
-../public/manifest.json              0.57 kB
-../public/assets/main-b75adab1.css   1.30 kB │ gzip:  0.67 kB
-../public/assets/vue-4ed993c7.js     0.00 kB │ gzip:  0.02 kB
-../public/assets/main-17f9b70b.js    1.50 kB │ gzip:  0.80 kB
-../public/assets/@vue-5be96905.js   52.40 kB │ gzip: 21.07 kB
-❯ poetry run app run server
-2023-02-19 22:53:08 [info     ] starting application.
-2023-02-19 22:53:08 [info     ] starting Background worker processes.
-2023-02-19 22:53:08 [info     ] Starting HTTP Server.
-^C2023-02-19 22:53:09 [info     ] ⏏️  Shutdown complete
-</code></pre>
     <h2 id="make-commands">Make Commands</h2>
     <ul>
       <li><code>make migrations</code></li>

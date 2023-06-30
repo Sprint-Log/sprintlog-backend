@@ -56,7 +56,7 @@ class ServerSettings(BaseSettings):
     """Seconds to hold connections open (65 is > AWS lb idle timeout)."""
     PORT: int = 8000
     """Server port."""
-    RELOAD: bool | None = None
+    RELOAD: bool | None = True
     """Turn on hot reloading."""
     RELOAD_DIRS: str = f"{BASE_DIR}"
     """Directories to watch for reloading."""
@@ -71,12 +71,16 @@ class ServerSettings(BaseSettings):
     ZULIP_API_URL: str = ""
     """Zulip Send Message API URL. for zulip server"""
     ZULIP_SEND_MESSAGE_URL: str = ""
+    """Zulip Create Stream API URL. for zulip server"""
+    ZULIP_CREATE_STREAM_URL: str = ""
+    """Zulip Update Message API URL. for zulip server"""
+    ZULIP_UPDATE_MESSAGE_URL: str = ""
     """Zulip Bot Email Address. for zulip server"""
     ZULIP_EMAIL_ADDRESS: str = ""
     """Zulip Bot API key. for zulip server"""
     ZULIP_API_KEY: str = ""
-    """Zulip Stream name. for zulip server"""
-    ZULIP_STREAM_NAME: str = ""
+    """Zulip admins. for zulip server"""
+    ZULIP_ADMIN_EMAIL: list[str]
 
 
 class AppSettings(BaseSettings):
@@ -361,6 +365,10 @@ class DatabaseSettings(BaseSettings):
     POOL_PRE_PING: bool = True
     CONNECT_ARGS: dict[str, Any] = {}
     URL: PostgresDsn = parse_obj_as(
+        PostgresDsn,
+        "postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",
+    )
+    EXT_URL: PostgresDsn = parse_obj_as(
         PostgresDsn,
         "postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",
     )
