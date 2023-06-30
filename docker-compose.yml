@@ -123,7 +123,7 @@ services:
     ports:
       - 8866:5000
     volumes:
-      - ./src/web:/data
+      - ./static:/data
     command: /data -A --enable-cors  --render-index
 volumes:
   db-data: {}
