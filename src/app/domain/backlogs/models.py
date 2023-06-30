@@ -7,7 +7,6 @@ from uuid import UUID
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.dto.factory import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
@@ -94,7 +93,7 @@ class Backlog(orm.TimestampedDatabaseModel):
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
-    plugin_meta: Mapped[dict[str, Any]] = m_col(JSON, default=dict, info=dto_field(Mark.READ_ONLY))  # Relationships
+    plugin_meta: Mapped[dict] = m_col(default=lambda: dict, info=dto_field(Mark.READ_ONLY))  # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     project_slug: Mapped[str] = m_col(ForeignKey(Project.slug), nullable=True)
