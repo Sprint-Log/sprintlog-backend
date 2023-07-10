@@ -104,11 +104,11 @@ class ZulipBacklogPlugin(BacklogPlugin):
             msg_id = data.plugin_meta.get("msg_id")
             if msg_id:
                 response: dict[str, Any] | None = await update_message(msg_id=msg_id, content=content)
-            if response:
-                if response.get("result") != "success":
-                    log_info(str(response))
-                else:
-                    log_info(f"successfully sent message to zulip {response}")
+                if response:
+                    if response.get("result") != "success":
+                        log_info(str(response))
+                    else:
+                        log_info(f"successfully sent message to zulip {response}")
         except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
             log_info(f"failed to update message: {e!s}")
         return data
