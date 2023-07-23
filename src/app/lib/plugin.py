@@ -3,27 +3,27 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 if TYPE_CHECKING:
-    from app.domain.backlogs.models import Backlog
     from app.domain.projects.models import Project
+    from app.domain.sprintlogs.models import SprintLog
 
-__all__ = ["BacklogPlugin", "ProjectPlugin"]
+__all__ = ["SprintlogPlugin", "ProjectPlugin"]
 
 
-class BacklogPlugin(ABC):
+class SprintlogPlugin(ABC):
     @abstractmethod
-    async def before_create(self, data: "Backlog | dict[str, Any]") -> "Backlog | dict[str, Any]":
+    async def before_create(self, data: "SprintLog | dict[str, Any]") -> "SprintLog | dict[str, Any]":
         return data
 
     @abstractmethod
-    async def after_create(self, data: "Backlog") -> "Backlog":
+    async def after_create(self, data: "SprintLog") -> "SprintLog":
         return data
 
     @abstractmethod
-    async def before_update(self, item_id: str, data: "Backlog | dict[str, Any]") -> "Backlog | dict[str, Any]":
+    async def before_update(self, item_id: str, data: "SprintLog | dict[str, Any]") -> "SprintLog | dict[str, Any]":
         return data
 
     @abstractmethod
-    async def after_update(self, data: "Backlog") -> "Backlog":
+    async def after_update(self, data: "SprintLog") -> "SprintLog":
         return data
 
     @abstractmethod
@@ -31,7 +31,7 @@ class BacklogPlugin(ABC):
         return item_id
 
     @abstractmethod
-    async def after_delete(self, data: "Backlog") -> "Backlog":
+    async def after_delete(self, data: "SprintLog") -> "SprintLog":
         return data
 
 

@@ -5,12 +5,12 @@ from uuid import UUID
 
 import httpx
 
-from app.domain.backlogs.models import Backlog
 from app.domain.projects.models import Project
-from app.lib.plugin import BacklogPlugin, ProjectPlugin
+from app.domain.sprintlogs.models import SprintLog
+from app.lib.plugin import ProjectPlugin, SprintlogPlugin
 from app.lib.settings import server
 
-__all__ = ["ZulipBacklogPlugin"]
+__all__ = ["ZulipSprintlogPlugin"]
 logger = logging.getLogger(__name__)
 backlog_topic: str = "📑 [BACKLOG] "
 
@@ -19,19 +19,19 @@ def log_info(message: str) -> None:
     return logger.info(message)
 
 
-async def send_msg(backlog_data: "Backlog | dict[str, Any]") -> Any:
+async def send_msg(sprintlog_data: "SprintLog | dict[str, Any]") -> Any:
     log_info("sending message to zulip")
     url = f"{server.ZULIP_API_URL}{server.ZULIP_SEND_MESSAGE_URL}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     log_info(url)
     content: str
     stream_name: str
-    if isinstance(backlog_data, Backlog):
-        content = f"{backlog_data.status} {backlog_data.priority} {backlog_data.progress} **[{backlog_data.slug}]** {backlog_data.title}  **:time::{backlog_data.due_date.strftime('%d-%m-%Y')}** @**{backlog_data.assignee_name}** {backlog_data.category}"
-        stream_name = f"📌PRJ/{backlog_data.project_name}"
-    elif isinstance(backlog_data, dict):
-        content = f"{backlog_data['status']} {backlog_data['priority']} {backlog_data['progress']} **[{backlog_data['slug']}]** {backlog_data['title']}  **:time::{backlog_data['due_date'].strftime('%d-%m-%Y')}** @**{backlog_data['assignee_name']}** {backlog_data['category']}"
-        stream_name = f"📌PRJ/{backlog_data['project_name']}"
+    if isinstance(sprintlog_data, SprintLog):
+        content = f"{sprintlog_data.status} {sprintlog_data.priority} {sprintlog_data.progress} **[{sprintlog_data.slug}]** {sprintlog_data.title}  **:time::{sprintlog_data.due_date.strftime('%d-%m-%Y')}** @**{sprintlog_data.assignee_name}** {sprintlog_data.category}"
+        stream_name = f"📌PRJ/{sprintlog_data.project_name}"
+    elif isinstance(sprintlog_data, dict):
+        content = f"{sprintlog_data['status']} {sprintlog_data['priority']} {sprintlog_data['progress']} **[{sprintlog_data['slug']}]** {sprintlog_data['title']}  **:time::{sprintlog_data['due_date'].strftime('%d-%m-%Y')}** @**{sprintlog_data['assignee_name']}** {sprintlog_data['category']}"
+        stream_name = f"📌PRJ/{sprintlog_data['project_name']}"
     log_info(content)
     data = {
         "type": "stream",
@@ -66,20 +66,20 @@ async def update_message(msg_id: int, content: str) -> dict[str, Any]:
         raise httpx.HTTPError(f"{response.status_code}, {response.text}")
 
 
-class ZulipBacklogPlugin(BacklogPlugin):
+class ZulipSprintlogPlugin(SprintlogPlugin):
     def __init__(self, zulip_bot: str = "pipo") -> None:
         self.zulip_bot: str = zulip_bot
         return
 
-    async def before_create(self, data: "Backlog | dict[str, Any]") -> "Backlog | dict[str, Any]":
+    async def before_create(self, data: "SprintLog | dict[str, Any]") -> "SprintLog | dict[str, Any]":
         log_info(self.zulip_bot)
-        if isinstance(data, Backlog):
+        if isinstance(data, SprintLog):
             data.plugin_meta = {"zulip_bot": self.zulip_bot}
         elif isinstance(data, dict):
             data["plugin_meta"] = {"zulip_bot": self.zulip_bot}
         return data
 
-    async def after_create(self, data: "Backlog") -> "Backlog":
+    async def after_create(self, data: "SprintLog") -> "SprintLog":
         log_info(self.zulip_bot)
         try:
             response = await send_msg(data)
@@ -93,10 +93,10 @@ class ZulipBacklogPlugin(BacklogPlugin):
             log_info(f"failed to send message to zulip: {e!s}")
         return data
 
-    async def before_update(self, item_id: str, data: "Backlog | dict[str, Any]") -> "Backlog | dict[str, Any]":
+    async def before_update(self, item_id: str, data: "SprintLog | dict[str, Any]") -> "SprintLog | dict[str, Any]":
         return await super().before_update(item_id, data)
 
-    async def after_update(self, data: "Backlog") -> "Backlog":
+    async def after_update(self, data: "SprintLog") -> "SprintLog":
         log_info(self.zulip_bot)
         data = await super().after_update(data)
         content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
@@ -118,7 +118,7 @@ class ZulipBacklogPlugin(BacklogPlugin):
 
         return item_id
 
-    async def after_delete(self, data: "Backlog") -> "Backlog":
+    async def after_delete(self, data: "SprintLog") -> "SprintLog":
         log_info(self.zulip_bot)
 
         return data

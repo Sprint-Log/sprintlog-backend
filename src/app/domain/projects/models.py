@@ -1,5 +1,5 @@
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import Annotated, Any
 from uuid import UUID
 
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
@@ -13,9 +13,6 @@ from app.domain.accounts.models import User
 from app.lib.db import orm
 from app.lib.plugin import ProjectPlugin
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
-
-if TYPE_CHECKING:
-    from app.domain.backlogs.models import Backlog
 
 __all__ = [
     "Project",
@@ -39,7 +36,6 @@ class Project(orm.TimestampedDatabaseModel):
     sprint_amount: Mapped[int | None] = m_col(default=3)
     sprint_checkup_day: Mapped[int | None] = m_col(default=1)
     repo_urls: Mapped[list[str]] = m_col(ARRAY(String))
-    backlogs: Mapped[list["Backlog"]] = relationship("Backlog", back_populates="project", lazy="noload")
     plugin_meta: Mapped[dict] = m_col(default=lambda: dict, info=dto_field(Mark.READ_ONLY))  # Relationships
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id), nullable=True)
     owner: Mapped["User"] = relationship(
@@ -107,6 +103,6 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
 
 
 WriteDTO = SQLAlchemyDTO[
-    Annotated[Project, DTOConfig(exclude={"id", "created_at", "updated_at", "backlogs", "plugin_meta", "owner"})]
+    Annotated[Project, DTOConfig(exclude={"id", "created_at", "updated_at", "sprintlogs", "plugin_meta", "owner"})]
 ]
-ReadDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"backlogs"})]]
+ReadDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"sprintlogs"})]]

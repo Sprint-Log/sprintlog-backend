@@ -21,7 +21,21 @@ from app.lib import settings, worker
 from app.lib.service.generic import Service
 from app.lib.worker.controllers import WorkerController
 
-from . import accounts, analytics, backlogs, openapi, plugins, projects, room, security, system, tags, teams, urls, web
+from . import (
+    accounts,
+    analytics,
+    openapi,
+    plugins,
+    projects,
+    room,
+    security,
+    sprintlogs,
+    system,
+    tags,
+    teams,
+    urls,
+    web,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -32,7 +46,7 @@ if TYPE_CHECKING:
 
 routes: list[ControllerRouterHandler] = [
     projects.controllers.ApiController,
-    backlogs.controllers.ApiController,
+    sprintlogs.controllers.ApiController,
     accounts.controllers.AccessController,
     accounts.controllers.AccountController,
     teams.controllers.TeamController,
@@ -62,7 +76,7 @@ __all__ = [
     "openapi",
     "analytics",
     "plugins",
-    "backlogs",
+    "sprintlogs",
     "projects",
     "signature_namespace",
 ]
