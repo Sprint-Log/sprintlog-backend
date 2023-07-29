@@ -51,8 +51,7 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
             return dict(response.json())
         raise httpx.HTTPError(f"{response.status_code}, {response.text}")
 
-
-async def update_message(msg_id: int, content: str) -> dict[str, Any]:
+async def update_message(topic_name:str, msg_id: int, content: str, propagate_mode: str) -> dict[str, Any]:
     log_info("updating message")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
@@ -60,9 +59,9 @@ async def update_message(msg_id: int, content: str) -> dict[str, Any]:
     log_info(f"content :{content}")
 
     data = {
-        "topic": backlog_topic,
-        "propagate_mode": "change_one",
-        "send_notification_to_old_thread": "true",
+        "topic": topic_name,
+        "propagate_mode": propagate_mode,
+        # "send_notification_to_old_thread": "true",
         "send_notification_to_new_thread": "true",
         "content": content,
     }
@@ -110,65 +109,91 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def before_update(self, item_id: str, data: "SprintLog | dict[str, Any]") -> "SprintLog | dict[str, Any]":
-        return await super().before_update(item_id, data)
+        data = await super().before_update(item_id, data)
+        isTask = data.plugin_meta.get("task")
+        if data.type == "task": 
+            if not isTask:
+                log_info("task type: updating backlog to task before_update")
+                # need to know if it's updating status or changing backlog to task
+                try:
+                    task_msg_id: Any
+                    content: str
+                    stream_name: str
+                    topic_name: str
+                    description: str
+                    if isinstance(data, SprintLog):
+                        description = data.description
+                        content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
+                        stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
+                        topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
+                    elif isinstance(data, dict):
+                        description = data["description"]
+                        content = f"[{data['slug']}] **:time::{data['due_date'].strftime('%d-%m-%Y')}** @**{data['assignee_name']}**"
+                        stream_name = f"📌PRJ/{data['project_name']}" if data.pin else f"PRJ/{data['project_name']}"
+                        topic_name = f"{data['progress']} {data['title']} {data['category']} {data['status']} {data['priority']}"
+                    if description != "":
+                        log_info("backlog description is not empty. send description")
+                        await send_msg(stream_name, topic_name, description)
+                    response = await send_msg(stream_name, topic_name, content)
+                    if response["result"] != "success":
+                        log_info(f"failed to send message to zulip for task {response}")
+                    else:
+                        log_info("successfully sent message to zulip for task")
+                        task_msg_id = {"msg_id": response["id"], "task": True, topic_name: topic_name}
+
+                    # delete item from the backlog
+                    try:
+                        msg_id = data.plugin_meta.get("msg_id")
+                        if msg_id:
+                            response: dict[str, Any] | None = await delete_message(msg_id=msg_id)
+                            if response:
+                                if response.get("result") != "success":
+                                    log_info(f"failed to delete message: {str(response)}")
+                                else:
+                                    log_info(f"successfully deleted message from zulip {response}")
+                    except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+                        log_info(f"failed to send task message: {e!s}")
+
+                    if task_msg_id is not None:
+                        data.plugin_meta = task_msg_id
+
+                except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+                    log_info(f"failed to send message to zulip: {e!s}")
+            else:
+                try:
+                    log_info("task type: updating topic")
+                    msg_id = data.plugin_meta.get("msg_id")
+                    # content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
+                    content: str = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
+                    topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
+                    if msg_id:
+                        response: dict[str, Any] | None = await update_message(topic_name=topic_name, msg_id=msg_id, content=content, propagate_mode="change_all")
+                        if response:
+                            if response.get("result") != "success":
+                                log_info(f"failed to update message to zulip {str(response)}")
+                            else:
+                                log_info(f"successfully update message to zulip {response}")
+                                task_msg_id = {"msg_id": msg_id, "task": True, topic_name: topic_name}
+
+                    if task_msg_id is not None:
+                        data.plugin_meta = task_msg_id
+
+                except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+                    log_info(f"failed to update message: {e!s}")
+        return data
 
     async def after_update(self, data: "SprintLog") -> "SprintLog":
         log_info(self.zulip_bot)
         data = await super().after_update(data)
-        if data.type == "task":
-            log_info("task type; updating backlog to task")
-            # need to know if it's updating status or changing backlog to task
+        log_info(f"metadata project {data.plugin_meta}")
+        isTask = data.plugin_meta.get("task")
+        if data.type != "task" or not isTask:
             try:
-                task_msg_id: Any
-                content: str
-                stream_name: str
-                topic_name: str
-                description: str
-                if isinstance(data, SprintLog):
-                    description = data.description
-                    content = f"**:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
-                    stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-                    topic_name = f"{data.status} {data.priority} {data.progress} [{data.slug}] {data.title} {data.category}"
-                elif isinstance(data, dict):
-                    description = data["description"]
-                    content = f"**:time::{data['due_date'].strftime('%d-%m-%Y')}** @**{data['assignee_name']}**"
-                    stream_name = f"📌PRJ/{data['project_name']}" if data.pin else f"PRJ/{data['project_name']}"
-                    topic_name = f"{data['status']} {data['priority']} {data['progress']} [{data['slug']}] {data['title']} {data['category']}"
-                if description != "":
-                    log_info("backlog description is not empty. send description")
-                    await send_msg(stream_name, topic_name, description)
-                response = await send_msg(stream_name, topic_name, content)
-                if response["result"] != "success":
-                    log_info(f"failed to send message to zulip for task {response}")
-                else:
-                    log_info("successfully sent message to zulip for task")
-                    task_msg_id = {"msg_id": response["id"]}
-
-                # delete item from the backlog
-                try:
-                    msg_id = data.plugin_meta.get("msg_id")
-                    if msg_id:
-                        response: dict[str, Any] | None = await delete_message(msg_id=msg_id)
-                        if response:
-                            if response.get("result") != "success":
-                                log_info(f"failed to delete message: {str(response)}")
-                            else:
-                                log_info(f"successfully deleted message from zulip {response}")
-                except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
-                    log_info(f"failed to send task message: {e!s}")
-
-                if task_msg_id is not None:
-                    data.plugin_meta = task_msg_id
-
-            except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
-                log_info(f"failed to send message to zulip: {e!s}")
-        else:
-            try:
-                log_info("backlog type; updating message")
+                log_info("backlog type: updating message")
                 msg_id = data.plugin_meta.get("msg_id")
                 content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
                 if msg_id:
-                    response: dict[str, Any] | None = await update_message(msg_id=msg_id, content=content)
+                    response: dict[str, Any] | None = await update_message(topic_name=backlog_topic, msg_id=msg_id, content=content, propagate_mode="change_one")
                     if response:
                         if response.get("result") != "success":
                             log_info(f"failed to update message to zulip {str(response)}")
