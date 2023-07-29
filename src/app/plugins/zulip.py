@@ -126,14 +126,14 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 description: str
                 if isinstance(data, SprintLog):
                     description = data.description
-                    content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
+                    content = f"**:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
                     stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-                    topic_name = data.title
+                    topic_name = f"{data.status} {data.priority} {data.progress} [{data.slug}] {data.title} {data.category}"
                 elif isinstance(data, dict):
                     description = data["description"]
-                    content = f"{data['status']} {data['priority']} {data['progress']} **[{data['slug']}]** {data['title']}  **:time::{data['due_date'].strftime('%d-%m-%Y')}** @**{data['assignee_name']}** {data['category']}"
+                    content = f"**:time::{data['due_date'].strftime('%d-%m-%Y')}** @**{data['assignee_name']}**"
                     stream_name = f"📌PRJ/{data['project_name']}" if data.pin else f"PRJ/{data['project_name']}"
-                    topic_name = "This is testing"
+                    topic_name = f"{data['status']} {data['priority']} {data['progress']} [{data['slug']}] {data['title']} {data['category']}"
                 if description != "":
                     log_info("backlog description is not empty. send description")
                     await send_msg(stream_name, topic_name, description)
