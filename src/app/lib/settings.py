@@ -75,6 +75,8 @@ class ServerSettings(BaseSettings):
     ZULIP_CREATE_STREAM_URL: str = ""
     """Zulip Update Message API URL. for zulip server"""
     ZULIP_UPDATE_MESSAGE_URL: str = ""
+    """Zulip Delete Message API URL. for zulip server"""
+    ZULIP_DELETE_MESSAGE_URL: str = ""
     """Zulip Bot Email Address. for zulip server"""
     ZULIP_EMAIL_ADDRESS: str = ""
     """Zulip Bot API key. for zulip server"""

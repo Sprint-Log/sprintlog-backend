@@ -114,6 +114,7 @@ class SprintLog(orm.TimestampedDatabaseModel):
     )
     audits: Mapped[list["Audit"]] = relationship("Audit", lazy="noload", info=dto_field(Mark.READ_ONLY))
     project_name: AssociationProxy[str] = association_proxy("project", "name", info=dto_field(Mark.READ_ONLY))
+    pin: AssociationProxy[bool] = association_proxy("project", "pin", info=dto_field(Mark.READ_ONLY))
     assignee_name: AssociationProxy[str] = association_proxy("assignee", "name", info=dto_field(Mark.READ_ONLY))
     owner_name: AssociationProxy[str] = association_proxy("owner", "name", info=dto_field(Mark.READ_ONLY))
 
