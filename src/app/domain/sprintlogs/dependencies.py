@@ -18,8 +18,10 @@ __all__ = ["provides_service"]
 
 logger = log.get_logger()
 
+
 def log_info(message: str) -> None:
-    return logger.info(message)
+    logger.info(message)
+
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
