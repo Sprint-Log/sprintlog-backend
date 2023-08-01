@@ -409,6 +409,18 @@ class RedisSettings(BaseSettings):
     """Length of time to wait (in seconds) between keepalive commands."""
 
 
+class PluginSettings(BaseSettings):
+    """Server configurations."""
+
+    class Config:
+        case_sensitive = True
+        env_file = ".env"
+        env_prefix = "PLUGIN_"
+
+    """Disable or enable zulip plugin"""
+    PLUGINS: list[str]
+
+
 @lru_cache
 def load_settings() -> (
     tuple[
@@ -421,6 +433,7 @@ def load_settings() -> (
         LogSettings,
         HTTPClientSettings,
         WorkerSettings,
+        PluginSettings,
     ]
 ):
     """Load Settings file.
@@ -465,6 +478,7 @@ def load_settings() -> (
         log: LogSettings = LogSettings.parse_obj({})
         worker: WorkerSettings = WorkerSettings.parse_obj({})
         http_client: HTTPClientSettings = HTTPClientSettings.parse_obj({})
+        plugin: PluginSettings = PluginSettings.parse_obj({})
 
     except ValidationError as e:
         print("Could not load settings. %s", e)  # noqa: T201
@@ -479,6 +493,7 @@ def load_settings() -> (
         log,
         http_client,
         worker,
+        plugin,
     )
 
 
@@ -492,4 +507,5 @@ def load_settings() -> (
     log,
     http_client,
     worker,
+    plugin,
 ) = load_settings()
