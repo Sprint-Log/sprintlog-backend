@@ -1,0 +1,130 @@
+version: "3.9"
+services:
+  cache:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    hostname: cache
+    command: redis-server --appendonly yes
+    volumes:
+      - cache-data:/data
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    hostname: db
+    environment:
+      POSTGRES_PASSWORD: "app"
+      POSTGRES_USER: "app"
+      POSTGRES_DB: "app"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - app
+      interval: 2s
+      timeout: 3s
+      retries: 40
+  sprintlog:
+    build:
+      context: .
+      dockerfile: Dockerfile.bullseye
+    # restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app/workspace/
+    env_file:
+      - .env
+    command: poetry run litestar run-all --reload
+  pgweb:
+    image: sosedoff/pgweb:latest
+    environment:
+      PGWEB_DATABASE_URL: postgres://app:app@db:5432/app?sslmode=disable
+    ports:
+      - 8081:8081
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-vz", "127.0.0.1", "8081"]
+      interval: 5s
+  migrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.bullseye
+      no_cache: true
+    restart: "no"
+    command: poetry run litestar database upgrade-database
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      # migration-gen:
+      #   condition: service_completed_successfully
+    volumes:
+      - .:/app/workspace/
+
+  revision:
+    build:
+      context: .
+      dockerfile: Dockerfile.bullseye
+    restart: "no"
+    command: poetry run alembic -c src/app/lib/db/alembic.ini revision --autogenerate
+    profiles:
+      - "rev"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    volumes:
+      - .:/app/workspace/
+
+  localmail:
+    image: mailhog/mailhog:v1.0.0
+    ports:
+      - "8025:8025"
+  localcdn:
+    image: sigoden/dufs
+    ports:
+      - 8866:5000
+    volumes:
+      - ./static:/data
+    command: /data -A --enable-cors  --render-index
+volumes:
+  db-data: {}
+  cache-data: {}

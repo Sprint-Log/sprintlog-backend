@@ -15,12 +15,12 @@ from sqlalchemy.orm import mapped_column as m_col
 from app.domain.accounts.models import User
 from app.domain.projects.models import Project
 from app.lib.db import orm
-from app.lib.plugin import BacklogPlugin
+from app.lib.plugin import SprintlogPlugin
 from app.lib.repository import SQLAlchemyAsyncSlugRepository
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
 
 __all__ = [
-    "Backlog",
+    "SprintLog",
     "ReadDTO",
     "Repository",
     "Service",
@@ -76,7 +76,7 @@ class ItemType(StrEnum):
     self = "self"
 
 
-class Backlog(orm.TimestampedDatabaseModel):
+class SprintLog(orm.TimestampedDatabaseModel):
     title: Mapped[str] = m_col(String(length=200), index=True)
     description: Mapped[str | None]
     slug: Mapped[str] = m_col(String(length=50), unique=True, index=True, info=dto_field(Mark.READ_ONLY))
@@ -97,25 +97,24 @@ class Backlog(orm.TimestampedDatabaseModel):
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     project_slug: Mapped[str] = m_col(ForeignKey(Project.slug), nullable=True)
-    project: Mapped["Project"] = relationship(
-        "Project", uselist=False, back_populates="backlogs", lazy="selectin", info=dto_field(Mark.READ_ONLY)
-    )
+    project: Mapped["Project"] = relationship("Project", uselist=False, lazy="selectin", info=dto_field(Mark.READ_ONLY))
     assignee: Mapped["User"] = relationship(
         "User",
         uselist=False,
-        foreign_keys="Backlog.assignee_id",
+        foreign_keys=assignee_id,
         lazy="joined",
         info=dto_field(Mark.PRIVATE),
     )
     owner: Mapped["User"] = relationship(
         "User",
         uselist=False,
-        foreign_keys="Backlog.owner_id",
+        foreign_keys=owner_id,
         lazy="joined",
         info=dto_field(Mark.PRIVATE),
     )
-    audits: Mapped[list["BacklogAudit"]] = relationship("BacklogAudit", lazy="noload", info=dto_field(Mark.READ_ONLY))
+    audits: Mapped[list["Audit"]] = relationship("Audit", lazy="noload", info=dto_field(Mark.READ_ONLY))
     project_name: AssociationProxy[str] = association_proxy("project", "name", info=dto_field(Mark.READ_ONLY))
+    pin: AssociationProxy[bool] = association_proxy("project", "pin", info=dto_field(Mark.READ_ONLY))
     assignee_name: AssociationProxy[str] = association_proxy("assignee", "name", info=dto_field(Mark.READ_ONLY))
     owner_name: AssociationProxy[str] = association_proxy("owner", "name", info=dto_field(Mark.READ_ONLY))
 
@@ -129,41 +128,41 @@ class Backlog(orm.TimestampedDatabaseModel):
         return cast("SQLColumnExpression[String | None]", cls.project_slug + "_" + cls.type)
 
 
-Backlog.registry.update_type_annotation_map(
+SprintLog.registry.update_type_annotation_map(
     {TagEnum: String, PriorityEnum: String, ProgressEnum: String, ItemType: String}
 )
 
 
-class BacklogAudit(orm.TimestampedDatabaseModel):
-    backlog_id: Mapped[UUID] = m_col(ForeignKey(Backlog.id))
+class Audit(orm.TimestampedDatabaseModel):
+    backlog_id: Mapped[UUID] = m_col(ForeignKey(SprintLog.id))
     field_name: Mapped[str]
     old_value: Mapped[str]
     new_value: Mapped[str]
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"id", "created_at", "updated_at"})]]
-ReadDTO = SQLAlchemyDTO[Annotated[Backlog, DTOConfig(exclude={"project", "audits"})]]
+WriteDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={"id", "created_at", "updated_at"})]]
+ReadDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={"project", "audits"})]]
 
 
-class Repository(SQLAlchemyAsyncSlugRepository[Backlog]):
-    model_type = Backlog
+class Repository(SQLAlchemyAsyncSlugRepository[SprintLog]):
+    model_type = SprintLog
 
-    async def get_available_backlog_slug(self, backlog: Backlog) -> str | None:
-        project_slug: str | None = backlog.project_slug
-        if not backlog.slug:
+    async def get_available_sprintlog_slug(self, sprintlog: SprintLog) -> str | None:
+        project_slug: str | None = sprintlog.project_slug
+        if not sprintlog.slug:
             token = secrets.token_hex(2)
-            slug = f"{project_slug}-S{backlog.sprint_number}-{token}"
+            slug = f"{project_slug}-S{sprintlog.sprint_number}-{token}"
             if await self._is_slug_unique(slug):
                 return slug
-        return backlog.slug
+        return sprintlog.slug
 
     async def _get_due_date(self, beg_date: date, est_days: float = 3.0) -> date:
         return beg_date + timedelta(days=est_days)
 
 
-class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
+class Service(SQLAlchemyAsyncRepositoryService[SprintLog]):
     repository_type = Repository
-    plugins: set[BacklogPlugin] = set()
+    plugins: set[SprintlogPlugin] = set()
 
     def __init__(self, **repo_kwargs: Any) -> None:
         self.repository: Repository = self.repository_type(**repo_kwargs)
@@ -171,16 +170,16 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
 
         super().__init__(**repo_kwargs)
 
-    async def to_model(self, data: Backlog | dict[str, Any], operation: str | None = None) -> Backlog:
-        if isinstance(data, Backlog):
-            slug = await self.repository.get_available_backlog_slug(backlog=data)
+    async def to_model(self, data: SprintLog | dict[str, Any], operation: str | None = None) -> SprintLog:
+        if isinstance(data, SprintLog):
+            slug = await self.repository.get_available_sprintlog_slug(sprintlog=data)
             if isinstance(slug, str):
                 data.slug = slug
             data.due_date = await self.repository._get_due_date(data.beg_date, data.est_days)
 
         return await super().to_model(data, operation)
 
-    async def create(self, data: Backlog | dict[str, Any]) -> Backlog:
+    async def create(self, data: SprintLog | dict[str, Any]) -> SprintLog:
         # Call the before_create hook for each registered plugin
         for plugin in self.plugins:
             data = await plugin.before_create(data=data)
@@ -193,12 +192,12 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
 
         return obj
 
-    async def update(self, item_id: Any, data: Backlog | dict[str, Any]) -> Backlog:
+    async def update(self, item_id: Any, data: SprintLog | dict[str, Any]) -> SprintLog:
         # Call the before_update hook for each registered plugin
         for plugin in self.plugins:
             data = await plugin.before_update(item_id=item_id, data=data)
 
-        obj: Backlog = await super().update(item_id, data)
+        obj: SprintLog = await super().update(item_id, data)
 
         # Call the after_update hook for each registered plugin
         for plugin in self.plugins:
@@ -206,12 +205,12 @@ class Service(SQLAlchemyAsyncRepositoryService[Backlog]):
 
         return obj
 
-    async def delete(self, item_id: Any) -> Backlog:
+    async def delete(self, item_id: Any) -> SprintLog:
         # Call the before_delete hook for each registered plugin
         for plugin in self.plugins:
             await plugin.before_delete(item_id=item_id)
 
-        obj: Backlog = await self.repository.delete(item_id)
+        obj: SprintLog = await self.repository.delete(item_id)
 
         # Call the after_delete hook for each registered plugin
         for plugin in self.plugins:
