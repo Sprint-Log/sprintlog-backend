@@ -44,7 +44,7 @@ worker = "app.cli:worker_management_app"
 aiosql = "*"
 asyncpg = "*"
 greenlet = {version = ">=2.0.2", platform = "darwin"}
-litestar = {version = "*", extras = ["jwt", 'cli', 'redis', 'jinja', 'sqlalchemy', 'structlog', 'pydantic']}
+litestar = {version = "2.0.0rc1", extras = ["jwt", 'cli', 'redis', 'jinja', 'sqlalchemy', 'structlog', 'pydantic']}
 passlib = {version = "*", extras = ["argon2"]}
 pydantic-settings = "*"
 python = ">=3.11,<3.12"

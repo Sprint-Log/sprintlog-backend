@@ -117,7 +117,7 @@ class AppSettings(BaseSettings):
     """
     NAME: str = "app"
     """Application name."""
-    SECRET_KEY: str
+    SECRET_KEY: str | None = None
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
     JWT_ENCRYPTION_ALGORITHM: str = "HS256"
     BACKEND_CORS_ORIGINS: list[str] = ["*"]
