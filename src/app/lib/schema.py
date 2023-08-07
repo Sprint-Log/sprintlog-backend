@@ -21,7 +21,7 @@ class BaseModel(_BaseModel):
 class CamelizedBaseModel(BaseModel):
     """Camelized Base pydantic schema."""
 
-    class Config:
+    class Config:  # type: ignore[pydantic-alias]
         """Camel Case config."""
 
         allow_population_by_field_name = True

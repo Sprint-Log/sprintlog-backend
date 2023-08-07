@@ -1,50 +1,51 @@
 from __future__ import annotations
 
-import binascii
+import importlib
 import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Final, Literal
 
+from dotenv import load_dotenv
 from litestar.data_extractors import RequestExtractorField, ResponseExtractorField  # noqa: TCH002
-from pydantic import AnyUrl, BaseSettings, PostgresDsn, SecretBytes, ValidationError, parse_obj_as, validator
+from pydantic import ValidationError, field_validator
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+)
 
 from app import utils
 
 __all__ = [
     "DatabaseSettings",
-    "APISettings",
     "AppSettings",
     "OpenAPISettings",
     "RedisSettings",
     "LogSettings",
     "WorkerSettings",
-    "HTTPClientSettings",
     "ServerSettings",
     "app",
-    "api",
     "db",
     "openapi",
     "redis",
     "server",
     "log",
     "worker",
-    "http_client",
 ]
 
 DEFAULT_MODULE_NAME = "app"
 BASE_DIR: Final = utils.module_to_os_path(DEFAULT_MODULE_NAME)
 STATIC_DIR = Path(BASE_DIR / "domain" / "web" / "public")
 TEMPLATES_DIR = Path(BASE_DIR / "domain" / "web" / "templates")
+version = importlib.metadata.version(DEFAULT_MODULE_NAME)
 
 
 class ServerSettings(BaseSettings):
     """Server configurations."""
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_prefix = "SERVER_"
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", env_prefix="SERVER_", case_sensitive=False
+    )
 
     APP_LOC: str = "app.asgi:create_app"
     """Path to app executable, or factory."""
@@ -86,23 +87,19 @@ class ServerSettings(BaseSettings):
 
 
 class AppSettings(BaseSettings):
-    """Generic application settings.
+    """Generic application settings.`
 
     These settings are returned as json by the healthcheck endpoint, so
     do not include any sensitive values here, or if you do ensure to
-    exclude them from serialization in the `Config` object.
+    exclude them from serialization in the `model_config` object.
     """
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", env_prefix="APP_", case_sensitive=False
+    )
 
     BUILD_NUMBER: str = ""
     """Identifier for CI build."""
-    CHECK_DB_READY: bool = True
-    """Check for database readiness on startup."""
-    CHECK_REDIS_READY: bool = True
-    """Check for redis readiness on startup."""
     DEBUG: bool = False
     """Run `Litestar` with `debug=True`."""
     ENVIRONMENT: str = "prod"
@@ -120,7 +117,7 @@ class AppSettings(BaseSettings):
     """
     NAME: str = "app"
     """Application name."""
-    SECRET_KEY: SecretBytes
+    SECRET_KEY: str
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
     JWT_ENCRYPTION_ALGORITHM: str = "HS256"
     BACKEND_CORS_ORIGINS: list[str] = ["*"]
@@ -140,7 +137,7 @@ class AppSettings(BaseSettings):
         """
         return utils.slugify(self.NAME)
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    @field_validator("BACKEND_CORS_ORIGINS")
     def assemble_cors_origins(
         cls,
         value: str | list[str],
@@ -154,44 +151,21 @@ class AppSettings(BaseSettings):
             return list(value)
         raise ValueError(value)
 
-    @validator("SECRET_KEY", pre=True, always=True)
+    @field_validator("SECRET_KEY")
     def generate_secret_key(
         cls,
-        value: SecretBytes | None,
-    ) -> SecretBytes:
+        value: str | None,
+    ) -> str:
         """Generate a secret key."""
         if value is None:
-            return SecretBytes(binascii.hexlify(os.urandom(32)))
+            return os.urandom(32).decode()
         return value
-
-
-class APISettings(BaseSettings):
-    """API specific configuration."""
-
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_prefix = "API_"
-
-    CACHE_EXPIRATION: int = 60
-    """Default cache key expiration in seconds."""
-    DB_SESSION_DEPENDENCY_KEY: str = "db_session"
-    """Parameter name for SQLAlchemy session dependency injection."""
-    DEFAULT_PAGINATION_LIMIT: int = 100
-    """Max records received for collection routes."""
-    DTO_INFO_KEY: str = "dto"
-    """Key used for DTO field config in SQLAlchemy info dict."""
-    HEALTH_PATH: str = "/health"
-    """Route that the health check is served under."""
 
 
 class LogSettings(BaseSettings):
     """Logging config for the application."""
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_prefix = "LOG_"
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="LOG_")
 
     # https://stackoverflow.com/a/1845097/6560549
     EXCLUDE_PATHS: str = r"\A(?!x)x"
@@ -261,10 +235,9 @@ class LogSettings(BaseSettings):
 class OpenAPISettings(BaseSettings):
     """Configures OpenAPI for the application."""
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_prefix = "OPENAPI_"
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", env_prefix="OPENAPI_", case_sensitive=False
+    )
 
     CONTACT_NAME: str = "Hexcode Technologies"
     """Name of contact on document."""
@@ -272,7 +245,7 @@ class OpenAPISettings(BaseSettings):
     """Email for contact on document."""
     TITLE: str | None = "Sprintlog"
     """Document title."""
-    VERSION: str = "v1.0"
+    VERSION: str = f"v{version}"
     """Document version."""
     LOCAL_CDN: str | None
 
@@ -294,10 +267,9 @@ class HTTPClientSettings(BaseSettings):
 class WorkerSettings(BaseSettings):
     """Global SAQ Job configuration."""
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_prefix = "WORKER_"
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", env_prefix="WORKER_", case_sensitive=False
+    )
 
     JOB_TIMEOUT: int = 10
     """Max time a job can run for, in seconds.
@@ -343,10 +315,9 @@ class WorkerSettings(BaseSettings):
 class DatabaseSettings(BaseSettings):
     """Configures the database for the application."""
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_prefix = "DB_"
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", env_prefix="DB_", case_sensitive=False
+    )
 
     ECHO: bool = False
     """Enable SQLAlchemy engine logs."""
@@ -364,22 +335,16 @@ class DatabaseSettings(BaseSettings):
     POOL_TIMEOUT: int = 30
     """See [`timeout`][sqlalchemy.pool.QueuePool]."""
     POOL_RECYCLE: int = 300
-    POOL_PRE_PING: bool = True
+    POOL_PRE_PING: bool = False
     CONNECT_ARGS: dict[str, Any] = {}
-    URL: PostgresDsn = parse_obj_as(
-        PostgresDsn,
-        "postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",
-    )
-    EXT_URL: PostgresDsn = parse_obj_as(
-        PostgresDsn,
-        "postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",
-    )
+    URL: str = ("postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",)
+    EXT_URL: str = ("postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",)
 
     ENGINE: str | None = None
     USER: str | None = None
     PASSWORD: str | None = None
     HOST: str | None = None
-    PORT: str | None = None
+    PORT: int | None = None
     NAME: str | None = None
     MIGRATION_CONFIG: str = f"{BASE_DIR}/lib/db/alembic.ini"
     MIGRATION_PATH: str = f"{BASE_DIR}/lib/db/migrations"
@@ -389,12 +354,9 @@ class DatabaseSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     """Redis settings for the application."""
 
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_prefix = "REDIS_"
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="REDIS_")
 
-    URL: AnyUrl = parse_obj_as(AnyUrl, "redis://localhost:6379/0")
+    URL: str = "redis://localhost:6379/0"
     """A Redis connection URL."""
     DB: int | None = None
     """Redis DB ID (optional)"""
@@ -425,13 +387,11 @@ class PluginSettings(BaseSettings):
 def load_settings() -> (
     tuple[
         AppSettings,
-        APISettings,
         RedisSettings,
         DatabaseSettings,
         OpenAPISettings,
         ServerSettings,
         LogSettings,
-        HTTPClientSettings,
         WorkerSettings,
         PluginSettings,
     ]
@@ -465,19 +425,21 @@ def load_settings() -> (
     Returns:
         Settings: application settings
     """
+    env_file = Path(f"{os.curdir}/.env")
+    if env_file.is_file():
+        load_dotenv(env_file)
     try:
         """Override Application reload dir."""
         server: ServerSettings = ServerSettings.parse_obj(
             {"HOST": "0.0.0.0", "RELOAD_DIRS": str(BASE_DIR)},  # noqa: S104
         )
         app: AppSettings = AppSettings.parse_obj({})
-        api: APISettings = APISettings.parse_obj({})
         redis: RedisSettings = RedisSettings.parse_obj({})
         db: DatabaseSettings = DatabaseSettings.parse_obj({})
         openapi: OpenAPISettings = OpenAPISettings.parse_obj({})
         log: LogSettings = LogSettings.parse_obj({})
         worker: WorkerSettings = WorkerSettings.parse_obj({})
-        http_client: HTTPClientSettings = HTTPClientSettings.parse_obj({})
+        HTTPClientSettings.parse_obj({})
         plugin: PluginSettings = PluginSettings.parse_obj({})
 
     except ValidationError as e:
@@ -485,13 +447,11 @@ def load_settings() -> (
         raise e from e
     return (
         app,
-        api,
         redis,
         db,
         openapi,
         server,
         log,
-        http_client,
         worker,
         plugin,
     )
@@ -499,13 +459,11 @@ def load_settings() -> (
 
 (
     app,
-    api,
     redis,
     db,
     openapi,
     server,
     log,
-    http_client,
     worker,
     plugin,
 ) = load_settings()

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from litestar.contrib.repository.filters import FilterTypes
-    from litestar.dto.factory import DTOData
+    from litestar.dto import DTOData
     from litestar.pagination import OffsetPagination
 
     from app.domain.accounts.models import User
@@ -86,8 +86,7 @@ class AccountController(Controller):
         data: DTOData[UserCreate],
     ) -> User:
         """Create a new user."""
-        obj = data.create_instance()
-        db_obj = await users_service.create(obj.__dict__)
+        db_obj = await users_service.create(data.as_builtins())
         return users_service.to_dto(db_obj)
 
     @patch(
@@ -106,8 +105,7 @@ class AccountController(Controller):
         ),
     ) -> User:
         """Create a new user."""
-        obj = data.create_instance()
-        db_obj = await users_service.update(user_id, obj.__dict__)
+        db_obj = await users_service.update(user_id, data.as_builtins())
         return users_service.to_dto(db_obj)
 
     @delete(

@@ -15,8 +15,9 @@ from litestar.contrib.repository.filters import (
     LimitOffset,
 )
 from litestar.contrib.sqlalchemy.repository import ModelT, SQLAlchemyAsyncRepository
+from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
-from pydantic import parse_obj_as
+from pydantic.type_adapter import TypeAdapter
 
 from app.lib.db import async_session_factory
 from app.lib.db.orm import model_from_dict
@@ -33,8 +34,8 @@ if TYPE_CHECKING:
 __all__ = ["SQLAlchemyAsyncRepositoryService"]
 
 SQLAlchemyAsyncRepoServiceT = TypeVar("SQLAlchemyAsyncRepoServiceT", bound="SQLAlchemyAsyncRepositoryService")
-ModelDictT: TypeAlias = dict[str, Any] | ModelT
-ModelDictListT: TypeAlias = list[ModelT | dict[str, Any]] | list[dict[str, Any]]
+ModelDictDTOT: TypeAlias = dict[str, Any] | ModelT | DTOData
+ModelDictListDTOT: TypeAlias = list[ModelT | dict[str, Any]] | list[dict[str, Any]] | DTOData
 ModelDTOT = TypeVar("ModelDTOT", bound="BaseModel")
 FilterTypeT = TypeVar("FilterTypeT", bound=FilterTypes)
 
@@ -313,12 +314,12 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
             The list of instances retrieved from the repository.
         """
         if not isinstance(data, Sequence | list):
-            return parse_obj_as(dto, data)
+            return TypeAdapter(dto).validate_python(data)
         limit_offset = self.find_filter(LimitOffset, *filters)
         total = total if total else len(data)
         limit_offset = limit_offset if limit_offset is not None else LimitOffset(limit=len(data), offset=0)
         return OffsetPagination[dto](  # type: ignore[valid-type]
-            items=parse_obj_as(list[dto], data),  # type: ignore[valid-type]
+            items=TypeAdapter(list[dto]).validate_python(data),  # type: ignore[valid-type]
             limit=limit_offset.limit,
             offset=limit_offset.offset,
             total=total,
