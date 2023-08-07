@@ -184,6 +184,11 @@ class Service(SQLAlchemyAsyncRepositoryService[SprintLog]):
         for plugin in self.plugins:
             data = await plugin.before_create(data=data)
 
+        if len(self.plugins) == 0:
+            if isinstance(data, dict):
+                data["plugin_meta"] = {}
+            elif isinstance(data, SprintLog):
+                data.plugin_meta = {}
         obj = await super().create(data)
         # Call the after_create hook for each
         for plugin in self.plugins:

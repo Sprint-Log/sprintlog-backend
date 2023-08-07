@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
 from app.domain.accounts.models import User
+from app.lib import log
 from app.lib.db import orm
 from app.lib.plugin import ProjectPlugin
 from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
@@ -21,6 +22,12 @@ __all__ = [
     "Service",
     "WriteDTO",
 ]
+
+logger = log.get_logger()
+
+
+def log_info(message: str) -> None:
+    logger.info(message)
 
 
 class Project(orm.TimestampedDatabaseModel):
@@ -67,6 +74,12 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
         # Call the before_create hook for each registered plugin
         for plugin in self.plugins:
             data = await plugin.before_create(data=data)
+
+        if len(self.plugins) == 0:
+            if isinstance(data, dict):
+                data["plugin_meta"] = {}
+            elif isinstance(data, Project):
+                data.plugin_meta = {}
         obj: Project = await super().create(data)
 
         # Call the after_create hook for each registered plugin

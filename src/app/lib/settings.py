@@ -408,6 +408,7 @@ class RedisSettings(BaseSettings):
     SOCKET_KEEPALIVE: int = 5
     """Length of time to wait (in seconds) between keepalive commands."""
 
+
 class PluginSettings(BaseSettings):
     """Server configurations."""
 
@@ -417,7 +418,8 @@ class PluginSettings(BaseSettings):
         env_prefix = "PLUGIN_"
 
     """Disable or enable zulip plugin"""
-    DISABLE_ZULIP: bool = False
+    PLUGINS: list[str]
+
 
 @lru_cache
 def load_settings() -> (

@@ -32,8 +32,7 @@ if TYPE_CHECKING:
 async def provides_service(db_session: AsyncSession) -> AsyncGenerator[Service, None]:
     plugins = []
     for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-        log_info(f"name in sprintlog :{name}")
-        if plugin.DISABLE_ZULIP and name == "zulip":
+        if "zulip" not in plugin.PLUGINS and name == "zulip":
             log_info("skipped zulip plugin in sprintlog")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
