@@ -49,6 +49,7 @@ services:
       timeout: 3s
       retries: 40
   sprintlog:
+    tty: true
     build:
       context: .
       dockerfile: Dockerfile.bullseye

@@ -32650,7 +32650,7 @@
           function me(e) {
             return (t) => {
               let { dispatch: n, getState: r } = t;
-              return (t) => (n) => "function" == typeof n ? n(e()) : t(n);
+              return (t) => (n) => ("function" == typeof n ? n(e()) : t(n));
             };
           }
           function ge(e) {

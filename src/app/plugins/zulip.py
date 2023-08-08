@@ -1,12 +1,14 @@
 import json
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 import httpx
 
-from app.domain.projects.models import Project
-from app.domain.sprintlogs.models import SprintLog
+if TYPE_CHECKING:
+    from app.domain.projects.models import Project
+    from app.domain.sprintlogs.models import SprintLog
+
 from app.lib.plugin import ProjectPlugin, SprintlogPlugin
 from app.lib.settings import server
 
@@ -15,11 +17,25 @@ logger = logging.getLogger(__name__)
 backlog_topic: str = "📑 [BACKLOG] "
 
 
+def get_value(data: "SprintLog", key: str) -> Any:
+    if isinstance(data, dict):
+        return data.get(key)
+
+    return getattr(data, key)
+
+
+def set_value(data: "SprintLog", key: str, value: Any) -> None:
+    if isinstance(data, dict):
+        data[key] = value
+    else:
+        setattr(data, key, value)
+
+
 def log_info(message: str) -> None:
     return logger.info(message)
 
 
-async def send_msg(stream_name: str, topic_name: str, content: str) -> Any:
+async def send_msg(stream_name: str, topic_name: str, content: str | None = "") -> Any:
     log_info("sending message to zulip")
     log_info(f"stream name: {stream_name}")
     log_info(f"topic name: {topic_name}")
@@ -51,7 +67,8 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
             return dict(response.json())
         raise httpx.HTTPError(f"{response.status_code}, {response.text}")
 
-async def update_message(topic_name:str, msg_id: int, content: str, propagate_mode: str) -> dict[str, Any]:
+
+async def update_message(topic_name: str, msg_id: int, content: str, propagate_mode: str) -> dict[str, Any]:
     log_info("updating message")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
@@ -61,7 +78,6 @@ async def update_message(topic_name:str, msg_id: int, content: str, propagate_mo
     data = {
         "topic": topic_name,
         "propagate_mode": propagate_mode,
-        # "send_notification_to_old_thread": "true",
         "send_notification_to_new_thread": "true",
         "content": content,
     }
@@ -78,12 +94,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         self.zulip_bot: str = zulip_bot
         return
 
-    async def before_create(self, data: "SprintLog | dict[str, Any]") -> "SprintLog | dict[str, Any]":
+    async def before_create(self, data: "SprintLog") -> "SprintLog":
         log_info(self.zulip_bot)
-        if isinstance(data, SprintLog):
-            data.plugin_meta = {"zulip_bot": self.zulip_bot}
-        elif isinstance(data, dict):
-            data["plugin_meta"] = {"zulip_bot": self.zulip_bot}
+        data.plugin_meta = {"zulip_bot": self.zulip_bot}
         return data
 
     async def after_create(self, data: "SprintLog") -> "SprintLog":
@@ -91,12 +104,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         try:
             content: str
             stream_name: str
-            if isinstance(data, SprintLog):
-                content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
-                stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-            elif isinstance(data, dict):
-                content = f"{data['status']} {data['priority']} {data['progress']} **[{data['slug']}]** {data['title']}  **:time::{data['due_date'].strftime('%d-%m-%Y')}** @**{data['assignee_name']}** {data['category']}"
-                stream_name = f"📌PRJ/{data['project_name']}" if data.pin else f"PRJ/{data['project_name']}"
+            content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
+            stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
+
             response = await send_msg(stream_name, backlog_topic, content)
             if response["result"] != "success":
                 log_info(f"failed to send message, response: {response}")
@@ -108,11 +118,12 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
             log_info(f"failed to send message to zulip: {e!s}")
         return data
 
-    async def before_update(self, item_id: str, data: "SprintLog | dict[str, Any]") -> "SprintLog | dict[str, Any]":
+    async def before_update(self, item_id: str, data: "SprintLog") -> "SprintLog":  # noqa: C901
         data = await super().before_update(item_id, data)
-        isTask = data.plugin_meta.get("task")
-        if data.type == "task": 
-            if not isTask:
+        is_task = data.plugin_meta.get("task")
+
+        if data.type == "task":
+            if not is_task:
                 log_info("task type: updating backlog to task before_update")
                 # need to know if it's updating status or changing backlog to task
                 try:
@@ -120,26 +131,19 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     content: str
                     stream_name: str
                     topic_name: str
-                    description: str
-                    if isinstance(data, SprintLog):
-                        description = data.description
-                        content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
-                        stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-                        topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
-                    elif isinstance(data, dict):
-                        description = data["description"]
-                        content = f"[{data['slug']}] **:time::{data['due_date'].strftime('%d-%m-%Y')}** @**{data['assignee_name']}**"
-                        stream_name = f"📌PRJ/{data['project_name']}" if data.pin else f"PRJ/{data['project_name']}"
-                        topic_name = f"{data['progress']} {data['title']} {data['category']} {data['status']} {data['priority']}"
+                    description = data.description
+                    content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
+                    stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
+                    topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
                     if description != "":
                         log_info("backlog description is not empty. send description")
                         await send_msg(stream_name, topic_name, description)
-                    response = await send_msg(stream_name, topic_name, content)
-                    if response["result"] != "success":
-                        log_info(f"failed to send message to zulip for task {response}")
+                    msg_response = await send_msg(stream_name, topic_name, content)
+                    if msg_response["result"] != "success":
+                        log_info(f"failed to send message to zulip for task {msg_response}")
                     else:
                         log_info("successfully sent message to zulip for task")
-                        task_msg_id = {"msg_id": response["id"], "task": True, topic_name: topic_name}
+                        task_msg_id = {"msg_id": msg_response["id"], "task": True, topic_name: topic_name}
 
                     # delete item from the backlog
                     try:
@@ -163,16 +167,19 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 try:
                     log_info("task type: updating topic")
                     msg_id = data.plugin_meta.get("msg_id")
-                    # content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
-                    content: str = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
+                    update_content: str = (
+                        f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
+                    )
                     topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
                     if msg_id:
-                        response: dict[str, Any] | None = await update_message(topic_name=topic_name, msg_id=msg_id, content=content, propagate_mode="change_all")
-                        if response:
-                            if response.get("result") != "success":
-                                log_info(f"failed to update message to zulip {str(response)}")
+                        update_response: dict[str, Any] | None = await update_message(
+                            topic_name=topic_name, msg_id=msg_id, content=update_content, propagate_mode="change_all"
+                        )
+                        if update_response:
+                            if update_response.get("result") != "success":
+                                log_info(f"failed to update message to zulip {str(update_response)}")
                             else:
-                                log_info(f"successfully update message to zulip {response}")
+                                log_info(f"successfully update message to zulip {update_response}")
                                 task_msg_id = {"msg_id": msg_id, "task": True, topic_name: topic_name}
 
                     if task_msg_id is not None:
@@ -186,14 +193,16 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         log_info(self.zulip_bot)
         data = await super().after_update(data)
         log_info(f"metadata project {data.plugin_meta}")
-        isTask = data.plugin_meta.get("task")
-        if data.type != "task" or not isTask:
+        is_task = data.plugin_meta.get("task")
+        if data.type != "task" or not is_task:
             try:
                 log_info("backlog type: updating message")
                 msg_id = data.plugin_meta.get("msg_id")
                 content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
                 if msg_id:
-                    response: dict[str, Any] | None = await update_message(topic_name=backlog_topic, msg_id=msg_id, content=content, propagate_mode="change_one")
+                    response: dict[str, Any] | None = await update_message(
+                        topic_name=backlog_topic, msg_id=msg_id, content=content, propagate_mode="change_one"
+                    )
                     if response:
                         if response.get("result") != "success":
                             log_info(f"failed to update message to zulip {str(response)}")
@@ -244,13 +253,9 @@ class ZulipProjectPlugin(ProjectPlugin):
         self.zulip_bot: str = zulip_bot
         return
 
-    async def before_create(self, data: "Project | dict[str, Any]") -> "Project | dict[str, Any]":
+    async def before_create(self, data: "Project") -> "Project":
         log_info(self.zulip_bot)
-        if isinstance(data, Project):
-            data.plugin_meta = {"zulip_bot": self.zulip_bot}
-        elif isinstance(data, dict):
-            data["plugin_meta"] = {"zulip_bot": self.zulip_bot}
-            data["plugin_meta"] = {"zulip_object": self.zulip_bot}
+        data.plugin_meta = {"zulip_bot": self.zulip_bot}
         return data
 
     async def after_create(self, data: "Project") -> "Project":
@@ -271,7 +276,7 @@ class ZulipProjectPlugin(ProjectPlugin):
             log_info(f"failed to create zulip stream: {e!s}")
         return data
 
-    async def before_update(self, item_id: str, data: "Project | dict[str, Any]") -> "Project | dict[str, Any]":
+    async def before_update(self, item_id: str, data: "Project") -> "Project":
         return await super().before_update(item_id, data)
 
     async def after_update(self, data: "Project") -> "Project":

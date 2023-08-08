@@ -787,13 +787,13 @@ idna = ">=2.0.0"
 
 [[package]]
 name = "faker"
-version = "19.2.0"
+version = "19.3.0"
 description = "Faker is a Python package that generates fake data for you."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Faker-19.2.0-py3-none-any.whl", hash = "sha256:c6c1218482faf79ae1d791bb7124067d12339e0b8f400de855e2c281bcf78c77"},
-    {file = "Faker-19.2.0.tar.gz", hash = "sha256:78840b94843f3aa32a34a220b2b5e8b309e3ffff3a231b0c54e841bb68e0757d"},
+    {file = "Faker-19.3.0-py3-none-any.whl", hash = "sha256:bee54278d6e1289573317604ab6f4782acca724396bf261eaf1890de228e553d"},
+    {file = "Faker-19.3.0.tar.gz", hash = "sha256:7d6ed00de3eef9bd57504500c67ee034cab959e4248f9c24aca33e08af82ca93"},
 ]
 
 [package.dependencies]
@@ -2203,12 +2203,12 @@ pylint = ">=1.7"
 
 [[package]]
 name = "pylint-pydantic"
-version = "0.2.4"
+version = "0.2.3"
 description = "A Pylint plugin to help Pylint understand the Pydantic"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pylint_pydantic-0.2.4-py3-none-any.whl", hash = "sha256:452b32992f47e303b432f8940d4077f1d60e8d3325351b8998d846431699111a"},
+    {file = "pylint_pydantic-0.2.3-py3-none-any.whl", hash = "sha256:da9f477cb9c600fb69cb20267b8b459fa75a51bb931149f46c5fccac2bb12961"},
 ]
 
 [package.dependencies]
@@ -3269,4 +3269,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "ee9c0569c9ad7ed8d97c7fa7d748bef0bb39eca8841ffe80cff7030f9ba9ecc9"
+content-hash = "6d0701e1be9dae799c48041284b41e07d907029c04b93e50757f6789c4844843"

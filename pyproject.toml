@@ -67,7 +67,6 @@ pytest-asyncio = "*"
 pytest-cov = "*"
 pytest-dotenv = "*"
 pytest-mock = "*"
-
 [tool.poetry.group.docs]
 optional = true
 
@@ -87,7 +86,7 @@ blacken-docs = "*"
 mypy = "1.4.1"
 pre-commit = "*"
 pylint = "*"
-pylint-pydantic = "*"
+pylint-pydantic = "0.2.3"
 slotscheck = "*"
 types-click = "*"
 types-passlib = "*"
@@ -283,7 +282,6 @@ exclude = '''(?x)(
 )
 '''
 implicit_reexport = false
-plugins = ['pydantic.mypy']
 show_error_codes = true
 strict = true
 warn_redundant_casts = true
@@ -292,11 +290,6 @@ warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
-[tool.pydantic-mypy]
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true
-warn_untyped_fields = true
 
 [[tool.mypy.overrides]]
 disallow_untyped_decorators = false

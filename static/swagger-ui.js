@@ -12855,7 +12855,7 @@
           function ge(e) {
             return (t) => {
               let { dispatch: n, getState: s } = t;
-              return (t) => (n) => "function" == typeof n ? n(e()) : t(n);
+              return (t) => (n) => ("function" == typeof n ? n(e()) : t(n));
             };
           }
           function fe(e) {

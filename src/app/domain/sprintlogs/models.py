@@ -5,7 +5,7 @@ from typing import Annotated, Any, cast
 from uuid import UUID
 
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
-from litestar.dto.factory import DTOConfig, Mark, dto_field
+from litestar.dto import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -181,34 +181,39 @@ class Service(SQLAlchemyAsyncRepositoryService[SprintLog]):
 
     async def create(self, data: SprintLog | dict[str, Any]) -> SprintLog:
         # Call the before_create hook for each registered plugin
-        for plugin in self.plugins:
-            data = await plugin.before_create(data=data)
+        if isinstance(data, SprintLog):
+            for plugin in self.plugins:
+                data = await plugin.before_create(data=data)
 
-        if len(self.plugins) == 0:
-            if isinstance(data, dict):
-                data["plugin_meta"] = {}
-            elif isinstance(data, SprintLog):
-                data.plugin_meta = {}
-        obj = await super().create(data)
-        # Call the after_create hook for each
-        for plugin in self.plugins:
-            after = await plugin.after_create(data=obj)
-            obj = await super().update(obj.id, after)
+            if len(self.plugins) == 0:
+                if isinstance(data, dict):
+                    data["plugin_meta"] = {}
+                elif isinstance(data, SprintLog):
+                    data.plugin_meta = {}
+            obj = await super().create(data)
+            # Call the after_create hook for each
+            for plugin in self.plugins:
+                after = await plugin.after_create(data=obj)
+                obj = await super().update(obj.id, after)
 
-        return obj
+            return obj
+        return await super().create(data)
 
     async def update(self, item_id: Any, data: SprintLog | dict[str, Any]) -> SprintLog:
-        # Call the before_update hook for each registered plugin
-        for plugin in self.plugins:
-            data = await plugin.before_update(item_id=item_id, data=data)
+        # Call the before_update hook for each registered plugin        if isinstance(data,SprintLog):
 
-        obj: SprintLog = await super().update(item_id, data)
+        if isinstance(data, SprintLog):
+            for plugin in self.plugins:
+                data = await plugin.before_update(item_id=item_id, data=data)
 
-        # Call the after_update hook for each registered plugin
-        for plugin in self.plugins:
-            await plugin.after_update(data=obj)
+            obj: SprintLog = await super().update(item_id, data)
 
-        return obj
+            # Call the after_update hook for each registered plugin
+            for plugin in self.plugins:
+                await plugin.after_update(data=obj)
+
+            return obj
+        return await super().update(item_id, data)
 
     async def delete(self, item_id: Any) -> SprintLog:
         # Call the before_delete hook for each registered plugin

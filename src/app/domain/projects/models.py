@@ -4,7 +4,7 @@ from uuid import UUID
 
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
-from litestar.dto.factory import DTOConfig, Mark, dto_field
+from litestar.dto import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, String
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
@@ -72,34 +72,38 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
 
     async def create(self, data: Project | dict[str, Any]) -> Project:
         # Call the before_create hook for each registered plugin
-        for plugin in self.plugins:
-            data = await plugin.before_create(data=data)
+        if isinstance(data, Project):
+            for plugin in self.plugins:
+                data = await plugin.before_create(data=data)
 
-        if len(self.plugins) == 0:
-            if isinstance(data, dict):
-                data["plugin_meta"] = {}
-            elif isinstance(data, Project):
-                data.plugin_meta = {}
-        obj: Project = await super().create(data)
+            if len(self.plugins) == 0:
+                if isinstance(data, dict):
+                    data["plugin_meta"] = {}
+                elif isinstance(data, Project):
+                    data.plugin_meta = {}
+            obj: Project = await super().create(data)
 
-        # Call the after_create hook for each registered plugin
-        for plugin in self.plugins:
-            await plugin.after_create(data=obj)
+            # Call the after_create hook for each registered plugin
+            for plugin in self.plugins:
+                await plugin.after_create(data=obj)
 
-        return obj
+            return obj
+        return await super().create(data)
 
     async def update(self, item_id: Any, data: Project | dict[str, Any]) -> Project:
         # Call the before_update hook for each registered plugin
-        for plugin in self.plugins:
-            data = await plugin.before_update(item_id=item_id, data=data)
+        if isinstance(data, Project):
+            for plugin in self.plugins:
+                data = await plugin.before_update(item_id=item_id, data=data)
 
-        obj: Project = await super().update(item_id, data)
+            obj: Project = await super().update(item_id, data)
 
-        # Call the after_update hook for each registered plugin
-        for plugin in self.plugins:
-            await plugin.after_update(data=obj)
+            # Call the after_update hook for each registered plugin
+            for plugin in self.plugins:
+                await plugin.after_update(data=obj)
 
-        return obj
+            return obj
+        return await super().update(item_id, data)
 
     async def delete(self, item_id: Any) -> Project:
         # Call the before_delete hook for each registered plugin

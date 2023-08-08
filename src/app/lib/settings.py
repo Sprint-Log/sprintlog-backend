@@ -117,7 +117,7 @@ class AppSettings(BaseSettings):
     """
     NAME: str = "app"
     """Application name."""
-    SECRET_KEY: str | None = None
+    SECRET_KEY: str
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
     JWT_ENCRYPTION_ALGORITHM: str = "HS256"
     BACKEND_CORS_ORIGINS: list[str] = ["*"]
@@ -337,8 +337,8 @@ class DatabaseSettings(BaseSettings):
     POOL_RECYCLE: int = 300
     POOL_PRE_PING: bool = False
     CONNECT_ARGS: dict[str, Any] = {}
-    URL: str = ("postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",)
-    EXT_URL: str = ("postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres",)
+    URL: str = "postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres"
+    EXT_URL: str = "postgresql+asyncpg://postgres:mysecretpassword@localhost:5432/postgres"
 
     ENGINE: str | None = None
     USER: str | None = None
