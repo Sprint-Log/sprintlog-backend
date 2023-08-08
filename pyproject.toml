@@ -249,6 +249,7 @@ classmethod-decorators = [
   "pydantic.validator",
   "pydantic.root_validator",
   "pydantic.field_validator",
+  "pydantic.field_validator",
   "sqlalchemy.ext.declarative.declared_attr",
   "sqlalchemy.orm.declared_attr.directive",
   "sqlalchemy.orm.declared_attr",

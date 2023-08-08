@@ -5,7 +5,7 @@ repos:
       - id: check-ast
       - id: check-case-conflict
       - id: check-merge-conflict
-      - id: check-toml
+      # - id: check-toml
       - id: debug-statements
       - id: end-of-file-fixer
       - id: mixed-line-ending

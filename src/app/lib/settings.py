@@ -245,7 +245,7 @@ class OpenAPISettings(BaseSettings):
     """Email for contact on document."""
     TITLE: str | None = "Sprintlog"
     """Document title."""
-    VERSION: str = f"v{version}"
+    VERSION: str = "v1.0"
     """Document version."""
     LOCAL_CDN: str | None
 
@@ -430,17 +430,17 @@ def load_settings() -> (
         load_dotenv(env_file)
     try:
         """Override Application reload dir."""
-        server: ServerSettings = ServerSettings.parse_obj(
+        server: ServerSettings = ServerSettings.model_validate(
             {"HOST": "0.0.0.0", "RELOAD_DIRS": str(BASE_DIR)},  # noqa: S104
         )
-        app: AppSettings = AppSettings.parse_obj({})
-        redis: RedisSettings = RedisSettings.parse_obj({})
-        db: DatabaseSettings = DatabaseSettings.parse_obj({})
-        openapi: OpenAPISettings = OpenAPISettings.parse_obj({})
-        log: LogSettings = LogSettings.parse_obj({})
-        worker: WorkerSettings = WorkerSettings.parse_obj({})
-        HTTPClientSettings.parse_obj({})
-        plugin: PluginSettings = PluginSettings.parse_obj({})
+        app: AppSettings = AppSettings.model_validate({})
+        redis: RedisSettings = RedisSettings.model_validate({})
+        db: DatabaseSettings = DatabaseSettings.model_validate({})
+        openapi: OpenAPISettings = OpenAPISettings.model_validate({})
+        log: LogSettings = LogSettings.model_validate({})
+        worker: WorkerSettings = WorkerSettings.model_validate({})
+        plugin: PluginSettings = PluginSettings.model_validate({})
+        HTTPClientSettings.model_validate({})
 
     except ValidationError as e:
         print("Could not load settings. %s", e)  # noqa: T201
