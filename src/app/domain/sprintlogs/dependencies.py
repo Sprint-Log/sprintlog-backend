@@ -44,7 +44,9 @@ async def provides_service(db_session: AsyncSession) -> AsyncGenerator[Service, 
                 plugins.append(obj())
     async with Service.new(
         session=db_session,
-        statement=select(SprintLog).order_by(SprintLog.due_date).options(joinedload(SprintLog.project)),
+        statement=select(SprintLog)
+        .order_by(SprintLog.due_date, SprintLog.progress, SprintLog.updated_at)
+        .options(joinedload(SprintLog.project)),
     ) as service:
         service.plugins = set(plugins)
         try:
