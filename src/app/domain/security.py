@@ -72,4 +72,5 @@ auth = OAuth2PasswordBearerAuth[User](
         urls.ACCOUNT_LOGIN,
         urls.ACCOUNT_REGISTER,
     ],
+    exclude_http_methods=["OPTIONS"],
 )

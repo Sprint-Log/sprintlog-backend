@@ -32,9 +32,7 @@ def create_app() -> Litestar:
         settings,
         static_files,
     )
-    from app.lib.dependencies import (
-        create_collection_dependencies,
-    )
+    from app.lib.dependencies import create_collection_dependencies
 
     dependencies = {constants.USER_DEPENDENCY_KEY: Provide(provide_user)}
     dependencies.update(create_collection_dependencies())

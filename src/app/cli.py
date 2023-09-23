@@ -5,14 +5,10 @@ from typing import Any
 
 import anyio
 import click
-from anyio import open_process
-from anyio.streams.text import TextReceiveStream
 from click import echo
-from pydantic import EmailStr
 from rich import get_console
 from rich.prompt import Confirm
 
-from app.domain import plugins
 from app.domain.accounts.dtos import UserCreate, UserUpdate
 from app.domain.accounts.services import UserService
 from app.lib import db, log, settings, worker
@@ -46,7 +42,11 @@ def run_app(_: dict[str, Any]) -> None:
     """Launch Application Components."""
 
 
-@click.group(name="database", invoke_without_command=False, help="Manage the configured database backend.")
+@click.group(
+    name="database",
+    invoke_without_command=False,
+    help="Manage the configured database backend.",
+)
 @click.pass_context
 def database_management_app(_: dict[str, Any]) -> None:
     """Manage the configured database backend."""
@@ -58,14 +58,20 @@ def user_management_app(_: dict[str, Any]) -> None:
     """Manage application users."""
 
 
-@click.group(name="worker", invoke_without_command=False, help="Manage application background workers.")
+@click.group(
+    name="worker",
+    invoke_without_command=False,
+    help="Manage application background workers.",
+)
 @click.pass_context
 def worker_management_app(_: dict[str, Any]) -> None:
     """Manage application users."""
 
 
 @click.group(
-    name="run-all", invoke_without_command=True, help="Starts the application server & worker in a single command."
+    name="run-all",
+    invoke_without_command=True,
+    help="Starts the application server & worker in a single command.",
 )
 @click.option(
     "--host",
@@ -101,7 +107,14 @@ def worker_management_app(_: dict[str, Any]) -> None:
     show_default=True,
 )
 @click.option("-r", "--reload", help="Enable reload", is_flag=True, default=False, type=bool)
-@click.option("-v", "--verbose", help="Enable verbose logging.", is_flag=True, default=False, type=bool)
+@click.option(
+    "-v",
+    "--verbose",
+    help="Enable verbose logging.",
+    is_flag=True,
+    default=False,
+    type=bool,
+)
 @click.option("-d", "--debug", help="Enable debugging.", is_flag=True, default=False, type=bool)
 def run_all_app(
     host: str,
@@ -126,11 +139,6 @@ def run_all_app(
     try:
         logger.info("starting Background worker processes.")
 
-        if settings.app.DEV_MODE:
-            logger.info("starting Vite")
-            vite_process = multiprocessing.Process(target=run_vite)
-            vite_process.start()
-
         logger.info("Starting HTTP Server.")
         reload_dirs = settings.server.RELOAD_DIRS if settings.server.RELOAD else None
         process_args = {
@@ -146,7 +154,8 @@ def run_all_app(
         if reload_dirs:
             process_args.update({"reload-dir": reload_dirs})
         subprocess.run(
-            ["uvicorn", settings.server.APP_LOC, *_convert_uvicorn_args(process_args)], check=True  # noqa: S603, S607
+            ["uvicorn", settings.server.APP_LOC, *_convert_uvicorn_args(process_args)],
+            check=True,
         )
     finally:
         for process in multiprocessing.active_children():
@@ -164,7 +173,14 @@ def run_all_app(
     required=False,
     show_default=True,
 )
-@click.option("-v", "--verbose", help="Enable verbose logging.", is_flag=True, default=False, type=bool)
+@click.option(
+    "-v",
+    "--verbose",
+    help="Enable verbose logging.",
+    is_flag=True,
+    default=False,
+    type=bool,
+)
 @click.option("-d", "--debug", help="Enable debugging.", is_flag=True, default=False, type=bool)
 def run_worker(
     worker_concurrency: int | None,
@@ -226,7 +242,7 @@ def create_user(
         superuser: bool = False,
     ) -> None:
         obj_in = UserCreate(
-            email=EmailStr(email),
+            email=str(email),
             name=name,
             password=password,
             is_superuser=superuser,
@@ -301,7 +317,7 @@ def upgrade_database() -> None:
 
 @database_management_app.command(
     name="reset-database",
-    help="Executes migrations to apply any outstanding database structures.",
+    help="Drops all tables and re-applies the migrations.",
 )
 @click.option(
     "--no-prompt",
@@ -370,21 +386,3 @@ def _convert_uvicorn_args(args: dict[str, Any]) -> list[str]:
             process_args.append(f"--{arg}={value}")
 
     return process_args
-
-
-def run_vite() -> None:
-    """Run Vite in a subprocess."""
-    try:
-        anyio.run(_run_vite, backend="asyncio", backend_options={"use_uvloop": True})
-    except KeyboardInterrupt:
-        logger.info("Stopping typescript development services.")
-    finally:
-        logger.info("Vite Service stopped.")
-
-
-async def _run_vite() -> None:
-    """Run Vite in a subprocess."""
-    log.config.configure()
-    async with await open_process(plugins.vite._config.run_command) as vite_process:
-        async for text in TextReceiveStream(vite_process.stdout):  # type: ignore[arg-type]
-            await logger.ainfo("Vite", message=text.replace("\n", ""))

@@ -9,7 +9,13 @@ from litestar.params import Dependency, Parameter
 
 from app.domain import urls
 from app.domain.accounts.dependencies import provides_user_service
-from app.domain.accounts.dtos import UserCreate, UserCreateDTO, UserDTO, UserUpdate, UserUpdateDTO
+from app.domain.accounts.dtos import (
+    UserCreate,
+    UserCreateDTO,
+    UserDTO,
+    UserUpdate,
+    UserUpdateDTO,
+)
 from app.domain.accounts.guards import requires_superuser
 from app.lib import log
 
@@ -47,7 +53,9 @@ class AccountController(Controller):
         cache=60,
     )
     async def list_users(
-        self, users_service: UserService, filters: list[FilterTypes] = Dependency(skip_validation=True)
+        self,
+        users_service: UserService,
+        filters: list[FilterTypes] = Dependency(skip_validation=True),
     ) -> OffsetPagination[User]:
         """List users."""
         results, total = await users_service.list_and_count(*filters)
@@ -74,7 +82,7 @@ class AccountController(Controller):
     @post(
         operation_id="CreateUser",
         name="users:create",
-        summary="Create a new user.",
+        summary="Create a new MMMMM.",
         cache_control=None,
         description="A user who can login and use the system.",
         path=urls.ACCOUNT_CREATE,

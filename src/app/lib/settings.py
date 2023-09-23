@@ -83,7 +83,7 @@ class ServerSettings(BaseSettings):
     """Zulip Bot API key. for zulip server"""
     ZULIP_API_KEY: str = ""
     """Zulip admins. for zulip server"""
-    ZULIP_ADMIN_EMAIL: list[str]
+    ZULIP_ADMIN_EMAIL: list[str] = ["phyoakl@hexcode.tech"]
 
 
 class AppSettings(BaseSettings):
@@ -117,7 +117,7 @@ class AppSettings(BaseSettings):
     """
     NAME: str = "app"
     """Application name."""
-    SECRET_KEY: str
+    SECRET_KEY: str = "ASDF12344"
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
     JWT_ENCRYPTION_ALGORITHM: str = "HS256"
     BACKEND_CORS_ORIGINS: list[str] = ["*"]

@@ -54,12 +54,12 @@ RUN apt-get install -y --no-install-recommends build-essential curl \
 
 ## -------------------------- install application ----------------------------------- ##
 WORKDIR /workspace/app
-COPY pyproject.toml poetry.lock README.md mkdocs.yml mypy.ini .pre-commit-config.yaml .pylintrc LICENSE Makefile \
+COPY pyproject.toml poetry.lock README.md mkdocs.yml .pre-commit-config.yaml .pylintrc LICENSE Makefile \
     package.json package-lock.json vite.config.ts tsconfig.json \
     ./
 COPY scripts ./scripts/
 RUN python -m venv --copies /workspace/app/.venv \
-    && /workspace/app/.venv/bin/pip install --quiet nodeenv cython  \
+    && /workspace/app/.venv/bin/pip install --quiet cython  \
     && poetry install ${POETRY_INSTALL_ARGS} --no-root --quiet \
     && poetry export ${POETRY_INSTALL_ARGS} --quiet --without-hashes --output=requirements.txt
 COPY src ./src/
@@ -85,7 +85,7 @@ RUN pip install --quiet --disable-pip-version-check --no-deps --requirement=/tmp
 RUN pip install --quiet --disable-pip-version-check --no-deps /tmp/*.whl
 USER nonroot
 STOPSIGNAL SIGINT
-EXPOSE 8000/tcp
+EXPOSE 8000
 ENTRYPOINT ["tini","--" ]
-CMD [ "litestar","run"]
+CMD [ "litestar","run","--host","0.0.0.0"]
 VOLUME /workspace/app

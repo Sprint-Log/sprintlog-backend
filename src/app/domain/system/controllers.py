@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Literal, TypeVar
 
 from litestar import Controller, MediaType, get
 from litestar.response import Response
-from sqlalchemy import text
 
 from app.domain.system.dtos import SystemHealth
 from app.lib import constants, log, worker
@@ -39,7 +38,6 @@ class SystemController(Controller):
     async def check_system_health(self, db_session: AsyncSession) -> Response[SystemHealth]:
         """Check database available and returns app config info."""
         try:
-            await db_session.execute(text("select 1"))
             db_ping = True
         except ConnectionRefusedError:
             db_ping = False

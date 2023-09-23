@@ -34,7 +34,6 @@ from . import (
     tags,
     teams,
     urls,
-    web,
 )
 
 if TYPE_CHECKING:
@@ -56,7 +55,6 @@ routes: list[ControllerRouterHandler] = [
     analytics.controllers.StatsController,
     tags.controllers.TagController,
     system.controllers.SystemController,
-    web.controllers.WebController,
 ]
 
 if settings.worker.WEB_ENABLED:
@@ -68,7 +66,6 @@ __all__ = [
     "system",
     "accounts",
     "teams",
-    "web",
     "urls",
     "tags",
     "security",
