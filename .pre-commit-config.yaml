@@ -46,9 +46,6 @@ repos:
       - id: mypy
         additional_dependencies:
           [
-            pydantic,
-            pydantic-settings,
-            pylint-pydantic,
             jinja2,
             hiredis,
             passlib,

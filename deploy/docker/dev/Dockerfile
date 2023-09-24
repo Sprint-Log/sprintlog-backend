@@ -60,8 +60,11 @@ COPY pyproject.toml poetry.lock README.md mkdocs.yml .pre-commit-config.yaml .py
 COPY scripts ./scripts/
 RUN python -m venv --copies /workspace/app/.venv \
     && /workspace/app/.venv/bin/pip install --quiet cython  \
-    && poetry install ${POETRY_INSTALL_ARGS} --no-root --quiet
+    && poetry install ${POETRY_INSTALL_ARGS} --no-root --quiet\
+    && poetry export ${POETRY_INSTALL_ARGS} --quiet --without-hashes --output=requirements.txt
+
 COPY src ./src/
+RUN poetry build --quiet
 
 ## ---------------------------------------------------------------------------------- ##
 ## -------------------------------- development build ------------------------------- ##

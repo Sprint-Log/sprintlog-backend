@@ -114,13 +114,18 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 log_info(f"successfully sent message to zulip {response['id']}")
                 data.plugin_meta = {"msg_id": response["id"]}
 
-        except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+        except (
+            httpx.ConnectTimeout,
+            httpx.ReadTimeout,
+            httpx.ConnectError,
+            httpx.HTTPError,
+        ) as e:
             log_info(f"failed to send message to zulip: {e!s}")
         return data
 
-    async def before_update(self, item_id: str, data: "SprintLog") -> "SprintLog":  # noqa: C901
+    async def before_update(self, item_id: str, data: "SprintLog") -> "SprintLog":
         data = await super().before_update(item_id, data)
-        is_task = data.plugin_meta.get("task")
+        is_task = data.plugin_meta.get("task") if data.plugin_meta else False
 
         if data.type == "task":
             if not is_task:
@@ -143,7 +148,11 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                         log_info(f"failed to send message to zulip for task {msg_response}")
                     else:
                         log_info("successfully sent message to zulip for task")
-                        task_msg_id = {"msg_id": msg_response["id"], "task": True, topic_name: topic_name}
+                        task_msg_id = {
+                            "msg_id": msg_response["id"],
+                            "task": True,
+                            topic_name: topic_name,
+                        }
 
                     # delete item from the backlog
                     try:
@@ -152,16 +161,26 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                             response: dict[str, Any] | None = await delete_message(msg_id=msg_id)
                             if response:
                                 if response.get("result") != "success":
-                                    log_info(f"failed to delete message: {str(response)}")
+                                    log_info(f"failed to delete message: {response!s}")
                                 else:
                                     log_info(f"successfully deleted message from zulip {response}")
-                    except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+                    except (
+                        httpx.ConnectTimeout,
+                        httpx.ReadTimeout,
+                        httpx.ConnectError,
+                        httpx.HTTPError,
+                    ) as e:
                         log_info(f"failed to send task message: {e!s}")
 
                     if task_msg_id is not None:
                         data.plugin_meta = task_msg_id
 
-                except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+                except (
+                    httpx.ConnectTimeout,
+                    httpx.ReadTimeout,
+                    httpx.ConnectError,
+                    httpx.HTTPError,
+                ) as e:
                     log_info(f"failed to send message to zulip: {e!s}")
             else:
                 try:
@@ -173,19 +192,31 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
                     if msg_id:
                         update_response: dict[str, Any] | None = await update_message(
-                            topic_name=topic_name, msg_id=msg_id, content=update_content, propagate_mode="change_all"
+                            topic_name=topic_name,
+                            msg_id=msg_id,
+                            content=update_content,
+                            propagate_mode="change_all",
                         )
                         if update_response:
                             if update_response.get("result") != "success":
-                                log_info(f"failed to update message to zulip {str(update_response)}")
+                                log_info(f"failed to update message to zulip {update_response!s}")
                             else:
                                 log_info(f"successfully update message to zulip {update_response}")
-                                task_msg_id = {"msg_id": msg_id, "task": True, topic_name: topic_name}
+                                task_msg_id = {
+                                    "msg_id": msg_id,
+                                    "task": True,
+                                    topic_name: topic_name,
+                                }
 
                     if task_msg_id is not None:
                         data.plugin_meta = task_msg_id
 
-                except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+                except (
+                    httpx.ConnectTimeout,
+                    httpx.ReadTimeout,
+                    httpx.ConnectError,
+                    httpx.HTTPError,
+                ) as e:
                     log_info(f"failed to update message: {e!s}")
         return data
 
@@ -201,14 +232,22 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
                 if msg_id:
                     response: dict[str, Any] | None = await update_message(
-                        topic_name=backlog_topic, msg_id=msg_id, content=content, propagate_mode="change_one"
+                        topic_name=backlog_topic,
+                        msg_id=msg_id,
+                        content=content,
+                        propagate_mode="change_one",
                     )
                     if response:
                         if response.get("result") != "success":
-                            log_info(f"failed to update message to zulip {str(response)}")
+                            log_info(f"failed to update message to zulip {response!s}")
                         else:
                             log_info(f"successfully update message to zulip {response}")
-            except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+            except (
+                httpx.ConnectTimeout,
+                httpx.ReadTimeout,
+                httpx.ConnectError,
+                httpx.HTTPError,
+            ) as e:
                 log_info(f"failed to update message: {e!s}")
         return data
 
@@ -272,7 +311,12 @@ class ZulipProjectPlugin(ProjectPlugin):
                 log_info(str(response))
             else:
                 log_info("successfully created zulip stream")
-        except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.ConnectError, httpx.HTTPError) as e:
+        except (
+            httpx.ConnectTimeout,
+            httpx.ReadTimeout,
+            httpx.ConnectError,
+            httpx.HTTPError,
+        ) as e:
             log_info(f"failed to create zulip stream: {e!s}")
         return data
 

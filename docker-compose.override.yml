@@ -14,6 +14,7 @@ x-development-volumes: &development-volumes
 services:
   localmail:
     image: mailhog/mailhog:v1.0.0
+    container_name: localmail
     ports:
       - "8025"
   sprintlog:
@@ -25,12 +26,19 @@ services:
         # remove this to build for production.
         POETRY_INSTALL_ARGS: --with=dev
     image: sprintlog:latest-dev
-    command: bash
+    command: litestar run --reload --host 0.0.0.0 --port 8000
     restart: "no"
     <<: *development-volumes
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    env_file:
+      - .env.example
   migrator:
     image: sprintlog:latest-dev
-    command: ls -lah /workspace/app/.venv/bin
+    command: litestar database upgrade-database
     restart: "no"
     <<: *development-volumes
     env_file:
@@ -40,3 +48,11 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+
+  localcdn:
+    image: sigoden/dufs
+    ports:
+      - 8866:5000
+    volumes:
+      - ./static:/data
+    command: /data -A --enable-cors  --render-index

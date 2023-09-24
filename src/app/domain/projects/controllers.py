@@ -40,32 +40,31 @@ class ApiController(Controller):
     dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
     tags = ["Projects API"]
     DETAIL_ROUTE = "/{row_id:uuid}"
-    guards = [requires_active_user]
 
-    @get()
+    @get(guards=[requires_active_user])
     async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
         """Get a list of Models."""
         return await service.list(*filters)
 
-    @post()
+    @post(guards=[requires_active_user])
     async def create(self, data: Model, current_user: User, service: "Service") -> Model:
         """Create an `Model`."""
 
         data.owner_id = current_user.id
         return await service.create(data)
 
-    @get(DETAIL_ROUTE)
+    @get(DETAIL_ROUTE, guards=[requires_active_user])
     async def retrieve(self, service: "Service", row_id: "UUID") -> Model:
         """Get Model by ID."""
         return await service.get(row_id)
 
-    @put(DETAIL_ROUTE)
+    @put(DETAIL_ROUTE, guards=[requires_active_user])
     async def update(self, data: Model, current_user: User, service: "Service", row_id: "UUID") -> Model:
         """Update an Model."""
         data.owner_id = current_user.id
         return await service.update(row_id, data)
 
-    @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
+    @delete(DETAIL_ROUTE, status_code=HTTP_200_OK, guards=[requires_active_user])
     async def delete(self, service: "Service", row_id: "UUID") -> Model:
         """Delete Author by ID."""
         return await service.delete(row_id)

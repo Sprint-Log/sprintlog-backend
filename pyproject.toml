@@ -52,6 +52,7 @@ python-dotenv = "*"
 saq = "*"
 sqlalchemy = ">=2.0.19"
 uvicorn = {version = "*", extras = ['standard']}
+livekit-server-sdk-python = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 asgi-lifespan = "*"
@@ -279,7 +280,6 @@ exclude = '''(?x)(
 )
 '''
 implicit_reexport = false
-plugins = ['pydantic.mypy']
 show_error_codes = true
 strict = true
 warn_redundant_casts = true
@@ -288,11 +288,6 @@ warn_unreachable = true
 warn_unused_configs = true
 warn_unused_ignores = true
 
-[tool.pydantic-mypy]
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true
-warn_untyped_fields = true
 
 [[tool.mypy.overrides]]
 disallow_untyped_decorators = false
