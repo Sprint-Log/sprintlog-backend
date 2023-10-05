@@ -1,11 +1,11 @@
-import { defineConfig } from "vite"
-import vue from "@vitejs/plugin-vue"
-import path from "path"
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import path from "path";
 
 function getBackendUrl(path: string) {
-  return `${process.env.FRONTEND_URL || "http://localhost:8000"}${path}`
+  return `${process.env.FRONTEND_URL || "http://localhost:8000"}${path}`;
 }
-const STATIC_URL = process.env.STATIC_URL || "/static/"
+const STATIC_URL = process.env.STATIC_URL || "/static/";
 export default defineConfig({
   base: `${STATIC_URL}`,
   root: path.join(__dirname, "src/app/domain/web/resources"),
@@ -49,7 +49,7 @@ export default defineConfig({
               .toString()
               .split("node_modules/")[1]
               .split("/")[0]
-              .toString()
+              .toString();
           }
         },
       },
@@ -60,4 +60,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src/frontend"),
     },
   },
-})
+});

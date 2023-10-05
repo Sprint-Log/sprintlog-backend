@@ -38,18 +38,22 @@ class ApiController(Controller):
     async def retrieve(self, room_id: str) -> models.Room:
         """Get a list of Models."""
         rooms: list[models.Room] = RoomServiceClient(
-            server.LIVE_API_URL, server.LIVE_API_KEY, server.LIVE_API_SECRET
+            server.LIVE_API_URL,
+            server.LIVE_API_KEY,
+            server.LIVE_API_SECRET,
         ).list_rooms()
         for room in rooms:
             if room.sid == room_id:
                 return room
-        raise NotFoundException()
+        raise NotFoundException
 
     @get(sync_to_thread=True)
     async def list_all(self) -> list[models.Room]:
         """Get a list of Models."""
         rooms: list[models.Room] = RoomServiceClient(
-            server.LIVE_API_URL, server.LIVE_API_KEY, server.LIVE_API_SECRET
+            server.LIVE_API_URL,
+            server.LIVE_API_KEY,
+            server.LIVE_API_SECRET,
         ).list_rooms()
         return rooms
 

@@ -1,38 +1,30 @@
 {
-    "compilerOptions": {
-        "target": "ESNext",
-        "useDefineForClassFields": true,
-        "module": "ESNext",
-        "moduleResolution": "Node",
-        "strict": true,
-        "jsx": "preserve",
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "esModuleInterop": true,
-        "lib": [
-            "ESNext",
-            "DOM"
-        ],
-        "skipLibCheck": true,
-        "noEmit": true,
-        "composite": true,
-        "allowSyntheticDefaultImports": true,
-        "baseUrl": "src/frontend",
-        "paths": {
-            "@/*": [
-                "./*"
-            ]
-        },
-        "types": [
-            "vite/client",
-            "node"
-        ]
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "jsx": "preserve",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "composite": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "src/frontend",
+    "paths": {
+      "@/*": ["./*"]
     },
-    "include": [
-        "vite.config.ts",
-        "**/*.d.ts",
-        "src/frontend/**/*.ts",
-        "src/frontend/**/*.tsx",
-        "src/frontend/**/*.vue"
-    ]
+    "types": ["vite/client", "node"]
+  },
+  "include": [
+    "vite.config.ts",
+    "**/*.d.ts",
+    "src/frontend/**/*.ts",
+    "src/frontend/**/*.tsx",
+    "src/frontend/**/*.vue"
+  ]
 }

@@ -129,7 +129,7 @@ class SprintLog(orm.TimestampedDatabaseModel):
 
 
 SprintLog.registry.update_type_annotation_map(
-    {TagEnum: String, PriorityEnum: String, ProgressEnum: String, ItemType: String}
+    {TagEnum: String, PriorityEnum: String, ProgressEnum: String, ItemType: String},
 )
 
 

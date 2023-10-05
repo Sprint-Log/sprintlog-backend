@@ -52,7 +52,7 @@ class Project(orm.TimestampedDatabaseModel):
         info=dto_field(Mark.PRIVATE),
     )
 
-    def __init__(self, **kw: Any):
+    def __init__(self, **kw: Any) -> None:
         super().__init__(**kw)
 
 
