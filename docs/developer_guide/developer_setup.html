@@ -2095,15 +2095,17 @@ hue-6-2: #e6c07b
     <h1 id="developer-setup">Developer Setup</h1>
     <p>
       To begin local development, clone the
-      <a href="https://github.com/sprint-log/sprintlog-backend">Sprintlog</a>
+      <a href="https://github.com/litestar-org/litestar-fullstack"
+        >litestar-org/litestar-fullstack</a
+      >
       repository and use one of the following methods to build it. Commands
       should be executed from inside of the project home folder.
     </p>
-    <h2 id="using-poetry">Using poetry</h2>
-    <pre><code class="language-bash">poetry install
+    <h2 id="using-pdm">Using PDM</h2>
+    <pre><code class="language-bash">pdm install
 </code></pre>
-    <p>Install optional dependencies using the <code>--extras</code> flag:</p>
-    <pre><code class="language-bash">poetry install --extras=dev,docs,lint
+    <p>Install optional dependencies using the <code>--G</code> flag:</p>
+    <pre><code class="language-bash">pdm install --G:all
 </code></pre>
     <h2 id="using-pip">Using pip</h2>
     <pre><code class="language-bash">pip install .

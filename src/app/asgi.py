@@ -53,7 +53,7 @@ def create_app() -> Litestar:
         type_encoders={pgproto.UUID: str, SecretStr: str},
         route_handlers=[*domain.routes],
         plugins=[db.plugin, domain.plugins.aiosql],
-        on_shutdown=[cache.redis.close],
+        on_shutdown=[cache.redis.aclose],
         on_startup=[lambda: log.configure(log.default_processors)],  # type: ignore[arg-type]
         on_app_init=[domain.security.auth.on_app_init, repository.on_app_init],
         static_files_config=static_files.config,

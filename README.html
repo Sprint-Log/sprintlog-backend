@@ -2420,6 +2420,11 @@ hue-6-2: #e6c07b
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
 </code></pre>
+    <h2 id="run-commands-1">Run Commands</h2>
+    <p>
+      To run the application through Uvicorn using the standard Litestar CLI,
+      you can use the following:
+    </p>
     <pre><code class="language-bash">❯ poetry run app run server --<span class="hljs-built_in">help</span>
 
  Usage: app run server [OPTIONS]
@@ -2446,6 +2451,14 @@ hue-6-2: #e6c07b
 │ --<span class="hljs-built_in">help</span>                    Show this message and <span class="hljs-built_in">exit</span>.                        │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 </code></pre>
+    <p>
+      The above command will not start the background workers. Those can be
+      launched separately in another terminal.
+    </p>
+    <p>
+      Alternately, the <code>run-all</code> command will automatically start the
+      background workers in separate processes.
+    </p>
     <pre><code class="language-bash">❯ poetry run app run worker --<span class="hljs-built_in">help</span>
 
  Usage: app run worker [OPTIONS]
@@ -2476,13 +2489,9 @@ hue-6-2: #e6c07b
 </code></pre>
     <p>This command does the following:</p>
     <ul>
-      <li>install <code>poetry</code> if it is not available in the path.</li>
+      <li>install <code>pdm</code> if it is not available in the path.</li>
       <li>create a virtual environment with all dependencies configured</li>
-      <li>
-        executes <code>npm ci</code> to install the node modules into the
-        environment
-      </li>
-      <li>run <code>npm run build</code> to generate the static assets</li>
+      <li>build assets to be hosted by production asset server</li>
     </ul>
     <h3 id="edit-env-configuration">Edit .env configuration</h3>
     <p>
@@ -2509,10 +2518,53 @@ KEY: 5c5f2230767976c332b6f933b63b483a35148b2218e2cdfd0da992d859feae19
       <code>poetry run app manage upgrade</code>
     </p>
     <h2 id="make-commands">Make Commands</h2>
+    <h3 id="install-development-environment">
+      Install Development Environment
+    </h3>
+    <p>
+      This command will remove any existing environment and install a new
+      environment with the latest dependencies.
+    </p>
+    <pre><code class="language-shell">make install
+</code></pre>
+    <h3 id="upgrade-project-dependencies">Upgrade Project Dependencies</h3>
+    <p>
+      This command will upgrade all components of the application at the same
+      time. It automatically executes:
+    </p>
     <ul>
-      <li><code>make migrations</code></li>
-      <li><code>make squash-migrations</code></li>
-      <li><code>make upgrade</code></li>
+      <li><code>pdm upgrade</code></li>
+      <li><code>npm update</code></li>
+      <li><code>pre-commit autoupdate</code></li>
     </ul>
+    <pre><code class="language-shell">make upgrade
+</code></pre>
+    <h3 id="execute-pre-commit">Execute Pre-commit</h3>
+    <p>
+      This command will automatically execute the pre-commit process for the
+      project.
+    </p>
+    <pre><code class="language-shell">make lint
+</code></pre>
+    <h3 id="generate-new-migrations">Generate New Migrations</h3>
+    <p>
+      This command is a shorthand for executing
+      <code>app database make-migrations</code>.
+    </p>
+    <pre><code class="language-shell">make migrations
+</code></pre>
+    <h3 id="upgrade-a-database-to-the-latest-revision">
+      Upgrade a Database to the Latest Revision
+    </h3>
+    <p>
+      This command is a shorthand for executing
+      <code>app database upgrade</code>.
+    </p>
+    <pre><code class="language-shell">make migrate
+</code></pre>
+    <h3 id="execute-full-test-suite">Execute Full Test Suite</h3>
+    <p>This command executes all tests for the project.</p>
+    <pre><code class="language-shell">make test
+</code></pre>
   </body>
 </html>

@@ -70,6 +70,15 @@ def _sqla_on_connect(dbapi_connection: Any, _: Any) -> Any:  # pragma: no cover
             format="binary",
         ),
     )
+    dbapi_connection.await_(
+        dbapi_connection.driver_connection.set_type_codec(
+            "json",
+            encoder=encoder,
+            decoder=decoder,
+            schema="pg_catalog",
+            format="binary",
+        ),
+    )
 
 
 config = SQLAlchemyAsyncConfig(

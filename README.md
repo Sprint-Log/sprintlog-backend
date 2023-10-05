@@ -131,6 +131,10 @@ Frontend
 
 ```
 
+## Run Commands
+
+To run the application through Uvicorn using the standard Litestar CLI, you can use the following:
+
 ```bash
 ❯ poetry run app run server --help
 
@@ -158,6 +162,10 @@ Frontend
 │ --help                    Show this message and exit.                        │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 ```
+
+The above command will not start the background workers. Those can be launched separately in another terminal.
+
+Alternately, the `run-all` command will automatically start the background workers in separate processes.
 
 ```bash
 ❯ poetry run app run worker --help
@@ -191,10 +199,9 @@ make install
 
 This command does the following:
 
-- install `poetry` if it is not available in the path.
+- install `pdm` if it is not available in the path.
 - create a virtual environment with all dependencies configured
-- executes `npm ci` to install the node modules into the environment
-- run `npm run build` to generate the static assets
+- build assets to be hosted by production asset server
 
 ### Edit .env configuration
 
@@ -222,6 +229,54 @@ To deploy migration to the database, execute:
 
 ## Make Commands
 
-- `make migrations`
-- `make squash-migrations`
-- `make upgrade`
+### Install Development Environment
+
+This command will remove any existing environment and install a new environment with the latest dependencies.
+
+```shell
+make install
+```
+
+### Upgrade Project Dependencies
+
+This command will upgrade all components of the application at the same time. It automatically executes:
+
+- `pdm upgrade`
+- `npm update`
+- `pre-commit autoupdate`
+
+```shell
+make upgrade
+```
+
+### Execute Pre-commit
+
+This command will automatically execute the pre-commit process for the project.
+
+```shell
+make lint
+```
+
+### Generate New Migrations
+
+This command is a shorthand for executing `app database make-migrations`.
+
+```shell
+make migrations
+```
+
+### Upgrade a Database to the Latest Revision
+
+This command is a shorthand for executing `app database upgrade`.
+
+```shell
+make migrate
+```
+
+### Execute Full Test Suite
+
+This command executes all tests for the project.
+
+```shell
+make test
+```

@@ -21,4 +21,4 @@ providers = ['python'] # force python as the only provider, otherwise railway ma
 
 [phases.migrations]
     dependsOn = ['install'] # must run after the install phase so that python dependencies are available
-    cmds = ['litestar database upgrade'] # executes migrations to apply any outstanding database structures
+    cmds = ['litestar database upgrade-database'] # executes migrations to apply any outstanding database structures
