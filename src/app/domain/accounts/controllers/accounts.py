@@ -25,7 +25,7 @@ __all__ = ["AccountController"]
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from litestar.contrib.repository.filters import FilterTypes
+    from advanced_alchemy.filters import FilterTypes
     from litestar.dto import DTOData
     from litestar.pagination import OffsetPagination
 

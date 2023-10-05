@@ -35,7 +35,7 @@ install:          ## Install the project in dev mode.
 	@if [ "$(VENV_EXISTS)" ]; then echo "Removing existing virtual environment"; fi
 	@if [ "$(NODE_MODULES_EXISTS)" ]; then echo "Removing existing node environment"; fi
 	if [ "$(VENV_EXISTS)" ]; then rm -Rf .venv; fi
-	if [ "$(USING_POETRY)" ]; then poetry config virtualenvs.in-project true --local  && poetry config virtualenvs.options.always-copy true --local && python3 -m venv --copies .venv && source .venv/bin/activate && .venv/bin/pip install -U wheel setuptools cython pip && poetry install --with lint,dev,docs; fi
+	if [ "$(USING_POETRY)" ]; then poetry config virtualenvs.in-project true --local  && poetry config virtualenvs.options.always-copy true --local && python3 -m venv --copies .venv && . .venv/bin/activate && .venv/bin/pip install -U wheel setuptools cython pip && poetry install --with lint,dev,docs; fi
 	if [ "$(USING_NPM)" ]; then npm ci; fi
 	@echo "=> Install complete.  ** If you want to re-install re-run 'make install'"
 
@@ -44,21 +44,12 @@ install:          ## Install the project in dev mode.
 migrations:       ## Generate database migrations
 	@echo "ATTENTION: This operation will create a new database migration for any defined models changes."
 	@while [ -z "$$MIGRATION_MESSAGE" ]; do read -r -p "Migration message: " MIGRATION_MESSAGE; done ;
-	@env PYTHONPATH=src $(ENV_PREFIX)alembic -c src/app/lib/db/alembic.ini revision --autogenerate -m "$${MIGRATION_MESSAGE}"
+	@env PYTHONPATH=src $(ENV_PREFIX)app database make-migrations --autogenerate -m "$${MIGRATION_MESSAGE}"
 
 .PHONY: migrate
 migrate:          ## Generate database migrations
 	@echo "ATTENTION: Will apply all database migrations."
-	@env PYTHONPATH=src $(ENV_PREFIX)app database upgrade-database
-
-.PHONY: squash-migrations
-squash-migrations:       ## Generate database migrations
-	@echo "ATTENTION: This operation will wipe all migrations and recreate from an empty state."
-	@env PYTHONPATH=src $(ENV_PREFIX)app database purge-database --no-prompt
-	rm -Rf src/app/lib/db/migrations/versions/*.py
-	@while [ -z "$$MIGRATION_MESSAGE" ]; do read -r -p "Initial migration message: " MIGRATION_MESSAGE; done ;
-	@env PYTHONPATH=src $(ENV_PREFIX)alembic -c src/app/lib/db/alembic.ini revision --autogenerate -m "$${MIGRATION_MESSAGE}"
-
+	@env PYTHONPATH=src $(ENV_PREFIX)app database upgrade
 
 .PHONY: build
 build:

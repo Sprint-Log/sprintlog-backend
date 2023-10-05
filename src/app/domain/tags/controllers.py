@@ -15,7 +15,7 @@ from app.lib import log
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from litestar.contrib.repository.filters import FilterTypes
+    from advanced_alchemy.filters import FilterTypes
     from litestar.dto import DTOData
     from litestar.pagination import OffsetPagination
 
@@ -45,7 +45,9 @@ class TagController(Controller):
         path=urls.TAG_LIST,
     )
     async def list_tags(
-        self, tags_service: TagService, filters: list[FilterTypes] = Dependency(skip_validation=True)
+        self,
+        tags_service: TagService,
+        filters: list[FilterTypes] = Dependency(skip_validation=True),
     ) -> OffsetPagination[Tag]:
         """List tags."""
         results, total = await tags_service.list_and_count(*filters)

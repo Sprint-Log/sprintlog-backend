@@ -38,7 +38,7 @@ services:
       - .env.example
   migrator:
     image: sprintlog:latest-dev
-    command: litestar database upgrade-database
+    command: litestar database upgrade --no-prompt
     restart: "no"
     <<: *development-volumes
     env_file:

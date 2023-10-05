@@ -10,11 +10,11 @@ import contextlib
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast, overload
 
-from litestar.contrib.repository.filters import (
+from advanced_alchemy.filters import (
     FilterTypes,
     LimitOffset,
 )
-from litestar.contrib.sqlalchemy.repository import ModelT, SQLAlchemyAsyncRepository
+from advanced_alchemy.repository.typing import ModelT
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from pydantic.type_adapter import TypeAdapter
@@ -27,13 +27,19 @@ from .generic import Service
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
+    from advanced_alchemy.repository import SQLAlchemyAsyncRepository
+    from litestar.repository.filters import FilterTypes as FilterTypesLitestar
     from pydantic import BaseModel
     from sqlalchemy import Select
     from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy.sql import ColumnElement
 
 __all__ = ["SQLAlchemyAsyncRepositoryService"]
 
-SQLAlchemyAsyncRepoServiceT = TypeVar("SQLAlchemyAsyncRepoServiceT", bound="SQLAlchemyAsyncRepositoryService")
+SQLAlchemyAsyncRepoServiceT = TypeVar(
+    "SQLAlchemyAsyncRepoServiceT",
+    bound="SQLAlchemyAsyncRepositoryService",
+)
 ModelDictDTOT: TypeAlias = dict[str, Any] | ModelT | DTOData
 ModelDictListDTOT: TypeAlias = list[ModelT | dict[str, Any]] | list[dict[str, Any]] | DTOData
 ModelDTOT = TypeVar("ModelDTOT", bound="BaseModel")
@@ -80,7 +86,8 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         return await self.repository.add(data)
 
     async def create_many(
-        self, data: list[ModelT | dict[str, Any]] | list[dict[str, Any]] | list[ModelT]
+        self,
+        data: list[ModelT | dict[str, Any]] | list[dict[str, Any]] | list[ModelT],
     ) -> Sequence[ModelT]:
         """Wrap repository bulk instance creation.
 
@@ -108,7 +115,8 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         return await self.repository.update(data)
 
     async def update_many(
-        self, data: list[ModelT | dict[str, Any]] | list[dict[str, Any]] | list[ModelT]
+        self,
+        data: list[ModelT | dict[str, Any]] | list[dict[str, Any]] | list[ModelT],
     ) -> Sequence[ModelT]:
         """Wrap repository bulk instance update.
 
@@ -144,7 +152,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         Returns:
             Representation of instance with identifier `item_id`.
         """
-        return bool((await self.repository.count(**kwargs)) > 0)
+        return await self.repository.count(**kwargs) > 0
 
     async def get(self, item_id: Any, **kwargs: Any) -> ModelT:
         """Wrap repository scalar operation.
@@ -158,7 +166,11 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """
         return await self.repository.get(item_id, **kwargs)
 
-    async def get_or_create(self, match_fields: list[str] | None = None, **kwargs: Any) -> tuple[ModelT, bool]:
+    async def get_or_create(
+        self,
+        match_fields: list[str] | None = None,
+        **kwargs: Any,
+    ) -> tuple[ModelT, bool]:
         """Wrap repository instance creation.
 
         Args:
@@ -168,9 +180,8 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         Returns:
             Representation of created instance.
         """
-        match_fields = match_fields if match_fields else self.match_fields
+        match_fields = match_fields or self.match_fields
         validated_model = await self.to_model(kwargs, "create")
-        # todo: submit PR with repo enhancements
         return await self.repository.get_or_create(**validated_model.to_dict())
 
     async def get_one(self, **kwargs: Any) -> ModelT:
@@ -217,7 +228,11 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         """
         return await self.repository.delete_many(item_ids)
 
-    async def to_model(self, data: ModelT | dict[str, Any], operation: str | None = None) -> ModelT:
+    async def to_model(
+        self,
+        data: ModelT | dict[str, Any],
+        operation: str | None = None,
+    ) -> ModelT:
         """Parse and Convert input into a model.
 
         Args:
@@ -227,14 +242,14 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
             Representation of created instances.
         """
         if isinstance(data, dict):
-            return model_from_dict(model=self.repository.model_type, **data)  # type: ignore[type-var,return-value]
+            return model_from_dict(model=self.repository.model_type, **data)  # type: ignore
         return data
 
     async def list_and_count(
         self,
         *filters: FilterTypes,
         **kwargs: Any,
-    ) -> tuple[list[ModelT], int]:
+    ) -> tuple[Sequence[ModelT], int]:
         """List of records and total count returned by query.
 
         Args:
@@ -252,12 +267,18 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
 
     @overload
     def to_dto(
-        self, data: Sequence[ModelT], total: int | None = None, *filters: FilterTypes
+        self,
+        data: Sequence[ModelT],
+        total: int | None = None,
+        *filters: FilterTypes | FilterTypesLitestar | ColumnElement[bool],
     ) -> OffsetPagination[ModelT]:
         ...
 
     def to_dto(
-        self, data: ModelT | Sequence[ModelT], total: int | None = None, *filters: FilterTypes
+        self,
+        data: ModelT | Sequence[ModelT],
+        total: int | None = None,
+        *filters: FilterTypes | FilterTypesLitestar | ColumnElement[bool],
     ) -> ModelT | OffsetPagination[ModelT]:
         """Convert the object to a format expected by the DTO handler
 
@@ -272,7 +293,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         if not isinstance(data, Sequence | list):
             return data
         limit_offset = self.find_filter(LimitOffset, *filters)
-        total = total if total else len(data)
+        total = total or len(data)
         limit_offset = limit_offset if limit_offset is not None else LimitOffset(limit=len(data), offset=0)
         return OffsetPagination(
             items=list(data),
@@ -316,7 +337,7 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         if not isinstance(data, Sequence | list):
             return TypeAdapter(dto).validate_python(data)
         limit_offset = self.find_filter(LimitOffset, *filters)
-        total = total if total else len(data)
+        total = total or len(data)
         limit_offset = limit_offset if limit_offset is not None else LimitOffset(limit=len(data), offset=0)
         return OffsetPagination[dto](  # type: ignore[valid-type]
             items=TypeAdapter(list[dto]).validate_python(data),  # type: ignore[valid-type]
@@ -349,7 +370,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
                 )
 
     @staticmethod
-    def find_filter(filter_type: type[FilterTypeT], *filters: FilterTypes) -> FilterTypeT | None:
+    def find_filter(
+        filter_type: type[FilterTypeT],
+        *filters: FilterTypes | FilterTypesLitestar | ColumnElement[bool],
+    ) -> FilterTypeT | None:
         """Get the filter specified by filter type from the filters.
 
         Args:
@@ -359,10 +383,10 @@ class SQLAlchemyAsyncRepositoryService(Service[ModelT], Generic[ModelT]):
         Returns:
             The match filter instance or None
         """
-        for filter_ in filters:
-            if isinstance(filter_, filter_type):
-                return cast("FilterTypeT | None", filter_)
-        return None
+        return next(
+            (cast("FilterTypeT | None", filter_) for filter_ in filters if isinstance(filter_, filter_type)),
+            None,
+        )
 
     async def list(self, *filters: FilterTypes, **kwargs: Any) -> Sequence[ModelT]:
         """Wrap repository scalars operation.

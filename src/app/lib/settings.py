@@ -44,7 +44,10 @@ class ServerSettings(BaseSettings):
     """Server configurations."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="SERVER_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="SERVER_",
+        case_sensitive=False,
     )
 
     APP_LOC: str = "app.asgi:create_app"
@@ -95,7 +98,10 @@ class AppSettings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="APP_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="APP_",
+        case_sensitive=False,
     )
 
     BUILD_NUMBER: str = ""
@@ -157,9 +163,7 @@ class AppSettings(BaseSettings):
         value: str | None,
     ) -> str:
         """Generate a secret key."""
-        if value is None:
-            return os.urandom(32).decode()
-        return value
+        return os.urandom(32).decode() if value is None else value
 
 
 class LogSettings(BaseSettings):
@@ -236,7 +240,10 @@ class OpenAPISettings(BaseSettings):
     """Configures OpenAPI for the application."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="OPENAPI_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="OPENAPI_",
+        case_sensitive=False,
     )
 
     CONTACT_NAME: str = "Hexcode Technologies"
@@ -268,7 +275,10 @@ class WorkerSettings(BaseSettings):
     """Global SAQ Job configuration."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="WORKER_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="WORKER_",
+        case_sensitive=False,
     )
 
     JOB_TIMEOUT: int = 10
@@ -316,7 +326,10 @@ class DatabaseSettings(BaseSettings):
     """Configures the database for the application."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="DB_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="DB_",
+        case_sensitive=False,
     )
 
     ECHO: bool = False
@@ -443,8 +456,8 @@ def load_settings() -> (
         HTTPClientSettings.model_validate({})
 
     except ValidationError as e:
-        print("Could not load settings. %s", e)  # noqa: T201
-        raise e from e
+        print("Could not load settings.", e)  # noqa: T201
+        raise
     return (
         app,
         redis,

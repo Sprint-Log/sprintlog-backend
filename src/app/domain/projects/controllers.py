@@ -20,7 +20,7 @@ from app.domain.accounts.models import User
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from litestar.contrib.repository import FilterTypes
+    from advanced_alchemy.filters import FilterTypes
 
     from app.domain.projects.models import Service
 from app.domain.projects.dependencies import provides_service

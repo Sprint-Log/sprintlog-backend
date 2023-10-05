@@ -53,7 +53,8 @@ async def send_msg(stream_name: str, topic_name: str, content: str | None = "") 
         response = await client.post(url, auth=auth, data=data)
         if response.status_code == 200:
             return dict(response.json())
-        raise httpx.HTTPError(f"{response.status_code}, {response.text}")
+        msg = f"{response.status_code}, {response.text}"
+        raise httpx.HTTPError(msg)
 
 
 async def delete_message(msg_id: int) -> dict[str, Any]:
@@ -65,7 +66,8 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
         response = await client.delete(url, auth=auth)
         if response.status_code == 200:
             return dict(response.json())
-        raise httpx.HTTPError(f"{response.status_code}, {response.text}")
+        msg = f"{response.status_code}, {response.text}"
+        raise httpx.HTTPError(msg)
 
 
 async def update_message(topic_name: str, msg_id: int, content: str, propagate_mode: str) -> dict[str, Any]:
@@ -86,13 +88,13 @@ async def update_message(topic_name: str, msg_id: int, content: str, propagate_m
         response = await client.patch(url, auth=auth, data=data)
         if response.status_code == 200:
             return dict(response.json())
-        raise httpx.HTTPError(f"{response.status_code}, {response.text}")
+        msg = f"{response.status_code}, {response.text}"
+        raise httpx.HTTPError(msg)
 
 
 class ZulipSprintlogPlugin(SprintlogPlugin):
     def __init__(self, zulip_bot: str = "pipo") -> None:
         self.zulip_bot: str = zulip_bot
-        return
 
     async def before_create(self, data: "SprintLog") -> "SprintLog":
         log_info(self.zulip_bot)
@@ -127,8 +129,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         data = await super().before_update(item_id, data)
         is_task = data.plugin_meta.get("task") if data.plugin_meta else False
 
-        if data.type == "task":
-            if not is_task:
+        if not is_task:
+            if data.type == "task":
                 log_info("task type: updating backlog to task before_update")
                 # need to know if it's updating status or changing backlog to task
                 try:
@@ -284,13 +286,13 @@ async def create_stream(
         log_info(str(response))
         if response.status_code == 200:
             return dict(response.json())
-        raise httpx.HTTPError(f"{response.status_code}, {response.text}")
+        msg = f"{response.status_code}, {response.text}"
+        raise httpx.HTTPError(msg)
 
 
 class ZulipProjectPlugin(ProjectPlugin):
     def __init__(self, zulip_bot: str = "pipo") -> None:
         self.zulip_bot: str = zulip_bot
-        return
 
     async def before_create(self, data: "Project") -> "Project":
         log_info(self.zulip_bot)
