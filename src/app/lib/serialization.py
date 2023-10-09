@@ -1,9 +1,9 @@
 import ast
-from base64 import b64decode
 import binascii
 import datetime
 import json
 import logging
+from base64 import b64decode
 from typing import Any
 from uuid import UUID
 
@@ -77,6 +77,7 @@ def eval_from_b64(value: Any) -> Any:
 
         except binascii.Error:
             return ast.literal_eval(value)
+    return None
 
 
 def convert_datetime_to_gmt(dt: datetime.datetime) -> str:

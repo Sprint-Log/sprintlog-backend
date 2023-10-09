@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID  # noqa: TCH003
 
-from pydantic import EmailStr  # noqa: TCH002
+from pydantic import EmailStr
 
 from app.domain.teams.models import TeamRoles
 from app.lib.schema import CamelizedBaseModel

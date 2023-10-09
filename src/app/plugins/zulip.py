@@ -73,7 +73,10 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
 
 
 async def update_message(
-    topic_name: str, msg_id: int, content: str, propagate_mode: str,
+    topic_name: str,
+    msg_id: int,
+    content: str,
+    propagate_mode: str,
 ) -> dict[str, Any]:
     log_info("updating message")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
@@ -109,9 +112,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
             content: str
             stream_name: str
             content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
-            stream_name = (
-                f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-            )
+            stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
 
             response = await send_msg(stream_name, backlog_topic, content)
             if response["result"] != "success":
@@ -125,12 +126,14 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
             httpx.ReadTimeout,
             httpx.ConnectError,
             httpx.HTTPError,
-        ) as e:
-            log_info(f"failed to send message to zulip: {e!s}")
+        ):
+            log_info("failed to send message to zulip: ")
         return data
 
     async def before_update(  # noqa: C901, PLR0915 , PLR0912
-        self, item_id: str | None, data: "SprintLog",
+        self,
+        item_id: str | None,
+        data: "SprintLog",
     ) -> "SprintLog":
         data = await super().before_update(item_id, data)
         meta_data = serialization.eval_from_b64(data.plugin_meta)
@@ -144,11 +147,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 try:
                     description = data.description
                     content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
-                    stream_name = (
-                        f"📌PRJ/{data.project_name}"
-                        if data.pin
-                        else f"PRJ/{data.project_name}"
-                    )
+                    stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
                     topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
                     if description != "":
                         log_info("backlog description is not empty. send description")
@@ -186,8 +185,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                         httpx.ReadTimeout,
                         httpx.ConnectError,
                         httpx.HTTPError,
-                    ) as e:
-                        log_info(f"failed to send task message: {e!s}")
+                    ):
+                        log_info("failed to send task message: ")
 
                     if task_msg_id:
                         data.plugin_meta = task_msg_id
@@ -197,8 +196,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     httpx.ReadTimeout,
                     httpx.ConnectError,
                     httpx.HTTPError,
-                ) as e:
-                    logger.exception(f"failed to send message to zulip: {e!s}")
+                ):
+                    logger.exception("failed to send message to zulip:")
             else:
                 try:
                     log_info("task type: updating topic")
@@ -238,8 +237,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     httpx.ReadTimeout,
                     httpx.ConnectError,
                     httpx.HTTPError,
-                ) as e:
-                    log_info(f"failed to update message: {e!s}")
+                ):
+                    log_info("failed to update message: ")
         return data
 
     async def after_update(self, data: "SprintLog") -> "SprintLog":
@@ -269,21 +268,22 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 httpx.ReadTimeout,
                 httpx.ConnectError,
                 httpx.HTTPError,
-            ) as e:
-                log_info(f"failed to update message: {e!s}")
+            ):
+                log_info("failed to update message: ")
         return data
 
     async def before_delete(self, item_id: UUID) -> "UUID":
-
         return item_id
 
     async def after_delete(self, data: "SprintLog") -> "SprintLog":
-
         return data
 
 
 async def create_stream(
-    title: str, description: str, principals: list[str], is_pinned: bool | None = False,
+    title: str,
+    description: str,
+    principals: list[str],
+    is_pinned: bool | None = False,
 ) -> dict[str, str]:
     log_info("creating zulip stream")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
@@ -313,7 +313,6 @@ class ZulipProjectPlugin(ProjectPlugin):
         return data
 
     async def after_create(self, data: "Project") -> "Project":
-
         try:
             principals: list[str] = server.ZULIP_ADMIN_EMAIL
             email: str
@@ -322,7 +321,10 @@ class ZulipProjectPlugin(ProjectPlugin):
             principals.append(email)
             log_info(str(principals))
             response = await create_stream(
-                data.name, data.description, principals, data.pin,
+                data.name,
+                data.description,
+                principals,
+                data.pin,
             )
             if response["result"] != "success":
                 log_info(str(response))
@@ -333,8 +335,8 @@ class ZulipProjectPlugin(ProjectPlugin):
             httpx.ReadTimeout,
             httpx.ConnectError,
             httpx.HTTPError,
-        ) as e:
-            log_info(f"failed to create zulip stream: {e!s}")
+        ):
+            log_info("failed to create zulip stream: ")
         return data
 
     async def before_update(self, item_id: UUID, data: "Project") -> "Project":
@@ -344,10 +346,7 @@ class ZulipProjectPlugin(ProjectPlugin):
         return await super().after_update(data)
 
     async def before_delete(self, item_id: UUID) -> "UUID":
-
         return item_id
 
     async def after_delete(self, data: "Project") -> "Project":
-
         return data
-

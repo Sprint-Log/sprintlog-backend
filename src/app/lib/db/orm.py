@@ -7,7 +7,7 @@ from typing import Any
 from advanced_alchemy.base import AuditColumns, orm_registry
 from advanced_alchemy.base import UUIDAuditBase as TimestampedDatabaseModel
 from advanced_alchemy.base import UUIDBase as DatabaseModel
-from advanced_alchemy.repository.typing import ModelT  # noqa: TCH002
+from advanced_alchemy.repository.typing import ModelT
 from sqlalchemy import String
 from sqlalchemy.orm import (
     Mapped,
