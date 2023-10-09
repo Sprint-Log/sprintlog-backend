@@ -1,7 +1,9 @@
 import ast
-import datetime
-import logging
 from base64 import b64decode
+import binascii
+import datetime
+import json
+import logging
 from typing import Any
 from uuid import UUID
 
@@ -64,10 +66,17 @@ def from_msgpack(value: bytes) -> Any:
     return _msgspec_msgpack_decoder.decode(value)
 
 
-def from_base64(value: str) -> Any:
-    decoded_str = b64decode(value).decode("UTF-8")
-    logger.error(decoded_str)
-    return ast.literal_eval(decoded_str)
+def eval_from_b64(value: Any) -> Any:
+    if isinstance(value, str):
+        try:
+            decoded_str = b64decode(value, validate=True).decode("UTF-8")
+            try:
+                return ast.literal_eval(decoded_str)
+            except ValueError:
+                return json.loads(decoded_str)
+
+        except binascii.Error:
+            return ast.literal_eval(value)
 
 
 def convert_datetime_to_gmt(dt: datetime.datetime) -> str:

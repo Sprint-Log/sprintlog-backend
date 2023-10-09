@@ -34,7 +34,7 @@ def set_value(data: "SprintLog", key: str, value: Any) -> None:
 
 
 def log_info(message: str) -> None:
-    return logger.info(message)
+    return logger.exception(message)
 
 
 async def send_msg(stream_name: str, topic_name: str, content: str | None = "") -> Any:
@@ -51,7 +51,7 @@ async def send_msg(stream_name: str, topic_name: str, content: str | None = "") 
         "topic": topic_name,
         "content": content,
     }
-    async with httpx.AsyncClient(timeout=1) as client:
+    async with httpx.AsyncClient(timeout=1000) as client:
         response = await client.post(url, auth=auth, data=data)
         if response.status_code == 200:
             return dict(response.json())
@@ -64,7 +64,7 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
     log_info(f"message id: {msg_id}")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_DELETE_MESSAGE_URL}/{msg_id}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
-    async with httpx.AsyncClient(timeout=1) as client:
+    async with httpx.AsyncClient(timeout=1000) as client:
         response = await client.delete(url, auth=auth)
         if response.status_code == 200:
             return dict(response.json())
@@ -73,10 +73,7 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
 
 
 async def update_message(
-    topic_name: str,
-    msg_id: int,
-    content: str,
-    propagate_mode: str,
+    topic_name: str, msg_id: int, content: str, propagate_mode: str,
 ) -> dict[str, Any]:
     log_info("updating message")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
@@ -91,7 +88,7 @@ async def update_message(
         "content": content,
     }
 
-    async with httpx.AsyncClient(timeout=1) as client:
+    async with httpx.AsyncClient(timeout=1000) as client:
         response = await client.patch(url, auth=auth, data=data)
         if response.status_code == 200:
             return dict(response.json())
@@ -100,23 +97,21 @@ async def update_message(
 
 
 class ZulipSprintlogPlugin(SprintlogPlugin):
-    def __init__(self, zulip_bot: str = "pipo") -> None:
-        self.zulip_bot: str = zulip_bot
-
+    def __init__(self) -> None:
         ...
 
     async def before_create(self, data: "SprintLog") -> "SprintLog":
-        log_info(self.zulip_bot)
-        data.plugin_meta = {"zulip_bot": self.zulip_bot}
+        data.plugin_meta = {}
         return data
 
     async def after_create(self, data: "SprintLog") -> "SprintLog":
-        log_info(self.zulip_bot)
         try:
             content: str
             stream_name: str
             content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
-            stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
+            stream_name = (
+                f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
+            )
 
             response = await send_msg(stream_name, backlog_topic, content)
             if response["result"] != "success":
@@ -135,15 +130,13 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def before_update(  # noqa: C901, PLR0915 , PLR0912
-        self,
-        item_id: str | None,
-        data: "SprintLog",
+        self, item_id: str | None, data: "SprintLog",
     ) -> "SprintLog":
         data = await super().before_update(item_id, data)
-        meta_data = serialization.from_base64(data.plugin_meta)
+        meta_data = serialization.eval_from_b64(data.plugin_meta)
         logger.error(meta_data)
         is_tasked = meta_data.get("task") if data.plugin_meta else False
-
+        task_msg_id: dict | None = None
         if not is_tasked:
             if data.type == "task":
                 log_info("task type: updating backlog to task before_update")
@@ -151,7 +144,11 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 try:
                     description = data.description
                     content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
-                    stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
+                    stream_name = (
+                        f"📌PRJ/{data.project_name}"
+                        if data.pin
+                        else f"PRJ/{data.project_name}"
+                    )
                     topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
                     if description != "":
                         log_info("backlog description is not empty. send description")
@@ -171,7 +168,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
                     # delete item from the backlog
                     try:
-                        msg_id = data.plugin_meta.get("msg_id")
+                        meta_data = serialization.eval_from_b64(data.plugin_meta)
+                        msg_id = meta_data.get("msg_id")
                         if msg_id:
                             response: dict[str, Any] | None = await delete_message(
                                 msg_id=msg_id,
@@ -191,7 +189,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     ) as e:
                         log_info(f"failed to send task message: {e!s}")
 
-                    if task_msg_id is not None:
+                    if task_msg_id:
                         data.plugin_meta = task_msg_id
 
                 except (
@@ -200,17 +198,18 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     httpx.ConnectError,
                     httpx.HTTPError,
                 ) as e:
-                    log_info(f"failed to send message to zulip: {e!s}")
+                    logger.exception(f"failed to send message to zulip: {e!s}")
             else:
                 try:
                     log_info("task type: updating topic")
-                    msg_id = data.plugin_meta.get("msg_id")
+                    meta_data = serialization.eval_from_b64(data.plugin_meta)
+                    msg_id = meta_data.get("msg_id")
                     update_content: str = (
                         f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
                     )
                     topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
                     if msg_id:
-                        update_response: dict[str, Any] | None = await update_message(
+                        update_response = await update_message(
                             topic_name=topic_name,
                             msg_id=msg_id,
                             content=update_content,
@@ -231,7 +230,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                                     topic_name: topic_name,
                                 }
 
-                    if task_msg_id is not None:
+                    if task_msg_id:
                         data.plugin_meta = task_msg_id
 
                 except (
@@ -244,10 +243,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def after_update(self, data: "SprintLog") -> "SprintLog":
-        log_info(self.zulip_bot)
         data = await super().after_update(data)
         log_info(f"metadata project {data.plugin_meta}")
-        meta_data = serialization.from_base64(data.plugin_meta)
+        meta_data = serialization.eval_from_b64(data.plugin_meta)
         is_tasked = meta_data.get("task")
         if data.type != "task" or not is_tasked:
             try:
@@ -276,21 +274,16 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def before_delete(self, item_id: UUID) -> "UUID":
-        log_info(self.zulip_bot)
 
         return item_id
 
     async def after_delete(self, data: "SprintLog") -> "SprintLog":
-        log_info(self.zulip_bot)
 
         return data
 
 
 async def create_stream(
-    title: str,
-    description: str,
-    principals: list[str],
-    is_pinned: bool | None = False,
+    title: str, description: str, principals: list[str], is_pinned: bool | None = False,
 ) -> dict[str, str]:
     log_info("creating zulip stream")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
@@ -303,7 +296,7 @@ async def create_stream(
         "invite_only": True,
         "history_public_to_subscribers": True,
     }
-    async with httpx.AsyncClient(timeout=1) as client:
+    async with httpx.AsyncClient(timeout=1000) as client:
         response = await client.post(url, auth=auth, data=data)
         log_info(str(response))
         if response.status_code == 200:
@@ -313,16 +306,14 @@ async def create_stream(
 
 
 class ZulipProjectPlugin(ProjectPlugin):
-    def __init__(self, zulip_bot: str = "pipo") -> None:
-        self.zulip_bot: str = zulip_bot
+    def __init__(self) -> None:
+        ...
 
     async def before_create(self, data: "Project") -> "Project":
-        log_info(self.zulip_bot)
-        data.plugin_meta = {"zulip_bot": self.zulip_bot}
         return data
 
     async def after_create(self, data: "Project") -> "Project":
-        log_info(self.zulip_bot)
+
         try:
             principals: list[str] = server.ZULIP_ADMIN_EMAIL
             email: str
@@ -331,10 +322,7 @@ class ZulipProjectPlugin(ProjectPlugin):
             principals.append(email)
             log_info(str(principals))
             response = await create_stream(
-                data.name,
-                data.description,
-                principals,
-                data.pin,
+                data.name, data.description, principals, data.pin,
             )
             if response["result"] != "success":
                 log_info(str(response))
@@ -356,11 +344,10 @@ class ZulipProjectPlugin(ProjectPlugin):
         return await super().after_update(data)
 
     async def before_delete(self, item_id: UUID) -> "UUID":
-        log_info(self.zulip_bot)
 
         return item_id
 
     async def after_delete(self, data: "Project") -> "Project":
-        log_info(self.zulip_bot)
 
         return data
+
