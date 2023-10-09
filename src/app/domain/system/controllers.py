@@ -6,10 +6,11 @@ from litestar import Controller, MediaType, get
 from litestar.response import Response
 
 from app.domain.system.dtos import SystemHealth
-from app.lib import constants, log, worker
+from app.lib import constants, log
 from app.lib.cache import redis
 
 if TYPE_CHECKING:
+    from litestar_saq import Queue
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -35,7 +36,7 @@ class SystemController(Controller):
         description="Execute a health check against backend components.  Returns system information including database and cache status.",
         signature_namespace={"SystemHealth": SystemHealth},
     )
-    async def check_system_health(self, db_session: AsyncSession) -> Response[SystemHealth]:
+    async def check_system_health(self, db_session: AsyncSession, task_queues: list[Queue]) -> Response[SystemHealth]:
         """Check database available and returns app config info."""
         try:
             db_ping = True
@@ -45,7 +46,7 @@ class SystemController(Controller):
         db_status = "online" if db_ping else "offline"
         cache_ping = await redis.ping()
         cache_status = "online" if cache_ping else "offline"
-        worker_ping = await worker.info.is_healthy()
+        worker_ping = bool([await queue.info() for queue in task_queues])
         worker_status = "online" if worker_ping else "offline"
         healthy = bool(worker_ping and cache_ping and db_ping)
         if healthy:

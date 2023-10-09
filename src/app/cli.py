@@ -5,19 +5,18 @@ from typing import Any
 
 import anyio
 import click
+from litestar import Litestar
 from rich import get_console
 
 from app.domain.accounts.dtos import UserCreate, UserUpdate
 from app.domain.accounts.services import UserService
-from app.lib import log, settings, worker
+from app.lib import log, settings
 
 __all__ = [
     "create_user",
     "run_all_app",
     "run_app",
-    "run_worker",
     "user_management_app",
-    "worker_management_app",
 ]
 
 
@@ -27,35 +26,23 @@ console = get_console()
 logger = log.get_logger()
 
 
-@click.group(name="serve", invoke_without_command=False, help="Run application services.")
+@click.group(
+    name="serve",
+    invoke_without_command=False,
+    help="Run application services.",
+)
 @click.pass_context
 def run_app(_: dict[str, Any]) -> None:
     """Launch Application Components."""
 
 
 @click.group(
-    name="database",
+    name="users",
     invoke_without_command=False,
-    help="Manage the configured database backend.",
+    help="Manage application users.",
 )
-@click.pass_context
-def database_management_app(_: dict[str, Any]) -> None:
-    """Manage the configured database backend."""
-
-
-@click.group(name="users", invoke_without_command=False, help="Manage application users.")
 @click.pass_context
 def user_management_app(_: dict[str, Any]) -> None:
-    """Manage application users."""
-
-
-@click.group(
-    name="worker",
-    invoke_without_command=False,
-    help="Manage application background workers.",
-)
-@click.pass_context
-def worker_management_app(_: dict[str, Any]) -> None:
     """Manage application users."""
 
 
@@ -97,7 +84,14 @@ def worker_management_app(_: dict[str, Any]) -> None:
     required=False,
     show_default=True,
 )
-@click.option("-r", "--reload", help="Enable reload", is_flag=True, default=False, type=bool)
+@click.option(
+    "-r",
+    "--reload",
+    help="Enable reload",
+    is_flag=True,
+    default=False,
+    type=bool,
+)
 @click.option(
     "-v",
     "--verbose",
@@ -106,8 +100,16 @@ def worker_management_app(_: dict[str, Any]) -> None:
     default=False,
     type=bool,
 )
-@click.option("-d", "--debug", help="Enable debugging.", is_flag=True, default=False, type=bool)
+@click.option(
+    "-d",
+    "--debug",
+    help="Enable debugging.",
+    is_flag=True,
+    default=False,
+    type=bool,
+)
 def run_all_app(
+    app: Litestar,
     host: str,
     port: int | None,
     http_workers: int | None,
@@ -117,6 +119,8 @@ def run_all_app(
     debug: bool | None,
 ) -> None:
     """Run the API server."""
+    from litestar_saq.cli import get_saq_plugin, run_worker_process
+
     log.config.configure()
     settings.server.HOST = host or settings.server.HOST
     settings.server.PORT = port or settings.server.PORT
@@ -126,9 +130,15 @@ def run_all_app(
     settings.app.DEBUG = debug or settings.app.DEBUG
     settings.log.LEVEL = 10 if verbose or settings.app.DEBUG else settings.log.LEVEL
     logger.info("starting all application services.")
+    saq_plugin = get_saq_plugin(app)
 
     try:
         logger.info("starting Background worker processes.")
+        worker_process = multiprocessing.Process(
+            target=run_worker_process,
+            args=(saq_plugin.get_workers(), app.logging_config),
+        )
+        worker_process.start()
 
         logger.info("Starting HTTP Server.")
         reload_dirs = settings.server.RELOAD_DIRS if settings.server.RELOAD else None
@@ -145,7 +155,7 @@ def run_all_app(
         if reload_dirs:
             process_args["reload-dir"] = reload_dirs
         subprocess.run(
-            ["uvicorn", settings.server.APP_LOC, *_convert_uvicorn_args(process_args)],  # noqa: S607
+            ["uvicorn", settings.server.APP_LOC, *_convert_uvicorn_args(process_args)],
             check=True,
         )
     finally:
@@ -153,38 +163,6 @@ def run_all_app(
             process.terminate()
         logger.info("⏏️  Shutdown complete")
         sys.exit()
-
-
-@worker_management_app.command(name="run", help="Starts the background workers.")
-@click.option(
-    "--worker-concurrency",
-    help="The number of simultaneous jobs a worker process can execute.",
-    type=click.IntRange(min=1),
-    default=settings.worker.CONCURRENCY,
-    required=False,
-    show_default=True,
-)
-@click.option(
-    "-v",
-    "--verbose",
-    help="Enable verbose logging.",
-    is_flag=True,
-    default=False,
-    type=bool,
-)
-@click.option("-d", "--debug", help="Enable debugging.", is_flag=True, default=False, type=bool)
-def run_worker(
-    worker_concurrency: int | None,
-    verbose: bool | None,
-    debug: bool | None,
-) -> None:
-    """Run the API server."""
-    log.config.configure()
-    settings.worker.CONCURRENCY = worker_concurrency or settings.worker.CONCURRENCY
-    settings.app.DEBUG = debug or settings.app.DEBUG
-    settings.log.LEVEL = 10 if verbose or settings.app.DEBUG else settings.log.LEVEL
-    logger.info("starting Background worker processes.")
-    worker.run_worker()
 
 
 @user_management_app.command(name="create-user", help="Create a user")
@@ -246,13 +224,24 @@ def create_user(
 
     email = email or click.prompt("Email")
     name = name or click.prompt("Full Name", show_default=False)
-    password = password or click.prompt("Password", hide_input=True, confirmation_prompt=True)
-    superuser = superuser or click.prompt("Create as superuser?", show_default=True, type=click.BOOL)
+    password = password or click.prompt(
+        "Password",
+        hide_input=True,
+        confirmation_prompt=True,
+    )
+    superuser = superuser or click.prompt(
+        "Create as superuser?",
+        show_default=True,
+        type=click.BOOL,
+    )
 
     anyio.run(_create_user, email, name, password, superuser)
 
 
-@user_management_app.command(name="promote-to-superuser", help="Promotes a user to application superuser")
+@user_management_app.command(
+    name="promote-to-superuser",
+    help="Promotes a user to application superuser",
+)
 @click.option(
     "--email",
     help="Email of the user",
@@ -272,10 +261,7 @@ def promote_to_superuser(email: str) -> None:
             user = await users_service.get_one_or_none(email=email)
             if user:
                 logger.info("Promoting user: %s", user.email)
-                user_in = UserUpdate(
-                    email=user.email,
-                    is_superuser=True,
-                )
+                user_in = UserUpdate(email=user.email, is_superuser=True)
                 user = await users_service.update(
                     item_id=user.id,
                     data=user_in.__dict__,

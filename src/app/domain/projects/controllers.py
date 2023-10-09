@@ -62,7 +62,7 @@ class ApiController(Controller):
     async def update(self, data: Model, current_user: User, service: "Service", row_id: "UUID") -> Model:
         """Update an Model."""
         data.owner_id = current_user.id
-        return await service.update(row_id, data)
+        return await service.update(item_id=row_id, data=data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK, guards=[requires_active_user])
     async def delete(self, service: "Service", row_id: "UUID") -> Model:

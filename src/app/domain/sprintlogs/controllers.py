@@ -83,7 +83,7 @@ class ApiController(Controller):
             data.owner_id = current_user.id
         if not data.assignee_id:
             data.assignee_id = current_user.id
-        return await service.update(row_id, data)
+        return await service.update(data, row_id)
 
     @delete(detail_route, guards=[requires_active_user], status_code=HTTP_200_OK)
     async def delete(self, service: "Service", row_id: "UUID") -> Model:
@@ -137,7 +137,7 @@ class ApiController(Controller):
                 obj.status = StatusEnum.started
             else:
                 obj.status = StatusEnum.checked_in
-            return await service.update(obj.id, obj)
+            return await service.update(obj, obj.id)
         raise HTTPException(
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
@@ -158,7 +158,7 @@ class ApiController(Controller):
                 obj.status = StatusEnum.started
             else:
                 obj.status = StatusEnum.checked_in
-            return await service.update(obj.id, obj)
+            return await service.update(obj, obj.id)
         raise HTTPException(
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
@@ -172,7 +172,7 @@ class ApiController(Controller):
         obj = await service.repository.get_by_slug(slug)
         if obj:
             obj.type = ItemType[typ]
-            return await service.update(obj.id, obj)
+            return await service.update(obj, obj.id)
         raise HTTPException(
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
@@ -210,7 +210,7 @@ class ApiController(Controller):
             elif next_idx >= len(priority_list):
                 next_idx = len(priority_list) - 1
             obj.priority = PriorityEnum(priority_list[next_idx])
-            return await service.update(obj.id, obj)
+            return await service.update(obj, obj.id)
         raise HTTPException(
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
@@ -232,7 +232,7 @@ class ApiController(Controller):
             elif next_idx >= len(priority_list):
                 next_idx = 0
             obj.priority = PriorityEnum(priority_list[next_idx])
-            return await service.update(obj.id, obj)
+            return await service.update(obj, obj.id)
         raise HTTPException(
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
@@ -253,7 +253,7 @@ class ApiController(Controller):
             elif next_idx >= len(status_list):
                 next_idx = len(status_list) - 1
             obj.status = StatusEnum(status_list[next_idx])
-            return await service.update(obj.id, obj)
+            return await service.update(obj, obj.id)
         raise HTTPException(
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",

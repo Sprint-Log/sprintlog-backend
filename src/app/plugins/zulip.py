@@ -70,7 +70,12 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
         raise httpx.HTTPError(msg)
 
 
-async def update_message(topic_name: str, msg_id: int, content: str, propagate_mode: str) -> dict[str, Any]:
+async def update_message(
+    topic_name: str,
+    msg_id: int,
+    content: str,
+    propagate_mode: str,
+) -> dict[str, Any]:
     log_info("updating message")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
@@ -95,6 +100,8 @@ async def update_message(topic_name: str, msg_id: int, content: str, propagate_m
 class ZulipSprintlogPlugin(SprintlogPlugin):
     def __init__(self, zulip_bot: str = "pipo") -> None:
         self.zulip_bot: str = zulip_bot
+
+        ...
 
     async def before_create(self, data: "SprintLog") -> "SprintLog":
         log_info(self.zulip_bot)
@@ -125,7 +132,11 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
             log_info(f"failed to send message to zulip: {e!s}")
         return data
 
-    async def before_update(self, item_id: str, data: "SprintLog") -> "SprintLog":
+    async def before_update(  # noqa: C901, PLR0915 , PLR0912
+        self,
+        item_id: str | None,
+        data: "SprintLog",
+    ) -> "SprintLog":
         data = await super().before_update(item_id, data)
         is_task = data.plugin_meta.get("task") if data.plugin_meta else False
 
@@ -147,7 +158,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                         await send_msg(stream_name, topic_name, description)
                     msg_response = await send_msg(stream_name, topic_name, content)
                     if msg_response["result"] != "success":
-                        log_info(f"failed to send message to zulip for task {msg_response}")
+                        log_info(
+                            f"failed to send message to zulip for task {msg_response}",
+                        )
                     else:
                         log_info("successfully sent message to zulip for task")
                         task_msg_id = {
@@ -160,12 +173,16 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     try:
                         msg_id = data.plugin_meta.get("msg_id")
                         if msg_id:
-                            response: dict[str, Any] | None = await delete_message(msg_id=msg_id)
+                            response: dict[str, Any] | None = await delete_message(
+                                msg_id=msg_id,
+                            )
                             if response:
                                 if response.get("result") != "success":
                                     log_info(f"failed to delete message: {response!s}")
                                 else:
-                                    log_info(f"successfully deleted message from zulip {response}")
+                                    log_info(
+                                        f"successfully deleted message from zulip {response}",
+                                    )
                     except (
                         httpx.ConnectTimeout,
                         httpx.ReadTimeout,
@@ -201,9 +218,13 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                         )
                         if update_response:
                             if update_response.get("result") != "success":
-                                log_info(f"failed to update message to zulip {update_response!s}")
+                                log_info(
+                                    f"failed to update message to zulip {update_response!s}",
+                                )
                             else:
-                                log_info(f"successfully update message to zulip {update_response}")
+                                log_info(
+                                    f"successfully update message to zulip {update_response}",
+                                )
                                 task_msg_id = {
                                     "msg_id": msg_id,
                                     "task": True,
@@ -308,7 +329,12 @@ class ZulipProjectPlugin(ProjectPlugin):
             principals.append(server.ZULIP_EMAIL_ADDRESS)
             principals.append(email)
             log_info(str(principals))
-            response = await create_stream(data.name, data.description, principals, data.pin)
+            response = await create_stream(
+                data.name,
+                data.description,
+                principals,
+                data.pin,
+            )
             if response["result"] != "success":
                 log_info(str(response))
             else:
@@ -322,7 +348,7 @@ class ZulipProjectPlugin(ProjectPlugin):
             log_info(f"failed to create zulip stream: {e!s}")
         return data
 
-    async def before_update(self, item_id: str, data: "Project") -> "Project":
+    async def before_update(self, item_id: UUID, data: "Project") -> "Project":
         return await super().before_update(item_id, data)
 
     async def after_update(self, data: "Project") -> "Project":

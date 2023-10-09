@@ -16,18 +16,19 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-    "litestar[cli,jinja,jwt,pydantic,redis,structlog]>=2.1.1",
-    "saq>=0.12.0",
-    "pydantic-settings>=2.0.3",
-    "advanced-alchemy==0.2.2",
-    "asyncpg>=0.28.0",
-    "aiosql>=9.0",
-    "python-dotenv>=1.0.0",
-    "uvicorn[standard]>=0.23.2",
-    "passlib[argon2]>=1.7.4",
-    "greenlet; sys_platform == \"darwin\"",
-    "pdm-shell>=1.1.0",
-    "livekit-server-sdk-python>=1.0.0",
+  "litestar[cli,jinja,jwt,pydantic,redis,structlog] @ git+https://github.com/litestar-org/litestar.git",
+  "pydantic-settings>=2.0.3",
+  "advanced-alchemy==0.3.0",
+  "asyncpg>=0.28.0",
+  "python-dotenv>=1.0.0",
+  "uvicorn[standard]>=0.23.2",
+  "passlib[argon2]>=1.7.4",
+  "greenlet; sys_platform == \"darwin\"",
+  "litestar-saq>=0.1.3",
+  "litestar-vite>=0.1.2",
+  "litestar-aiosql>=0.1.1",
+  "pdm-shell>=1.1.0",
+  "livekit-server-sdk-python>=1.0.0",
 ]
 description = "Sprintlog: Streamline, Collaborate, and Automate Your Team's Success , In Real Time!"
 keywords = [
@@ -60,7 +61,6 @@ app = "litestar.__main__:run_cli"
 [project.entry-points."litestar.commands"]
 run-all = "app.cli:run_all_app"
 users = "app.cli:user_management_app"
-worker = "app.cli:worker_management_app"
 
 [build-system]
 build-backend = "hatchling.build"
@@ -226,6 +226,7 @@ ignore = [
   "RUF006",
   "SLF001",
   "PT007",
+  "S607",
   'PT004',
   'PT005',
   'S603',
