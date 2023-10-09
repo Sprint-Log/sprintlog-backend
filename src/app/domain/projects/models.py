@@ -20,7 +20,7 @@ __all__ = [
     "Project",
     "ReadDTO",
     "Repository",
-    "Service",
+    "ProjectService",
     "WriteDTO",
 ]
 
@@ -64,7 +64,7 @@ class Repository(SQLAlchemyAsyncRepository[Project]):
     model_type = Project
 
 
-class Service(SQLAlchemyAsyncRepositoryService[Project]):
+class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
     repository_type = Repository
     plugins: set[ProjectPlugin] = set()
 

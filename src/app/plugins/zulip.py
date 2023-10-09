@@ -5,6 +5,8 @@ from uuid import UUID
 
 import httpx
 
+from app.lib import serialization
+
 if TYPE_CHECKING:
     from app.domain.projects.models import Project
     from app.domain.sprintlogs.models import SprintLog
@@ -138,17 +140,15 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         data: "SprintLog",
     ) -> "SprintLog":
         data = await super().before_update(item_id, data)
-        is_task = data.plugin_meta.get("task") if data.plugin_meta else False
+        meta_data = serialization.from_base64(data.plugin_meta)
+        logger.error(meta_data)
+        is_tasked = meta_data.get("task") if data.plugin_meta else False
 
-        if not is_task:
+        if not is_tasked:
             if data.type == "task":
                 log_info("task type: updating backlog to task before_update")
                 # need to know if it's updating status or changing backlog to task
                 try:
-                    task_msg_id: Any
-                    content: str
-                    stream_name: str
-                    topic_name: str
                     description = data.description
                     content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
                     stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
@@ -247,14 +247,15 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         log_info(self.zulip_bot)
         data = await super().after_update(data)
         log_info(f"metadata project {data.plugin_meta}")
-        is_task = data.plugin_meta.get("task")
-        if data.type != "task" or not is_task:
+        meta_data = serialization.from_base64(data.plugin_meta)
+        is_tasked = meta_data.get("task")
+        if data.type != "task" or not is_tasked:
             try:
                 log_info("backlog type: updating message")
-                msg_id = data.plugin_meta.get("msg_id")
-                content: str = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
+                msg_id = meta_data.get("msg_id")
+                content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
                 if msg_id:
-                    response: dict[str, Any] | None = await update_message(
+                    response = await update_message(
                         topic_name=backlog_topic,
                         msg_id=msg_id,
                         content=content,

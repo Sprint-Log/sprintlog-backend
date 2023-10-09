@@ -4,9 +4,15 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any
 
 from advanced_alchemy.config import AlembicAsyncConfig
-from advanced_alchemy.extensions.litestar.plugins.init.config import SQLAlchemyAsyncConfig
-from advanced_alchemy.extensions.litestar.plugins.init.config.asyncio import autocommit_before_send_handler
-from advanced_alchemy.extensions.litestar.plugins.init.plugin import SQLAlchemyInitPlugin
+from advanced_alchemy.extensions.litestar.plugins.init.config import (
+    SQLAlchemyAsyncConfig,
+)
+from advanced_alchemy.extensions.litestar.plugins.init.config.asyncio import (
+    autocommit_before_send_handler,
+)
+from advanced_alchemy.extensions.litestar.plugins.init.plugin import (
+    SQLAlchemyInitPlugin,
+)
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
@@ -24,6 +30,8 @@ if TYPE_CHECKING:
 engine = create_async_engine(
     settings.db.URL,
     future=True,
+    json_serializer=serialization.to_json,
+    json_deserializer=serialization.from_json,
     echo=settings.db.ECHO,
     echo_pool=True if settings.db.ECHO_POOL == "debug" else settings.db.ECHO_POOL,
     max_overflow=settings.db.POOL_MAX_OVERFLOW,
@@ -35,7 +43,10 @@ engine = create_async_engine(
     poolclass=NullPool if settings.db.POOL_DISABLE else None,
     connect_args=settings.db.CONNECT_ARGS,
 )
-async_session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(engine, expire_on_commit=False)
+async_session_factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
+    engine,
+    expire_on_commit=False,
+)
 """Database session factory.
 
 See [`async_sessionmaker()`][sqlalchemy.ext.asyncio.async_sessionmaker].

@@ -24,7 +24,7 @@ __all__ = [
     "SprintLog",
     "ReadDTO",
     "Repository",
-    "Service",
+    "SprintlogService",
     "WriteDTO",
 ]
 
@@ -217,7 +217,7 @@ class Repository(SQLAlchemyAsyncSlugRepository[SprintLog]):
         return beg_date + timedelta(days=est_days)
 
 
-class Service(SQLAlchemyAsyncRepositoryService[SprintLog]):
+class SprintlogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
     repository_type = Repository
     plugins: set[SprintlogPlugin] = set()
 
@@ -273,7 +273,6 @@ class Service(SQLAlchemyAsyncRepositoryService[SprintLog]):
     ) -> SprintLog:
         # Call the before_update hook for each registered plugin        if isinstance(data,SprintLog):
         data = await self.to_model(data, "update")
-
         for plugin in self.plugins:
             data = await plugin.before_update(item_id=item_id, data=data)
 

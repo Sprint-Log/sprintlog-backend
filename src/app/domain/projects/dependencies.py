@@ -5,7 +5,7 @@ import pkgutil
 from typing import TYPE_CHECKING
 
 import app.plugins
-from app.domain.projects.models import Service
+from app.domain.projects.models import ProjectService
 from app.lib import log
 from app.lib.plugin import ProjectPlugin
 from app.lib.settings import plugin
@@ -26,10 +26,12 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def provides_service(db_session: AsyncSession) -> AsyncGenerator[Service, None]:
+async def provides_service(
+    db_session: AsyncSession,
+) -> AsyncGenerator[ProjectService, None]:
     plugins = []
     for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-        if "zulip" not in plugin.PLUGINS and name == "zulip":
+        if "zulip" not in plugin.ENABLED:
             log_info("skipped zulip plugin in project")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
@@ -39,10 +41,8 @@ async def provides_service(db_session: AsyncSession) -> AsyncGenerator[Service, 
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:
                 plugins.append(obj())
-    """Construct repository and service objects for the request."""
-    async with Service.new(
-        session=db_session,
-    ) as service:
+    """Construct repository and ProjectService objects for the request."""
+    async with ProjectService.new(session=db_session) as service:
         service.plugins = set(plugins)
         try:
             yield service

@@ -7,7 +7,10 @@ from pathlib import Path
 from typing import Any, Final, Literal
 
 from dotenv import load_dotenv
-from litestar.data_extractors import RequestExtractorField, ResponseExtractorField  # noqa: TCH002
+from litestar.data_extractors import (
+    RequestExtractorField,
+    ResponseExtractorField,
+)
 from pydantic import ValidationError, field_validator
 from pydantic_settings import (
     BaseSettings,
@@ -144,10 +147,7 @@ class AppSettings(BaseSettings):
         return utils.slugify(self.NAME)
 
     @field_validator("BACKEND_CORS_ORIGINS")
-    def assemble_cors_origins(
-        cls,
-        value: str | list[str],
-    ) -> list[str] | str:
+    def assemble_cors_origins(cls, value: str | list[str]) -> list[str] | str:
         """Parse a list of origins."""
         if isinstance(value, list):
             return value
@@ -158,10 +158,7 @@ class AppSettings(BaseSettings):
         raise ValueError(value)
 
     @field_validator("SECRET_KEY")
-    def generate_secret_key(
-        cls,
-        value: str | None,
-    ) -> str:
+    def generate_secret_key(cls, value: str | None) -> str:
         """Generate a secret key."""
         return os.urandom(32).decode() if value is None else value
 
@@ -169,7 +166,11 @@ class AppSettings(BaseSettings):
 class LogSettings(BaseSettings):
     """Logging config for the application."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="LOG_")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="LOG_",
+    )
 
     # https://stackoverflow.com/a/1845097/6560549
     EXCLUDE_PATHS: str = r"\A(?!x)x"
@@ -225,7 +226,7 @@ class LogSettings(BaseSettings):
     logged."""
     WORKER_EVENT: str = "Worker"
     """Log event name for logs from SAQ worker."""
-    SAQ_LEVEL: int = 20
+    SAQ_LEVEL: int = 50
     """Level to log SAQ logs."""
     SQLALCHEMY_LEVEL: int = 30
     """Level to log SQLAlchemy logs."""
@@ -336,7 +337,11 @@ class DatabaseSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     """Redis settings for the application."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="REDIS_")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="REDIS_",
+    )
 
     URL: str = "redis://localhost:6379/0"
     """A Redis connection URL."""
@@ -362,7 +367,7 @@ class PluginSettings(BaseSettings):
         env_prefix = "PLUGIN_"
 
     """Disable or enable zulip plugin"""
-    PLUGINS: list[str]
+    ENABLED: list[str]
 
 
 @lru_cache
@@ -439,13 +444,4 @@ def load_settings() -> (
     )
 
 
-(
-    app,
-    redis,
-    db,
-    openapi,
-    server,
-    log,
-    worker,
-    plugin,
-) = load_settings()
+(app, redis, db, openapi, server, log, worker, plugin) = load_settings()

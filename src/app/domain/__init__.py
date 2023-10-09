@@ -9,6 +9,7 @@ from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.types import TypeEncodersMap
 from pydantic import UUID4
+from saq import Queue
 
 from app.domain.accounts.dtos import (
     AccountLogin,
@@ -18,6 +19,8 @@ from app.domain.accounts.dtos import (
 )
 from app.domain.accounts.models import User
 from app.domain.analytics.dtos import NewUsersByWeek
+from app.domain.projects.models import ProjectService
+from app.domain.sprintlogs.models import SprintlogService
 from app.domain.tags.models import Tag
 from app.domain.teams.models import Team
 
@@ -86,11 +89,14 @@ signature_namespace: Mapping[str, Any] = {
     "Tag": Tag,
     "OAuth2Login": OAuth2Login,
     "OffsetPagination": OffsetPagination,
+    "SprintlogService": SprintlogService,
+    "ProjectService": ProjectService,
     "UserService": accounts.services.UserService,
     "TeamService": teams.services.TeamService,
     "TagService": tags.services.TagService,
     "TeamInvitationService": teams.services.TeamInvitationService,
     "TeamMemberService": teams.services.TeamMemberService,
     "DTOData": DTOData,
+    "Queue": Queue,
     "TypeEncodersMap": TypeEncodersMap,
 }

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     from advanced_alchemy.filters import FilterTypes
 
-    from app.domain.projects.models import Service
+    from app.domain.projects.models import ProjectService
 from app.domain.projects.dependencies import provides_service
 from app.domain.projects.models import Project as Model
 from app.domain.projects.models import ReadDTO, WriteDTO
@@ -42,29 +42,44 @@ class ApiController(Controller):
     DETAIL_ROUTE = "/{row_id:uuid}"
 
     @get(guards=[requires_active_user])
-    async def filter(self, service: "Service", filters: list["FilterTypes"] = validation_skip) -> Sequence[Model]:
+    async def filter(
+        self,
+        service: "ProjectService",
+        filters: list["FilterTypes"] = validation_skip,
+    ) -> Sequence[Model]:
         """Get a list of Models."""
         return await service.list(*filters)
 
     @post(guards=[requires_active_user])
-    async def create(self, data: Model, current_user: User, service: "Service") -> Model:
+    async def create(
+        self,
+        data: Model,
+        current_user: User,
+        service: "ProjectService",
+    ) -> Model:
         """Create an `Model`."""
 
         data.owner_id = current_user.id
         return await service.create(data)
 
     @get(DETAIL_ROUTE, guards=[requires_active_user])
-    async def retrieve(self, service: "Service", row_id: "UUID") -> Model:
+    async def retrieve(self, service: "ProjectService", row_id: "UUID") -> Model:
         """Get Model by ID."""
         return await service.get(row_id)
 
     @put(DETAIL_ROUTE, guards=[requires_active_user])
-    async def update(self, data: Model, current_user: User, service: "Service", row_id: "UUID") -> Model:
+    async def update(
+        self,
+        data: Model,
+        current_user: User,
+        service: "ProjectService",
+        row_id: "UUID",
+    ) -> Model:
         """Update an Model."""
         data.owner_id = current_user.id
         return await service.update(item_id=row_id, data=data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK, guards=[requires_active_user])
-    async def delete(self, service: "Service", row_id: "UUID") -> Model:
+    async def delete(self, service: "ProjectService", row_id: "UUID") -> Model:
         """Delete Author by ID."""
         return await service.delete(row_id)

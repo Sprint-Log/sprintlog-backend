@@ -22,9 +22,6 @@ services:
     build:
       context: .
       dockerfile: deploy/docker/dev/Dockerfile
-      args:
-        # remove this to build for production.
-        PDM_INSTALL_ARGS: -G:all
     image: sprintlog:latest-dev
     command: litestar run --reload --host 0.0.0.0 --port 8000
     restart: "no"

@@ -14,7 +14,6 @@ def create_app() -> Litestar:
     """Create ASGI application."""
 
     from litestar import Litestar
-    from litestar.config.app import ExperimentalFeatures
     from litestar.di import Provide
     from litestar.stores.registry import StoreRegistry
 
@@ -56,5 +55,4 @@ def create_app() -> Litestar:
         on_app_init=[domain.security.auth.on_app_init, repository.on_app_init],
         static_files_config=static_files.config,
         signature_namespace=domain.signature_namespace,
-        experimental_features=[ExperimentalFeatures.DTO_CODEGEN],
     )

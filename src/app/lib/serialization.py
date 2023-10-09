@@ -1,4 +1,7 @@
+import ast
 import datetime
+import logging
+from base64 import b64decode
 from typing import Any
 from uuid import UUID
 
@@ -32,6 +35,9 @@ def _default(value: Any) -> str:
         return val
 
 
+logger = logging.getLogger(__name__)
+
+
 _msgspec_json_encoder = msgspec.json.Encoder(enc_hook=_default)
 _msgspec_json_decoder = msgspec.json.Decoder()
 _msgspec_msgpack_encoder = msgspec.msgpack.Encoder(enc_hook=_default)
@@ -56,6 +62,12 @@ def to_msgpack(value: Any) -> bytes:
 def from_msgpack(value: bytes) -> Any:
     """Decode to an object with the optimized msgspec package."""
     return _msgspec_msgpack_decoder.decode(value)
+
+
+def from_base64(value: str) -> Any:
+    decoded_str = b64decode(value).decode("UTF-8")
+    logger.error(decoded_str)
+    return ast.literal_eval(decoded_str)
 
 
 def convert_datetime_to_gmt(dt: datetime.datetime) -> str:
