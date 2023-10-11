@@ -31,15 +31,20 @@ async def provides_service(
 ) -> AsyncGenerator[ProjectService, None]:
     plugins = []
     for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-        if "zulip" not in plugin.ENABLED:
-            log_info("skipped zulip plugin in project")
+        log_info(f"checking plugin {name}")
+        if name not in plugin.ENABLED:
+            log_info(f"skipped {name} plugin in sprintlog")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
         log_info(f"module name: {module}")
         for obj_name in dir(module):
             log_info(f"object name :{obj_name}")
             obj = getattr(module, obj_name)
-            if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:
+            if (
+                isinstance(obj, type)
+                and issubclass(obj, ProjectPlugin)
+                and obj is not ProjectPlugin
+            ):
                 plugins.append(obj())
     """Construct repository and ProjectService objects for the request."""
     async with ProjectService.new(session=db_session) as service:

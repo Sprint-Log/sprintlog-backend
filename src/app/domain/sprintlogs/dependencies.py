@@ -34,19 +34,26 @@ async def provides_service(
 ) -> AsyncGenerator[SprintlogService, None]:
     plugins = []
     for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-        if "zulip" not in plugin.ENABLED:
-            log_info("skipped zulip plugin in sprintlog")
+        log_info(f"checking plugin {name}")
+        if name not in plugin.ENABLED:
+            log_info(f"skipped {name} plugin in sprintlog")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
         log_info(f"sprintlog module name: {module}")
         for obj_name in dir(module):
             log_info(f"sprintlog object name: {obj_name}")
             obj = getattr(module, obj_name)
-            if isinstance(obj, type) and issubclass(obj, SprintlogPlugin) and obj is not SprintlogPlugin:
+            if (
+                isinstance(obj, type)
+                and issubclass(obj, SprintlogPlugin)
+                and obj is not SprintlogPlugin
+            ):
                 plugins.append(obj())
     async with SprintlogService.new(
         session=db_session,
-        statement=select(SprintLog).order_by(SprintLog.updated_at.desc()).options(joinedload(SprintLog.project)),
+        statement=select(SprintLog)
+        .order_by(SprintLog.updated_at.desc())
+        .options(joinedload(SprintLog.project)),
     ) as service:
         service.plugins = set(plugins)
         try:
