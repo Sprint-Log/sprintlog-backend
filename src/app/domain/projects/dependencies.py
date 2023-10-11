@@ -40,11 +40,7 @@ async def provides_service(
         for obj_name in dir(module):
             log_info(f"object name :{obj_name}")
             obj = getattr(module, obj_name)
-            if (
-                isinstance(obj, type)
-                and issubclass(obj, ProjectPlugin)
-                and obj is not ProjectPlugin
-            ):
+            if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:
                 plugins.append(obj())
     """Construct repository and ProjectService objects for the request."""
     async with ProjectService.new(session=db_session) as service:

@@ -9,8 +9,8 @@ from app.lib import serialization
 
 if TYPE_CHECKING:
     from app.domain.projects.models import Project
-    from app.domain.sprintlogs.models import SprintLog
 
+from app.domain.sprintlogs.models import SprintLog
 from app.lib.plugin import ProjectPlugin, SprintlogPlugin
 from app.lib.settings import server
 
@@ -59,7 +59,10 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
 
 
 async def update_message(
-    topic_name: str, msg_id: int, content: str, propagate_mode: str,
+    topic_name: str,
+    msg_id: int,
+    content: str,
+    propagate_mode: str,
 ) -> dict[str, Any]:
     log_info("updating message")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
@@ -83,16 +86,14 @@ async def update_message(
 
 
 def format_content(data: SprintLog) -> dict:
-    stream_name = (
-        f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-    )
-    topic_name = (
-        f"{data.progress} {data.title} {data.category}  {data.priority} {data.status"
-    )
+    stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
+
+    topic_name = f"{data.progress} {data.title} {data.category}  {data.priority} {data.status}"
+
     content = f"""{data.description}
-    [{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** 
+    [{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**
     f"""
-    return dict(content=content, stream_name=stream_name, topic_name=topic_name)
+    return {"content": content, "stream_name": stream_name, "topic_name": topic_name}
 
 
 async def update_backlog(data: SprintLog) -> dict:
@@ -139,9 +140,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
     async def after_create(self, data: "SprintLog") -> "SprintLog":
         try:
             content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
-            stream_name = (
-                f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-            )
+            stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
 
             response = await send_msg(stream_name, backlog_topic, content)
             if response["result"] != "success":
@@ -160,7 +159,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def before_update(  # noqa: C901, PLR0915 , PLR0912
-        self, item_id: str | None, data: "SprintLog",
+        self,
+        item_id: str | None,
+        data: "SprintLog",
     ) -> "SprintLog":
         data = await super().before_update(item_id, data)
         meta_data = serialization.eval_from_b64(data.plugin_meta)
@@ -173,11 +174,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 try:
                     description = data.description
                     content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
-                    stream_name = (
-                        f"📌PRJ/{data.project_name}"
-                        if data.pin
-                        else f"PRJ/{data.project_name}"
-                    )
+                    stream_name = f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
                     topic_name = f"{data.progress} {data.title} {data.category} {data.status} {data.priority}"
                     if description != "":
                         log_info("backlog description is not empty. send description")
@@ -308,7 +305,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
 
 async def create_stream(
-    title: str, description: str, principals: list[str], is_pinned: bool | None = False,
+    title: str,
+    description: str,
+    principals: list[str],
+    is_pinned: bool | None = False,
 ) -> dict[str, str]:
     log_info("creating zulip stream")
     url: str = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
@@ -346,7 +346,10 @@ class ZulipProjectPlugin(ProjectPlugin):
             principals.append(email)
             log_info(str(principals))
             response = await create_stream(
-                data.name, data.description, principals, data.pin,
+                data.name,
+                data.description,
+                principals,
+                data.pin,
             )
             if response["result"] != "success":
                 log_info(str(response))
