@@ -13,14 +13,15 @@ from app.domain.accounts.models import User
 from app.domain.sprintlogs.dependencies import provides_service
 from app.domain.sprintlogs.models import (
     ItemType,
-    PriorityEnum,
-    ProgressEnum,
+    Priority,
+    Progress,
     ReadDTO,
     SprintlogService,
-    StatusEnum,
+    Status,
     WriteDTO,
 )
 from app.domain.sprintlogs.models import SprintLog as Model
+from app.lib import log
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -31,6 +32,13 @@ from litestar.pagination import OffsetPagination
 __all__ = [
     "ApiController",
 ]
+
+
+logger = log.get_logger()
+
+
+def log_info(message: str) -> None:
+    logger.error(message)
 
 
 validation_skip: Any = Dependency(skip_validation=True)
@@ -56,10 +64,7 @@ class ApiController(Controller):
 
     @post(guards=[requires_active_user])
     async def create(
-        self,
-        data: Model,
-        current_user: User,
-        service: "SprintlogService",
+        self, data: Model, current_user: User, service: "SprintlogService",
     ) -> Model:
         if not data.owner_id:
             data.owner_id = current_user.id
@@ -97,8 +102,7 @@ class ApiController(Controller):
         limit_offset: "LimitOffset",
     ) -> "OffsetPagination[Model]":
         results, total = await service.list_and_count(
-            limit_offset,
-            project_type=project_type,
+            limit_offset, project_type=project_type,
         )
         return OffsetPagination(
             items=cast(list, results),
@@ -113,18 +117,14 @@ class ApiController(Controller):
         if obj:
             return obj
         raise HTTPException(
-            status_code=404,
-            detail=f"Sprintlog.slug {slug} not available",
+            status_code=404, detail=f"Sprintlog.slug {slug} not available",
         )
 
     async def _update_progress(
-        self,
-        service: "SprintlogService",
-        slug: str,
-        delta: int,
+        self, service: "SprintlogService", slug: str, delta: int,
     ) -> Model:
         obj = await service.repository.get_by_slug(slug)
-        progress_list = list(ProgressEnum)
+        progress_list = list(Progress)
         if obj:
             current_idx = progress_list.index(obj.progress)
             next_idx = current_idx + delta
@@ -132,20 +132,19 @@ class ApiController(Controller):
                 next_idx = 0
             elif next_idx >= len(progress_list):
                 next_idx = len(progress_list) - 1
-            obj.progress = ProgressEnum(progress_list[next_idx])
-            if obj.progress != ProgressEnum.full:
-                obj.status = StatusEnum.started
+            obj.progress = Progress(progress_list[next_idx])
+            if obj.progress != Progress.ready:
+                obj.status = Status.started
             else:
-                obj.status = StatusEnum.checked_in
+                obj.status = Status.checked_in
             return await service.update(obj, obj.id)
         raise HTTPException(
-            status_code=404,
-            detail=f"Sprintlog.slug {slug} not available",
+            status_code=404, detail=f"Sprintlog.slug {slug} not available",
         )
 
     async def _circle_progress(self, service: "SprintlogService", slug: str) -> Model:
         obj = await service.repository.get_by_slug(slug)
-        progress_list = list(ProgressEnum)
+        progress_list = list(Progress)
         if obj:
             current_idx = progress_list.index(obj.progress)
             next_idx = current_idx + 1
@@ -153,15 +152,14 @@ class ApiController(Controller):
                 next_idx = len(progress_list)
             elif next_idx >= len(progress_list):
                 next_idx = 0
-            obj.progress = ProgressEnum(progress_list[next_idx])
-            if obj.progress != ProgressEnum.full:
-                obj.status = StatusEnum.started
+            obj.progress = Progress(progress_list[next_idx])
+            if obj.progress != Progress.ready:
+                obj.status = Status.started
             else:
-                obj.status = StatusEnum.checked_in
+                obj.status = Status.checked_in
             return await service.update(obj, obj.id)
         raise HTTPException(
-            status_code=404,
-            detail=f"Sprintlog.slug {slug} not available",
+            status_code=404, detail=f"Sprintlog.slug {slug} not available",
         )
 
     @put(f"progress/up/{slug_route}", guards=[requires_active_user])
@@ -169,18 +167,17 @@ class ApiController(Controller):
         return await self._update_progress(service, slug, 1)
 
     async def _update_type(
-        self,
-        service: "SprintlogService",
-        slug: str,
-        typ: str,
+        self, service: "SprintlogService", slug: str, typ: str,
     ) -> Model:
         obj = await service.repository.get_by_slug(slug)
+
         if obj:
+            old_data = obj.to_dict()
+            log_info("obj.type " + obj.type)
             obj.type = ItemType[typ]
-            return await service.update(obj, obj.id)
+            return await service.update(obj, obj.id, old_data=old_data)
         raise HTTPException(
-            status_code=404,
-            detail=f"Sprintlog.slug {slug} not available",
+            status_code=404, detail=f"Sprintlog.slug {slug} not available",
         )
 
     @put(f"switch/task/{slug_route}", guards=[requires_active_user])
@@ -200,13 +197,10 @@ class ApiController(Controller):
         return await self._circle_progress(service, slug)
 
     async def _update_priority(
-        self,
-        service: "SprintlogService",
-        slug: str,
-        delta: int,
+        self, service: "SprintlogService", slug: str, delta: int,
     ) -> Model:
         obj = await service.repository.get_by_slug(slug)
-        priority_list = list(PriorityEnum)
+        priority_list = list(Priority)
         if obj:
             current_idx = priority_list.index(obj.priority)
             next_idx = current_idx + delta
@@ -214,21 +208,17 @@ class ApiController(Controller):
                 next_idx = 0
             elif next_idx >= len(priority_list):
                 next_idx = len(priority_list) - 1
-            obj.priority = PriorityEnum(priority_list[next_idx])
+            obj.priority = Priority(priority_list[next_idx])
             return await service.update(obj, obj.id)
         raise HTTPException(
-            status_code=404,
-            detail=f"Sprintlog.slug {slug} not available",
+            status_code=404, detail=f"Sprintlog.slug {slug} not available",
         )
 
     async def _circle_priority(
-        self,
-        service: "SprintlogService",
-        slug: str,
-        delta: int,
+        self, service: "SprintlogService", slug: str, delta: int,
     ) -> Model:
         obj = await service.repository.get_by_slug(slug)
-        priority_list = list(PriorityEnum)
+        priority_list = list(Priority)
         if obj:
             current_idx = priority_list.index(obj.priority)
             next_idx = current_idx + 1
@@ -236,11 +226,10 @@ class ApiController(Controller):
                 next_idx = len(priority_list)
             elif next_idx >= len(priority_list):
                 next_idx = 0
-            obj.priority = PriorityEnum(priority_list[next_idx])
+            obj.priority = Priority(priority_list[next_idx])
             return await service.update(obj, obj.id)
         raise HTTPException(
-            status_code=404,
-            detail=f"Sprintlog.slug {slug} not available",
+            status_code=404, detail=f"Sprintlog.slug {slug} not available",
         )
 
     @put(f"priority/circle/{slug_route}", guards=[requires_active_user])
@@ -248,13 +237,10 @@ class ApiController(Controller):
         return await self._circle_priority(service, slug, 0)
 
     async def update_status(
-        self,
-        service: "SprintlogService",
-        slug: str,
-        delta: int,
+        self, service: "SprintlogService", slug: str, delta: int,
     ) -> Model:
         obj = await service.repository.get_by_slug(slug)
-        status_list = list(StatusEnum)
+        status_list = list(Status)
         if obj:
             current_idx = status_list.index(obj.status)
             next_idx = current_idx + delta
@@ -262,11 +248,10 @@ class ApiController(Controller):
                 next_idx = 0
             elif next_idx >= len(status_list):
                 next_idx = len(status_list) - 1
-            obj.status = StatusEnum(status_list[next_idx])
+            obj.status = Status(status_list[next_idx])
             return await service.update(obj, obj.id)
         raise HTTPException(
-            status_code=404,
-            detail=f"Sprintlog.slug {slug} not available",
+            status_code=404, detail=f"Sprintlog.slug {slug} not available",
         )
 
     @put(f"status/circle/{slug_route}", guards=[requires_active_user])

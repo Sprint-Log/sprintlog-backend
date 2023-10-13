@@ -242,6 +242,7 @@ ignore = [
   "TD",
   "PERF203", # ignore for now; investigate
 ]
+unfixable = [  "F841" ]
 line-length = 120
 select = ["ALL"]
 # Allow unused variables when underscore-prefixed.

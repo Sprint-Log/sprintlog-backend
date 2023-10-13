@@ -33,7 +33,7 @@
     "python.linting.flake8Args": [
         "--max-line-length=120"
     ],
-    "python.linting.pylintEnabled": true,
+    "python.linting.pylintEnabled": false,
     "python.linting.pylintArgs": [
         "--load-plugins pylint_pydantic",
         "--rcfile=pylintrc"

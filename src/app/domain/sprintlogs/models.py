@@ -29,20 +29,20 @@ __all__ = [
 ]
 
 
-class PriorityEnum(StrEnum):
+class Priority(StrEnum):
     low = "🟢"
     med = "🟡"
     hi = "🔴"
 
 
-class ProgressEnum(StrEnum):
+class Progress(StrEnum):
     empty = "⬜⬜⬜"
-    a_third = "🟩⬜⬜"
-    two_third = "🟩🟩⬜"
-    full = "🟩🟩🟩"
+    in_progress = "🟩⬜⬜"
+    half_way = "🟩🟩⬜"
+    ready = "🟩🟩🟩"
 
 
-class StatusEnum(StrEnum):
+class Status(StrEnum):
     new = "☀️"
     started = "🛠️"
     checked_in = "🔳"
@@ -50,7 +50,7 @@ class StatusEnum(StrEnum):
     cancelled = "🚫"
 
 
-class TagEnum(StrEnum):
+class Category(StrEnum):
     ideas = "💡"
     issues = "⚠️"
     maintenance = "🔨"
@@ -81,36 +81,23 @@ class SprintLog(orm.TimestampedDatabaseModel):
     title: Mapped[str] = m_col(String(length=200), index=True)
     description: Mapped[str | None]
     slug: Mapped[str] = m_col(
-        String(length=50),
-        unique=True,
-        index=True,
-        info=dto_field(Mark.READ_ONLY),
+        String(length=50), unique=True, index=True, info=dto_field(Mark.READ_ONLY),
     )
-    progress: Mapped[ProgressEnum] = m_col(
-        String(length=50),
-        default=ProgressEnum.empty,
-        index=True,
+    progress: Mapped[Progress] = m_col(
+        String(length=50), default=Progress.empty, index=True,
     )
     sprint_number: Mapped[int]
-    priority: Mapped[PriorityEnum] = m_col(
-        String(length=50),
-        default=PriorityEnum.med,
-        index=True,
+    priority: Mapped[Priority] = m_col(
+        String(length=50), default=Priority.med, index=True,
     )
-    status: Mapped[StatusEnum] = m_col(
-        String(length=50),
-        default=StatusEnum.new,
-        index=True,
+    status: Mapped[Status] = m_col(
+        String(length=50), default=Status.new, index=True,
     )
     type: Mapped[ItemType] = m_col(
-        String(length=50),
-        default=ItemType.draft,
-        index=True,
+        String(length=50), default=ItemType.draft, index=True,
     )
-    category: Mapped[TagEnum] = m_col(
-        String(length=50),
-        default=TagEnum.features,
-        index=True,
+    category: Mapped[Category] = m_col(
+        String(length=50), default=Category.features, index=True,
     )
     order: Mapped[int] = m_col(default=0)
     est_days: Mapped[float]
@@ -119,18 +106,14 @@ class SprintLog(orm.TimestampedDatabaseModel):
     end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     due_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date)
     labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
-    plugin_meta: Mapped[dict] = m_col(
-        default=lambda: dict,
-        info=dto_field(Mark.READ_ONLY),
+    plugin_meta: Mapped[dict | None] = m_col(
+        default=lambda: dict, info=dto_field(Mark.READ_ONLY), nullable=True,
     )  # Relationships
     assignee_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id))
     project_slug: Mapped[str] = m_col(ForeignKey(Project.slug), nullable=True)
     project: Mapped["Project"] = relationship(
-        "Project",
-        uselist=False,
-        lazy="selectin",
-        info=dto_field(Mark.READ_ONLY),
+        "Project", uselist=False, lazy="selectin", info=dto_field(Mark.READ_ONLY),
     )
     assignee: Mapped["User"] = relationship(
         "User",
@@ -147,29 +130,19 @@ class SprintLog(orm.TimestampedDatabaseModel):
         info=dto_field(Mark.PRIVATE),
     )
     audits: Mapped[list["Audit"]] = relationship(
-        "Audit",
-        lazy="noload",
-        info=dto_field(Mark.READ_ONLY),
+        "Audit", lazy="noload", info=dto_field(Mark.READ_ONLY),
     )
     project_name: AssociationProxy[str] = association_proxy(
-        "project",
-        "name",
-        info=dto_field(Mark.READ_ONLY),
+        "project", "name", info=dto_field(Mark.READ_ONLY),
     )
     pin: AssociationProxy[bool] = association_proxy(
-        "project",
-        "pin",
-        info=dto_field(Mark.READ_ONLY),
+        "project", "pin", info=dto_field(Mark.READ_ONLY),
     )
     assignee_name: AssociationProxy[str] = association_proxy(
-        "assignee",
-        "name",
-        info=dto_field(Mark.READ_ONLY),
+        "assignee", "name", info=dto_field(Mark.READ_ONLY),
     )
     owner_name: AssociationProxy[str] = association_proxy(
-        "owner",
-        "name",
-        info=dto_field(Mark.READ_ONLY),
+        "owner", "name", info=dto_field(Mark.READ_ONLY),
     )
 
     @hybrid_property
@@ -180,13 +153,12 @@ class SprintLog(orm.TimestampedDatabaseModel):
     @classmethod
     def _project_type_expression(cls) -> SQLColumnExpression[String | None]:
         return cast(
-            "SQLColumnExpression[String | None]",
-            cls.project_slug + "_" + cls.type,
+            "SQLColumnExpression[String | None]", cls.project_slug + "_" + cls.type,
         )
 
 
 SprintLog.registry.update_type_annotation_map(
-    {TagEnum: String, PriorityEnum: String, ProgressEnum: String, ItemType: String},
+    {Category: String, Priority: String, Progress: String, ItemType: String},
 )
 
 
@@ -197,7 +169,9 @@ class Audit(orm.TimestampedDatabaseModel):
     new_value: Mapped[str]
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={"id", "created_at", "updated_at"})]]
+WriteDTO = SQLAlchemyDTO[
+    Annotated[SprintLog, DTOConfig(exclude={"id", "created_at", "updated_at"})]
+]
 ReadDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={"project", "audits"})]]
 
 
@@ -228,17 +202,14 @@ class SprintlogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
         super().__init__(**repo_kwargs)
 
     async def to_model(
-        self,
-        data: SprintLog | dict[str, Any],
-        operation: str | None = None,
+        self, data: SprintLog | dict[str, Any], operation: str | None = None,
     ) -> SprintLog:
         if isinstance(data, SprintLog):
             slug = await self.repository.get_available_sprintlog_slug(sprintlog=data)
             if isinstance(slug, str):
                 data.slug = slug
             data.due_date = await self.repository._get_due_date(
-                data.beg_date,
-                data.est_days,
+                data.beg_date, data.est_days,
             )
 
         return await super().to_model(data, operation)
@@ -270,17 +241,20 @@ class SprintlogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
         auto_expunge: bool | None = None,
         auto_refresh: bool | None = None,
         id_attribute: str | InstrumentedAttribute | None = None,
+        old_data: SprintLog | dict | None = None,
     ) -> SprintLog:
         # Call the before_update hook for each registered plugin        if isinstance(data,SprintLog):
         data = await self.to_model(data, "update")
         for plugin in self.plugins:
-            data = await plugin.before_update(item_id=item_id, data=data)
+            data = await plugin.before_update(
+                item_id=item_id, data=data, old_data=old_data,
+            )
 
-        obj: SprintLog = await super().update(item_id=item_id, data=data)
+        obj = await super().update(item_id=item_id, data=data)
 
         # Call the after_update hook for each registered plugin
         for plugin in self.plugins:
-            await plugin.after_update(data=obj)
+            await plugin.after_update(data=obj, old_data=old_data)
 
         return obj
 
@@ -295,7 +269,7 @@ class SprintlogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
         for plugin in self.plugins:
             await plugin.before_delete(item_id=item_id)
 
-        obj: SprintLog = await self.repository.delete(item_id)
+        obj = await self.repository.delete(item_id)
 
         # Call the after_delete hook for each registered plugin
         for plugin in self.plugins:

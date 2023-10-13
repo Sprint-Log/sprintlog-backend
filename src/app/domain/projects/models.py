@@ -44,16 +44,12 @@ class Project(orm.TimestampedDatabaseModel):
     sprint_amount: Mapped[int | None] = m_col(default=3)
     sprint_checkup_day: Mapped[int | None] = m_col(default=1)
     repo_urls: Mapped[list[str]] = m_col(ARRAY(String))
-    plugin_meta: Mapped[dict] = m_col(
-        default=lambda: dict,
-        info=dto_field(Mark.READ_ONLY),
+    plugin_meta: Mapped[dict | None] = m_col(
+        default=lambda: dict, info=dto_field(Mark.READ_ONLY),
     )  # Relationships
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id), nullable=True)
     owner: Mapped["User"] = relationship(
-        "User",
-        uselist=False,
-        lazy="joined",
-        info=dto_field(Mark.PRIVATE),
+        "User", uselist=False, lazy="joined", info=dto_field(Mark.PRIVATE),
     )
 
     def __init__(self, **kw: Any) -> None:
@@ -104,10 +100,13 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
         id_attribute: str | InstrumentedAttribute | None = None,
     ) -> Project:
         # Call the before_update hook for each registered plugin
+        old_data = await self.repository.get(item_id)
         data = await super().to_model(data, "update")
 
         for plugin in self.plugins:
-            data = await plugin.before_update(item_id=item_id, data=data)
+            data = await plugin.before_update(
+                item_id=item_id, data=data, old_data=old_data,
+            )
 
         obj = await super().update(item_id=item_id, data=data)
 
