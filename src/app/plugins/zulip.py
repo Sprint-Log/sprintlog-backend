@@ -78,19 +78,20 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
     async def _move_zulip_task(
         self, data: SprintLog, existing_meta: dict, delete_msg: bool,
     ) -> SprintLog:
-        current_msg_id = existing_meta.get("msg_id")
-        if current_msg_id and delete_msg:
-            try:
-                response = await delete_message(msg_id=current_msg_id)
-                if response and response.get("result") == "success":
-                    log_info(f"successfully deleted message from zulip {response}")
-            except (
-                httpx.ConnectTimeout,
-                httpx.ReadTimeout,
-                httpx.ConnectError,
-                httpx.HTTPError,
-            ):
-                logger.exception("failed to send message to zulip:")
+        if delete_msg:
+            current_msg_id = existing_meta.get("msg_id")
+            if current_msg_id:
+                try:
+                    response = await delete_message(msg_id=current_msg_id)
+                    if response and response.get("result") == "success":
+                        log_info(f"successfully deleted message from zulip {response}")
+                except (
+                    httpx.ConnectTimeout,
+                    httpx.ReadTimeout,
+                    httpx.ConnectError,
+                    httpx.HTTPError,
+                ):
+                    logger.exception("failed to send message to zulip:")
 
         content, stream_name, topic_name = self._format_content(data).values()
         msg_response = await send_msg(stream_name, topic_name, content)
@@ -216,12 +217,6 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
             switch_to_task = not backlogged and switched
 
             try:
-                if switch_to_backlog:
-                    log_info("Swithcing to bacjlog")
-                    return await self._move_zulip_task(data, meta_data, True)
-                if switch_to_task:
-                    log_info("Swithcing to task")
-                    return await self._move_zulip_task(data, meta_data, False)
                 if backlog_update:
                     log_info("Just Backlog Update")
                     log_info(f"update_data {data.type}")
@@ -230,6 +225,12 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                     log_info("Just Sprint Update")
                     log_info(f"update_data {data.type}")
                     return await self._update_task(data, meta_data)
+                if switch_to_backlog:
+                    log_info("Swithcing to bacjlog")
+                    return await self._move_zulip_task(data, meta_data, True)
+                if switch_to_task:
+                    log_info("Swithcing to task")
+                    return await self._move_zulip_task(data, meta_data, False)
             except (
                 httpx.ConnectTimeout,
                 httpx.ReadTimeout,
