@@ -20,6 +20,29 @@ def log_info(message: str) -> None:
     return logger.exception(message)
 
 
+async def create_stream(
+    title: str, description: str, principals: list[str], is_pinned: bool | None = False,
+) -> dict[str, str]:
+    log_info("creating zulip stream")
+    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
+    auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
+    tag = f"📌PRJ/{title}" if is_pinned else f"PRJ/{title}"
+    subscription: list[dict[str, str]] = [{"description": description, "name": tag}]
+    data = {
+        "subscriptions": json.dumps(subscription),
+        "principals": json.dumps(principals),
+        "invite_only": True,
+        "history_public_to_subscribers": True,
+    }
+    async with httpx.AsyncClient(timeout=1000) as client:
+        response = await client.post(url, auth=auth, data=data)
+        log_info(str(response))
+        if response.status_code == 200:
+            return dict(response.json())
+        msg = f"{response.status_code}, {response.text}"
+        raise httpx.HTTPError(msg)
+
+
 async def send_msg(stream_name: str, topic_name: str, content: str | None = "") -> dict:
     log_info("sending message to zulip")
     log_info(f"stream name: {stream_name}")
@@ -38,6 +61,18 @@ async def send_msg(stream_name: str, topic_name: str, content: str | None = "") 
         response = await client.post(url, auth=auth, data=data)
         if response.status_code == 200:
             return dict(response.json())
+        if (
+            response.status_code == 400
+            and dict(response.json()).get("code") == "STREAM_DOES_NOT_EXIST"
+        ):
+            await create_stream(
+                stream_name,
+                "Stream rebuild due to inexistance",
+                server.ZULIP_ADMIN_EMAIL,
+            )
+            response = await client.post(url, auth=auth, data=data)
+            return dict(response.json())
+
         msg = f"{response.status_code}, {response.text}"
         raise httpx.HTTPError(msg)
 
@@ -269,29 +304,6 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
     async def after_delete(self, data: "SprintLog") -> "SprintLog":
         return data
-
-
-async def create_stream(
-    title: str, description: str, principals: list[str], is_pinned: bool | None = False,
-) -> dict[str, str]:
-    log_info("creating zulip stream")
-    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
-    auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
-    tag = f"📌PRJ/{title}" if is_pinned else f"PRJ/{title}"
-    subscription: list[dict[str, str]] = [{"description": description, "name": tag}]
-    data = {
-        "subscriptions": json.dumps(subscription),
-        "principals": json.dumps(principals),
-        "invite_only": True,
-        "history_public_to_subscribers": True,
-    }
-    async with httpx.AsyncClient(timeout=1000) as client:
-        response = await client.post(url, auth=auth, data=data)
-        log_info(str(response))
-        if response.status_code == 200:
-            return dict(response.json())
-        msg = f"{response.status_code}, {response.text}"
-        raise httpx.HTTPError(msg)
 
 
 class ZulipProjectPlugin(ProjectPlugin):
