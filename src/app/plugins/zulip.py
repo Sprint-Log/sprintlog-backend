@@ -21,13 +21,14 @@ def log_info(message: str) -> None:
 
 
 async def create_stream(
-    title: str, description: str, principals: list[str], is_pinned: bool | None = False,
+    name: str,
+    description: str,
+    principals: list[str],
 ) -> dict[str, str]:
     log_info("creating zulip stream")
-    url: str = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
+    url = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
-    tag = f"📌PRJ/{title}" if is_pinned else f"PRJ/{title}"
-    subscription: list[dict[str, str]] = [{"description": description, "name": tag}]
+    subscription = [{"description": description, "name": name}]
     data = {
         "subscriptions": json.dumps(subscription),
         "principals": json.dumps(principals),
@@ -41,6 +42,10 @@ async def create_stream(
             return dict(response.json())
         msg = f"{response.status_code}, {response.text}"
         raise httpx.HTTPError(msg)
+
+
+def _gen_stream_name(name: str, is_pinned: bool | None = False) -> str:
+    return f"📌PRJ/{name}" if is_pinned else f"PRJ/{name}"
 
 
 async def send_msg(stream_name: str, topic_name: str, content: str | None = "") -> dict:
@@ -61,10 +66,7 @@ async def send_msg(stream_name: str, topic_name: str, content: str | None = "") 
         response = await client.post(url, auth=auth, data=data)
         if response.status_code == 200:
             return dict(response.json())
-        if (
-            response.status_code == 400
-            and dict(response.json()).get("code") == "STREAM_DOES_NOT_EXIST"
-        ):
+        if response.status_code == 400 and dict(response.json()).get("code") == "STREAM_DOES_NOT_EXIST":
             await create_stream(
                 stream_name,
                 "Stream rebuild due to inexistance",
@@ -95,9 +97,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         ...
 
     def _format_content(self, data: SprintLog) -> dict:
-        stream_name = (
-            f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-        )
+        stream_name = _gen_stream_name(data.project_name, data.pin)
 
         topic_name = f"{data.progress} {data.title} {data.category}  {data.priority} {data.status}"
 
@@ -111,7 +111,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         }
 
     async def _move_zulip_task(
-        self, data: SprintLog, existing_meta: dict, delete_msg: bool,
+        self,
+        data: SprintLog,
+        existing_meta: dict,
+        delete_msg: bool,
     ) -> SprintLog:
         if delete_msg:
             current_msg_id = existing_meta.get("msg_id")
@@ -141,7 +144,11 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def _update_message(
-        self, topic_name: str, msg_id: int, content: str, propagate_mode: str,
+        self,
+        topic_name: str,
+        msg_id: int,
+        content: str,
+        propagate_mode: str,
     ) -> dict[str, Any]:
         log_info("updating message")
         url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
@@ -183,7 +190,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def _update_task(
-        self, data: SprintLog, meta_data: dict, propagation: str = "change_all",
+        self,
+        data: SprintLog,
+        meta_data: dict,
+        propagation: str = "change_all",
     ) -> SprintLog:
         log_info("backlog type: updating message")
         msg_id = meta_data.get("msg_id")
@@ -208,9 +218,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
     async def after_create(self, data: "SprintLog") -> "SprintLog":
         try:
-            stream_name = (
-                f"📌PRJ/{data.project_name}" if data.pin else f"PRJ/{data.project_name}"
-            )
+            stream_name = _gen_stream_name(data.project_name, data.pin)
             content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
 
             response = await send_msg(stream_name, backlog_topic, content)
@@ -235,17 +243,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         data: "SprintLog",
         old_data: "SprintLog|dict|None" = None,
     ) -> "SprintLog":
-
-        meta_data = (
-            serialization.eval_from_b64(data.plugin_meta) if data.plugin_meta else None
-        )
+        meta_data = serialization.eval_from_b64(data.plugin_meta) if data.plugin_meta else None
         if meta_data:
             backlogged = data.type == "backlog"
-            switched = (
-                data.type != old_data.get("type")
-                if isinstance(old_data, dict)
-                else False
-            )
+            switched = data.type != old_data.get("type") if isinstance(old_data, dict) else False
             backlog_update = backlogged and not switched
             sprint_update = not backlogged and not switched
             switch_to_backlog = backlogged and switched
@@ -281,7 +282,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def after_update(
-        self, data: "SprintLog", old_data: "SprintLog|dict|None" = None,
+        self,
+        data: "SprintLog",
+        old_data: "SprintLog|dict|None" = None,
     ) -> "SprintLog":
         data = await super().after_update(data)
         log_info(f"metadata project {data.plugin_meta}")
@@ -321,9 +324,7 @@ class ZulipProjectPlugin(ProjectPlugin):
             principals.append(server.ZULIP_EMAIL_ADDRESS)
             principals.append(email)
             log_info(str(principals))
-            response = await create_stream(
-                data.name, data.description, principals, data.pin,
-            )
+            response = await create_stream(data.name, data.description, principals)
             if response["result"] != "success":
                 log_info(str(response))
             else:
@@ -338,7 +339,10 @@ class ZulipProjectPlugin(ProjectPlugin):
         return data
 
     async def before_update(
-        self, item_id: UUID, data: Project, old_data: Project | None = None,
+        self,
+        item_id: UUID,
+        data: Project,
+        old_data: Project | None = None,
     ) -> "Project":
         return await super().before_update(item_id, data, old_data)
 

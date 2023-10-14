@@ -29,7 +29,9 @@ class SprintlogPlugin(ABC):
 
     @abstractmethod
     async def after_update(
-        self, data: "SprintLog", old_data: "SprintLog|dict|None" = None
+        self,
+        data: "SprintLog",
+        old_data: "SprintLog|dict|None" = None,
     ) -> "SprintLog":
         return data
 
@@ -53,7 +55,10 @@ class ProjectPlugin(ABC):
 
     @abstractmethod
     async def before_update(
-        self, item_id: UUID, data: "Project", old_data: "Project|None" = None,
+        self,
+        item_id: UUID,
+        data: "Project",
+        old_data: "Project|None" = None,
     ) -> "Project":
         return data
 
