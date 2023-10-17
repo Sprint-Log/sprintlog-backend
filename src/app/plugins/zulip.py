@@ -100,12 +100,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
     def _format_content(self, data: SprintLog) -> dict:
         stream_name = _gen_stream_name(data.project_name, data.pin)
-
         topic_name = f"{data.progress} {data.title} {data.category}  {data.priority} {data.status}"
-
-        content = f"""{data.description}
-        [{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**
-        f"""
+        content = f"{data.description}\n[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
         return {
             "content": content,
             "stream_name": stream_name,
@@ -331,8 +327,9 @@ class ZulipProjectPlugin(ProjectPlugin):
         try:
             email = "" if data.owner.email is None else data.owner.email
             principals = [*server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS, email]
+            stream_name = _gen_stream_name(data.name, data.pin)
 
-            response = await create_stream(data.name, data.description, principals)
+            response = await create_stream(stream_name, data.description, principals)
             if response["result"] != "success":
                 log_info(str(response))
             else:
