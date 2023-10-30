@@ -17,9 +17,6 @@
 
 # Litestar Fullstack Reference Application
 
-> [!WARNING]\
-> This repo is referencing a currently unreleased version of Litestar 2.0. Expect things to stabilize as we get closer to a final release.
-
 Sprintlog is also a highly adaptable and pluggable self-hosted solution designed to optimize your team's productivity and streamline agile project management.
 
 It contains most of the boilerplate required for a production web API with features like:

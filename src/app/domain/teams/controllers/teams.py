@@ -10,7 +10,13 @@ from litestar.params import Dependency, Parameter
 from app.domain import urls
 from app.domain.accounts.guards import requires_active_user
 from app.domain.teams.dependencies import provides_teams_service
-from app.domain.teams.dtos import TeamCreate, TeamCreateDTO, TeamDTO, TeamUpdate, TeamUpdateDTO
+from app.domain.teams.dtos import (
+    TeamCreate,
+    TeamCreateDTO,
+    TeamDTO,
+    TeamUpdate,
+    TeamUpdateDTO,
+)
 from app.domain.teams.guards import requires_team_admin, requires_team_membership
 
 if TYPE_CHECKING:
@@ -52,7 +58,9 @@ class TeamController(Controller):
         if current_user.is_superuser:
             results, total = await teams_service.list_and_count(*filters)
         else:
-            results, total = await teams_service.get_user_teams(*filters, user_id=current_user.id)
+            results, total = await teams_service.get_user_teams(
+                *filters, user_id=current_user.id
+            )
         return teams_service.to_dto(results, total, *filters)
 
     @post(
@@ -63,10 +71,7 @@ class TeamController(Controller):
         dto=TeamCreateDTO,
     )
     async def create_team(
-        self,
-        teams_service: TeamService,
-        current_user: User,
-        data: DTOData[TeamCreate],
+        self, teams_service: TeamService, current_user: User, data: DTOData[TeamCreate],
     ) -> Team:
         """Create a new team."""
         obj = data.create_instance().__dict__
@@ -85,8 +90,7 @@ class TeamController(Controller):
         self,
         teams_service: TeamService,
         team_id: UUID = Parameter(
-            title="Team ID",
-            description="The team to retrieve.",
+            title="Team ID", description="The team to retrieve.",
         ),
     ) -> Team:
         """Get details about a team."""
@@ -104,15 +108,11 @@ class TeamController(Controller):
         self,
         data: DTOData[TeamUpdate],
         teams_service: TeamService,
-        team_id: UUID = Parameter(
-            title="Team ID",
-            description="The team to update.",
-        ),
+        team_id: UUID = Parameter(title="Team ID", description="The team to update.",),
     ) -> Team:
         """Update a migration team."""
         db_obj = await teams_service.update(
-            item_id=team_id,
-            data=data.create_instance().__dict__,
+            item_id=team_id, data=data.create_instance().__dict__,
         )
         return teams_service.to_dto(db_obj)
 
@@ -127,10 +127,7 @@ class TeamController(Controller):
     async def delete_team(
         self,
         teams_service: TeamService,
-        team_id: UUID = Parameter(
-            title="Team ID",
-            description="The team to delete.",
-        ),
+        team_id: UUID = Parameter(title="Team ID", description="The team to delete.",),
     ) -> None:
         """Delete a team."""
         _ = await teams_service.delete(team_id)
