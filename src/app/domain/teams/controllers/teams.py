@@ -59,7 +59,8 @@ class TeamController(Controller):
             results, total = await teams_service.list_and_count(*filters)
         else:
             results, total = await teams_service.get_user_teams(
-                *filters, user_id=current_user.id
+                *filters,
+                user_id=current_user.id,
             )
         return teams_service.to_dto(results, total, *filters)
 
@@ -71,7 +72,10 @@ class TeamController(Controller):
         dto=TeamCreateDTO,
     )
     async def create_team(
-        self, teams_service: TeamService, current_user: User, data: DTOData[TeamCreate],
+        self,
+        teams_service: TeamService,
+        current_user: User,
+        data: DTOData[TeamCreate],
     ) -> Team:
         """Create a new team."""
         obj = data.create_instance().__dict__
@@ -90,7 +94,8 @@ class TeamController(Controller):
         self,
         teams_service: TeamService,
         team_id: UUID = Parameter(
-            title="Team ID", description="The team to retrieve.",
+            title="Team ID",
+            description="The team to retrieve.",
         ),
     ) -> Team:
         """Get details about a team."""
@@ -108,11 +113,12 @@ class TeamController(Controller):
         self,
         data: DTOData[TeamUpdate],
         teams_service: TeamService,
-        team_id: UUID = Parameter(title="Team ID", description="The team to update.",),
+        team_id: UUID = Parameter(title="Team ID", description="The team to update."),
     ) -> Team:
         """Update a migration team."""
         db_obj = await teams_service.update(
-            item_id=team_id, data=data.create_instance().__dict__,
+            item_id=team_id,
+            data=data.create_instance().__dict__,
         )
         return teams_service.to_dto(db_obj)
 
@@ -127,7 +133,7 @@ class TeamController(Controller):
     async def delete_team(
         self,
         teams_service: TeamService,
-        team_id: UUID = Parameter(title="Team ID", description="The team to delete.",),
+        team_id: UUID = Parameter(title="Team ID", description="The team to delete."),
     ) -> None:
         """Delete a team."""
         _ = await teams_service.delete(team_id)

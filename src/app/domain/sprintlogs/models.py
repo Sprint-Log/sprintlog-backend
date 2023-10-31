@@ -237,10 +237,11 @@ class SprintlogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
             slug = await self.repository.get_available_sprintlog_slug(sprintlog=data)
             if isinstance(slug, str):
                 data.slug = slug
-            data.due_date = await self.repository._get_due_date(
-                data.beg_date,
-                data.est_days,
-            )
+            if not data.due_date:
+                data.due_date = await self.repository._get_due_date(
+                    data.beg_date,
+                    data.est_days,
+                )
 
         return await super().to_model(data, operation)
 

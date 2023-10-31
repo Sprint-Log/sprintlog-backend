@@ -21,7 +21,9 @@ def log_info(message: str) -> None:
 
 
 async def create_stream(
-    name: str, description: str, principals: list[str],
+    name: str,
+    description: str,
+    principals: list[str],
 ) -> dict[str, str]:
     log_info("creating zulip stream")
     url = f"{server.ZULIP_API_URL}{server.ZULIP_CREATE_STREAM_URL}"
@@ -64,10 +66,7 @@ async def send_msg(stream_name: str, topic_name: str, content: str | None = "") 
         response = await client.post(url, auth=auth, data=data)
         if response.status_code == 200:
             return dict(response.json())
-        if (
-            response.status_code == 400
-            and dict(response.json()).get("code") == "STREAM_DOES_NOT_EXIST"
-        ):
+        if response.status_code == 400 and dict(response.json()).get("code") == "STREAM_DOES_NOT_EXIST":
             await create_stream(
                 stream_name,
                 "Stream rebuild due to inexistance",
@@ -109,7 +108,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         }
 
     async def _move_zulip_task(
-        self, data: SprintLog, existing_meta: dict, delete_msg: bool,
+        self,
+        data: SprintLog,
+        existing_meta: dict,
+        delete_msg: bool,
     ) -> SprintLog:
         if delete_msg:
             current_msg_id = existing_meta.get("msg_id")
@@ -196,7 +198,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def _update_task(
-        self, data: SprintLog, meta_data: dict, propagation: str = "change_all",
+        self,
+        data: SprintLog,
+        meta_data: dict,
+        propagation: str = "change_all",
     ) -> SprintLog:
         log_info("backlog type: updating message")
         msg_id = meta_data.get("msg_id")
@@ -246,16 +251,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         data: "SprintLog",
         old_data: "SprintLog|dict|None" = None,
     ) -> "SprintLog":
-        meta_data = (
-            serialization.eval_from_b64(data.plugin_meta) if data.plugin_meta else None
-        )
+        meta_data = serialization.eval_from_b64(data.plugin_meta) if data.plugin_meta else None
         if meta_data:
             backlogged = data.type == "backlog"
-            switched = (
-                data.type != old_data.get("type")
-                if isinstance(old_data, dict)
-                else False
-            )
+            switched = data.type != old_data.get("type") if isinstance(old_data, dict) else False
             backlog_update = backlogged and not switched
             sprint_update = not backlogged and not switched
             switch_to_backlog = backlogged and switched
@@ -291,7 +290,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         return data
 
     async def after_update(
-        self, data: "SprintLog", old_data: "SprintLog|dict|None" = None,
+        self,
+        data: "SprintLog",
+        old_data: "SprintLog|dict|None" = None,
     ) -> "SprintLog":
         data = await super().after_update(data)
         log_info(f"metadata project {data.plugin_meta}")
@@ -344,7 +345,10 @@ class ZulipProjectPlugin(ProjectPlugin):
         return data
 
     async def before_update(
-        self, item_id: UUID, data: Project, old_data: Project | None = None,
+        self,
+        item_id: UUID,
+        data: Project,
+        old_data: Project | None = None,
     ) -> "Project":
         return await super().before_update(item_id, data, old_data)
 

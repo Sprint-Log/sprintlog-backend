@@ -199,6 +199,9 @@ class ApiController(Controller):
             old_data = obj.to_dict()
             log_info("obj.type " + obj.type)
             obj.type = ItemType[typ]
+            if typ == "backlog":
+                obj.progress = Progress.empty
+                obj.status = Status.started
             return await service.update(obj, obj.id, old_data=old_data)
         raise HTTPException(
             status_code=404, detail=f"Sprintlog.slug {slug} not available",
