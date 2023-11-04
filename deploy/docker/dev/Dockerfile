@@ -30,7 +30,7 @@ RUN apt-get update \
 ## ------------------------- Python build base -------------------------------------- ##
 ## ---------------------------------------------------------------------------------- ##
 FROM python-base AS build-base
-# ARG PDM_INSTALL_ARGS="--only main"
+ARG PDM_INSTALL_ARGS="-G:all"
 ENV PDM_INSTALL_ARGS="${PDM_INSTALL_ARGS}" \
     GRPC_PYTHON_BUILD_WITH_CYTHON=1 \
     PATH="/workspace/app/.venv/bin:/usr/local/bin:$PATH"
@@ -79,4 +79,6 @@ COPY src src/
 RUN pdm install $PDM_INSTALL_ARGS
 STOPSIGNAL SIGINT
 EXPOSE 8000
+ENTRYPOINT ["tini","--" ]
+CMD [ "litestar","run","--host","0.0.0.0"]
 VOLUME /workspace/app

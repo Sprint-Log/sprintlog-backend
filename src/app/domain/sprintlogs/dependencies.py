@@ -39,9 +39,7 @@ async def provides_service(
             log_info(f"skipped {name} plugin in sprintlog")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
-        log_info(f"sprintlog module name: {module}")
         for obj_name in dir(module):
-            log_info(f"sprintlog object name: {obj_name}")
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, SprintlogPlugin) and obj is not SprintlogPlugin:
                 plugins.append(obj())

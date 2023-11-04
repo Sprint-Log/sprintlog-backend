@@ -38,7 +38,6 @@ async def provides_service(
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
         log_info(f"module name: {module}")
         for obj_name in dir(module):
-            log_info(f"object name :{obj_name}")
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:
                 plugins.append(obj())

@@ -1,5 +1,6 @@
 import json
 import logging
+from enum import Enum
 from typing import Any
 from uuid import UUID
 
@@ -19,6 +20,12 @@ backlog_topic = "📑 [BACKLOG] "
 def log_info(message: str) -> None:
     return logger.exception(message)
 
+
+class StatusFlags(Enum):
+    BACKLOG_UPDATE = 1
+    SPRINT_UPDATE = 2
+    SWITCH_TO_BACKLOG = 4
+    SWITCH_TO_TASK = 8
 
 async def create_stream(
     name: str,
@@ -45,6 +52,7 @@ async def create_stream(
 
 
 def _gen_stream_name(name: str, is_pinned: bool | None = False) -> str:
+    log_info(f">>> {name}")
     return f"📌PRJ/{name}" if is_pinned else f"PRJ/{name}"
 
 
@@ -93,6 +101,7 @@ async def delete_message(msg_id: int) -> dict[str, Any]:
 
 
 class ZulipSprintlogPlugin(SprintlogPlugin):
+    status:StatusFlags
     def __init__(self) -> None:
         log_info("plugin initaiton sequence")
         ...
@@ -112,7 +121,15 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         data: SprintLog,
         existing_meta: dict,
         delete_msg: bool,
+        project_name: str = "",
     ) -> SprintLog:
+        log_info(">>> moving to zulip task from backlog")
+        if not data.project_name and project_name:
+            content, _, topic_name = self._format_content(data).values()
+            stream_name = _gen_stream_name(project_name)
+        else:
+            content, stream_name, topic_name = self._format_content(data).values()
+
         if delete_msg:
             current_msg_id = existing_meta.get("msg_id")
             if current_msg_id:
@@ -128,13 +145,12 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 ):
                     logger.exception("failed to send message to zulip:")
 
-        content, stream_name, topic_name = self._format_content(data).values()
+
+        log_info(f"CST>>> {content} - {stream_name} - {topic_name} - {data.to_dict()}")
         msg_response = await send_msg(stream_name, topic_name, content)
         if msg_response["result"] == "success":
             new_meta = {
                 "msg_id": msg_response["id"],
-                "task": True,
-                topic_name: topic_name,
             }
             data.plugin_meta = new_meta
 
@@ -148,11 +164,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         propagate_mode: str,
         stream_name: str | None = None,
     ) -> dict[str, Any]:
-        log_info("updating message")
-        url: str = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
+        url = f"{server.ZULIP_API_URL}{server.ZULIP_UPDATE_MESSAGE_URL}/{msg_id}"
         auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
-        log_info(f"message id:{msg_id}")
-        log_info(f"content :{content}")
 
         data = {
             "topic": topic_name,
@@ -174,13 +187,12 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 await create_stream(
                     stream_name,
                     "Stream rebuild due to inexistance",
-                    principals=[*server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS],
+                    principals=[*server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS  ],
                 )
             msg = f"{response.status_code}, {response.text}"
             raise httpx.HTTPError(msg)
 
     async def _update_backlog(self, data: SprintLog, meta_data: dict) -> SprintLog:
-        log_info("backlog type: updating message")
         msg_id = meta_data.get("msg_id")
         content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
         if msg_id:
@@ -203,9 +215,8 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         meta_data: dict,
         propagation: str = "change_all",
     ) -> SprintLog:
-        log_info("backlog type: updating message")
         msg_id = meta_data.get("msg_id")
-        content, stream_name, topic_name = self._format_content(data).values()
+        content, _stream_name, topic_name = self._format_content(data).values()
         if msg_id:
             response = await self._update_message(
                 topic_name=topic_name,
@@ -226,6 +237,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
     async def after_create(self, data: "SprintLog") -> "SprintLog":
         try:
+            log_info(">>> after_create trigger")
             stream_name = _gen_stream_name(data.project_name, data.pin)
             content = f"{data.status} {data.priority} {data.progress} **[{data.slug}]** {data.title}  **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}** {data.category}"
 
@@ -245,36 +257,46 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
             log_info("failed to send message to zulip: ")
         return data
 
+    def _set_status(self, data:SprintLog, old_data:SprintLog)->StatusFlags:
+        backlogged = data.type == "backlog"
+        switched = data.type != old_data.get("type") if isinstance(old_data, dict) else False
+        if backlogged and not switched:
+            self.status = StatusFlags.BACKLOG_UPDATE
+            return self.status
+        if not backlogged and not switched:
+            self.status = StatusFlags.SPRINT_UPDATE
+            return self.status
+        if backlogged and switched:
+            self.status = StatusFlags.SWITCH_TO_BACKLOG
+            return self.status
+        if not backlogged and switched :
+            self.status = StatusFlags.SWITCH_TO_TASK
+            return self.status
+        return None
+
     async def before_update(
         self,
         item_id: str | None,
         data: "SprintLog",
         old_data: "SprintLog|dict|None" = None,
     ) -> "SprintLog":
-        meta_data = serialization.eval_from_b64(data.plugin_meta) if data.plugin_meta else None
-        if meta_data:
-            backlogged = data.type == "backlog"
-            switched = data.type != old_data.get("type") if isinstance(old_data, dict) else False
-            backlog_update = backlogged and not switched
-            sprint_update = not backlogged and not switched
-            switch_to_backlog = backlogged and switched
-            switch_to_task = not backlogged and switched
+        data = await super().before_update(item_id, data)
+        meta_data = serialization.eval_from_b64(data.plugin_meta) if data.plugin_meta else serialization.eval_from_b64(old_data.plugin_meta)
+        status = self._set_status(data, old_data)
+        project_name = old_data.project_name if isinstance(old_data, SprintLog) else data.project_name
 
+        if meta_data:
             try:
-                if backlog_update:
-                    log_info("Just Backlog Update")
-                    log_info(f"update_data {data.type}")
-                    return await self._update_task(data, meta_data)
-                if sprint_update:
-                    log_info("Just Sprint Update")
-                    log_info(f"update_data {data.type}")
-                    return await self._update_task(data, meta_data)
-                if switch_to_backlog:
-                    log_info("Swithcing to bacjlog")
-                    return await self._move_zulip_task(data, meta_data, True)
-                if switch_to_task:
-                    log_info("Swithcing to task")
-                    return await self._move_zulip_task(data, meta_data, False)
+                log_info(status)
+                match self.status:
+                    case StatusFlags.BACKLOG_UPDATE:
+                        return await self._update_task(data, meta_data)
+                    case StatusFlags.SPRINT_UPDATE:
+                        return await self._update_task(data, meta_data)
+                    case StatusFlags.SWITCH_TO_BACKLOG:
+                        return await self._move_zulip_task(data, meta_data, True, project_name)
+                    case StatusFlags.SWITCH_TO_TASK:
+                        return await self._move_zulip_task(data, meta_data, False , project_name)
             except (
                 httpx.ConnectTimeout,
                 httpx.ReadTimeout,
@@ -284,10 +306,11 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 return data
 
         else:
-            log_info("cant get meta")
-            await self._move_zulip_task(data, meta_data, False)
+            log_info(f">>>cant get meta: {meta_data}")
+            await self._move_zulip_task(data, meta_data, False , project_name)
 
         return data
+
 
     async def after_update(
         self,
@@ -297,17 +320,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         data = await super().after_update(data)
         log_info(f"metadata project {data.plugin_meta}")
         meta_data = serialization.eval_from_b64(data.plugin_meta)
-        is_tasked = meta_data.get("task")
-        if data.type != "task" or not is_tasked:
-            try:
-                data = await self._update_backlog(data, meta_data)
-            except (
-                httpx.ConnectTimeout,
-                httpx.ReadTimeout,
-                httpx.ConnectError,
-                httpx.HTTPError,
-            ):
-                log_info("failed to update message: ")
+
         return data
 
     async def before_delete(self, item_id: UUID) -> "UUID":

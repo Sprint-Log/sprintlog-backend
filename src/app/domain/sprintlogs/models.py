@@ -130,7 +130,7 @@ class SprintLog(orm.TimestampedDatabaseModel):
     project: Mapped["Project"] = relationship(
         "Project",
         uselist=False,
-        lazy="selectin",
+        lazy="joined",
         info=dto_field(Mark.READ_ONLY),
     )
     assignee: Mapped["User"] = relationship(
@@ -155,7 +155,6 @@ class SprintLog(orm.TimestampedDatabaseModel):
     project_name: AssociationProxy[str] = association_proxy(
         "project",
         "name",
-        info=dto_field(Mark.READ_ONLY),
     )
     pin: AssociationProxy[bool] = association_proxy(
         "project",
@@ -198,15 +197,15 @@ class Audit(orm.TimestampedDatabaseModel):
     new_value: Mapped[str]
 
 
-WriteDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={"id", "created_at", "updated_at"})]]
-ReadDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={"project", "audits"})]]
+WriteDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={"id", "created_at", "updated_at"},max_nested_depth=2)]]
+ReadDTO = SQLAlchemyDTO[Annotated[SprintLog, DTOConfig(exclude={ "audits"},max_nested_depth=2)]]
 
 
 class Repository(SQLAlchemyAsyncSlugRepository[SprintLog]):
     model_type = SprintLog
 
     async def get_available_sprintlog_slug(self, sprintlog: SprintLog) -> str | None:
-        project_slug: str | None = sprintlog.project_slug
+        project_slug: str  = sprintlog.project_slug
         if not sprintlog.slug:
             token = secrets.token_hex(2)
             slug = f"{project_slug}-S{sprintlog.sprint_number}-{token}"
@@ -234,8 +233,8 @@ class SprintlogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
         operation: str | None = None,
     ) -> SprintLog:
         if isinstance(data, SprintLog):
-            slug = await self.repository.get_available_sprintlog_slug(sprintlog=data)
-            if isinstance(slug, str):
+            if operation == "create":
+                slug = await self.repository.get_available_sprintlog_slug(sprintlog=data)
                 data.slug = slug
             if not data.due_date:
                 data.due_date = await self.repository._get_due_date(
@@ -266,13 +265,13 @@ class SprintlogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
         self,
         data: SprintLog | dict[str, Any],
         item_id: Any | None = None,
+        old_data: SprintLog | dict | None = None,
         attribute_names: Iterable[str] | None = None,
         with_for_update: bool | None = None,
         auto_commit: bool | None = None,
         auto_expunge: bool | None = None,
         auto_refresh: bool | None = None,
         id_attribute: str | InstrumentedAttribute | None = None,
-        old_data: SprintLog | dict | None = None,
     ) -> SprintLog:
         # Call the before_update hook for each registered plugin        if isinstance(data,SprintLog):
         data = await self.to_model(data, "update")

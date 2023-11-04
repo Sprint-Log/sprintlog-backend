@@ -76,7 +76,7 @@ class ApiController(Controller):
     async def retrieve(self, service: "SprintlogService", row_id: "UUID") -> Model:
         return await service.get(row_id)
 
-    @put(detail_route, guards=[requires_active_user])
+    @put(detail_route, guards=[requires_active_user] )
     async def update(
         self,
         data: Model,
@@ -84,11 +84,12 @@ class ApiController(Controller):
         service: "SprintlogService",
         row_id: "UUID",
     ) -> Model:
+        old_data = await service.get(row_id)
         if not data.owner_id:
             data.owner_id = current_user.id
         if not data.assignee_id:
             data.assignee_id = current_user.id
-        return await service.update(data, row_id)
+        return await service.update(data, row_id , old_data=old_data)
 
     @delete(detail_route, guards=[requires_active_user], status_code=HTTP_200_OK)
     async def delete(self, service: "SprintlogService", row_id: "UUID") -> Model:
