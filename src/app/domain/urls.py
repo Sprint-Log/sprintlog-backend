@@ -22,6 +22,7 @@ TEAM_DELETE = "/api/teams/{team_id:uuid}"
 TEAM_DETAIL = "/api/teams/{team_id:uuid}"
 TEAM_UPDATE = "/api/teams/{team_id:uuid}"
 TEAM_CREATE = "/api/teams"
+TEAM_MEMBER = "/api/team_member/"
 TEAM_INDEX = "/api/teams/{team_id:uuid}"
 TEAM_INVITATION_LIST = "/api/workspaces/{team_id:uuid}/invitations"
 

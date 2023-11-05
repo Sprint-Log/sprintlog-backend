@@ -64,3 +64,23 @@ def requires_team_ownership(connection: ASGIConnection, _: BaseRouteHandler) -> 
         return
     msg = "Insufficient permissions to access team."
     raise PermissionDeniedException(msg)
+
+
+def requires_membership(connection: ASGIConnection, route: BaseRouteHandler) -> None:
+    if connection.user.is_superuser:
+        return
+    if any(membership.team.name == route.opt.get("membership") for membership in connection.user.teams):
+        return
+    msg = "Insufficient permissions to access team."
+    raise PermissionDeniedException(msg)
+
+
+def requires_membership_name(connection: ASGIConnection, route: BaseRouteHandler) -> None:
+    if connection.user.is_superuser:
+        return
+    team_name = UUID(connection.path_params["team_name"])
+
+    if any(membership.team.name == team_name for membership in connection.user.teams):
+        return
+    msg = "Insufficient permissions to access team."
+    raise PermissionDeniedException(msg)

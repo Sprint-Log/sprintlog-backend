@@ -22,7 +22,7 @@ from app.domain.analytics.dtos import NewUsersByWeek
 from app.domain.projects.models import ProjectService
 from app.domain.sprintlogs.models import SprintlogService
 from app.domain.tags.models import Tag
-from app.domain.teams.models import Team
+from app.domain.teams.models import Team, TeamMember
 
 from . import (
     accounts,
@@ -81,6 +81,7 @@ signature_namespace: Mapping[str, Any] = {
     "UUID4": UUID4,
     "User": User,
     "Team": Team,
+    "TeamMember": TeamMember,
     "UserCreate": UserCreate,
     "UserUpdate": UserUpdate,
     "AccountLogin": AccountLogin,

@@ -6,19 +6,20 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import NullPool
 
 from app.domain.teams.models import TeamRoles
+from app.lib.settings import db
 
 here = Path(__file__).parent
 engine = create_async_engine(
     URL(
         drivername="postgresql+asyncpg",
-        username="postgres",
-        password="super-secret",  # noqa: S106
-        host="127.0.0.1",
-        port=5423,
-        database="postgres",
+        username=db.USER,
+        password=db.PASSWORD,
+        host=db.HOST,
+        port=db.PORT,
+        database=db.NAME,
         query={},  # type:ignore[arg-type]
     ),
-    echo=False,
+    echo=db.ECHO,
     poolclass=NullPool,
 )
 
@@ -33,7 +34,7 @@ raw_users = [
         "id": "97108ac1-ffcb-411d-8b1e-d9183399f63b",
         "email": "phyoakl@hexcode.tech",
         "name": "Phyo Arkar Lwin",
-        "password": "0xc0d3test",
+        "password": "0xc0d3admin",
         "is_superuser": True,
         "is_active": True,
     },
@@ -41,7 +42,7 @@ raw_users = [
         "id": "5ef29f3c-3560-4d15-ba6b-a2e5c721e4d2",
         "email": "admin@hexcode.tech",
         "name": "Scrum Master",
-        "password": "0xc0d3test",
+        "password": "0xc0d3admin",
         "is_superuser": False,
         "is_active": True,
     },
@@ -49,7 +50,7 @@ raw_users = [
         "id": "6ef29f3c-3560-4d15-ba6b-a2e5c721e4d3",
         "email": "dev@hexcode.tech",
         "name": "Developer",
-        "password": "0xc0d3test",
+        "password": "0xc0d3admin",
         "is_superuser": False,
         "is_active": True,
     },
@@ -57,7 +58,7 @@ raw_users = [
         "id": "7ef29f3c-3560-4d15-ba6b-a2e5c721e4e1",
         "email": "client@hexcode.tech",
         "name": "Customer",
-        "password": "0xc0d3test",
+        "password": "0xc0d3admin",
         "is_superuser": False,
         "is_active": False,
     },

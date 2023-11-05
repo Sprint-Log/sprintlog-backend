@@ -128,7 +128,6 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
     status: StatusFlags
 
     def __init__(self) -> None:
-        log_info("plugin initaiton sequence")
         ...
 
     def _format_content(self, data: SprintLog) -> dict:
