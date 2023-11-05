@@ -53,7 +53,7 @@
     "[python]": {
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-python.python",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {
             "source.organizeImports": false,
             "source.fixAll": true

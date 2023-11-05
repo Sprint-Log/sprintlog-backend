@@ -34,9 +34,7 @@ async def provides_service(
 ) -> AsyncGenerator[SprintlogService, None]:
     plugins = []
     for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-        log_info(f"checking plugin {name}")
         if name not in plugin.ENABLED:
-            log_info(f"skipped {name} plugin in sprintlog")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
         for obj_name in dir(module):
