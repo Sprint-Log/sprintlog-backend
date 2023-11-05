@@ -53,8 +53,8 @@ class ApiController(Controller):
     detail_route = "/detail/{row_id:uuid}"
     project_route = "/project/{project_type:str}"
     slug_route = "{slug:str}"
-    guards = [requires_active_user]
 
+    @get(guards=[requires_active_user])
     async def filter(
         self,
         service: "SprintlogService",
@@ -62,7 +62,7 @@ class ApiController(Controller):
     ) -> Sequence[Model]:
         return await service.list(*filters)
 
-    @post()
+    @post(guards=[requires_active_user])
     async def create(
         self,
         data: Model,
@@ -75,11 +75,11 @@ class ApiController(Controller):
             data.assignee_id = current_user.id
         return await service.create(data)
 
-    @get(detail_route)
+    @get(detail_route, guards=[requires_active_user])
     async def retrieve(self, service: "SprintlogService", row_id: "UUID") -> Model:
         return await service.get(row_id)
 
-    @put(detail_route)
+    @put(detail_route, guards=[requires_active_user])
     async def update(
         self,
         data: Model,
@@ -94,11 +94,11 @@ class ApiController(Controller):
             data.assignee_id = current_user.id
         return await service.update(data, row_id, old_data=old_data)
 
-    @delete(detail_route, status_code=HTTP_200_OK)
+    @delete(detail_route, guards=[requires_active_user], status_code=HTTP_200_OK)
     async def delete(self, service: "SprintlogService", row_id: "UUID") -> Model:
         return await service.delete(row_id)
 
-    @get(project_route)
+    @get(project_route, guards=[requires_active_user])
     async def filter_by_project_type(
         self,
         service: "SprintlogService",
@@ -116,7 +116,7 @@ class ApiController(Controller):
             offset=limit_offset.offset,
         )
 
-    @get(f"/slug/{slug_route}")
+    @get(f"/slug/{slug_route}", guards=[requires_active_user])
     async def retrieve_by_slug(self, service: "SprintlogService", slug: str) -> Model:
         obj: Model | None = await service.repository.get_by_slug(slug)
         if obj:
@@ -156,7 +156,6 @@ class ApiController(Controller):
         self,
         service: "SprintlogService",
         slug: str,
-        authorized: bool = False,
     ) -> Model:
         obj = await service.repository.get_by_slug(slug)
         progress_list = list(Progress)
@@ -165,7 +164,7 @@ class ApiController(Controller):
             next_idx = 0 if current_idx == len(progress_list) else len(progress_list) - 1
             obj.progress = Progress(progress_list[next_idx])
             if obj.status == Status.checked_in:
-                obj.status = Status.completed if authorized else Status.checked_in
+                obj.status = Status.completed
             else:
                 obj.status = Status.checked_in
             return await service.update(obj, obj.id)
@@ -195,13 +194,16 @@ class ApiController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @put(f"progress/up/{slug_route}")
+    @put(f"progress/up/{slug_route}", guards=[requires_active_user])
     async def increase_progress(self, service: "SprintlogService", slug: str) -> Model:
         return await self._update_progress(service, slug, 1)
 
-    @put(f"progress/complete/{slug_route}")
-    async def toggle_complete(self, service: "SprintlogService", slug: str, user: User) -> Model:
-        if user.is_superuser:
+    @put(
+        f"progress/complete/{slug_route}",
+        guards=[requires_active_user],
+    )
+    async def toggle_complete(self, service: "SprintlogService", slug: str, current_user: User) -> Model:
+        if current_user.is_superuser:
             return await self._toggle_completion(service, slug, authorized=True)
         return await self._toggle_completion(service, slug)
 
@@ -226,19 +228,19 @@ class ApiController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @put(f"switch/task/{slug_route}")
+    @put(f"switch/task/{slug_route}", guards=[requires_active_user])
     async def switch_to_backlog(self, service: "SprintlogService", slug: str) -> Model:
         return await self._update_type(service, slug, "task")
 
-    @put(f"switch/backlog/{slug_route}")
+    @put(f"switch/backlog/{slug_route}", guards=[requires_active_user])
     async def switch_to_task(self, service: "SprintlogService", slug: str) -> Model:
         return await self._update_type(service, slug, "backlog")
 
-    @put(f"progress/down/{slug_route}")
+    @put(f"progress/down/{slug_route}", guards=[requires_active_user])
     async def decrease_progress(self, service: "SprintlogService", slug: str) -> Model:
         return await self._update_progress(service, slug, -1)
 
-    @put(f"progress/circle/{slug_route}")
+    @put(f"progress/circle/{slug_route}", guards=[requires_active_user])
     async def circle_progress(self, service: "SprintlogService", slug: str) -> Model:
         return await self._circle_progress(service, slug)
 
@@ -286,7 +288,7 @@ class ApiController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @put(f"priority/circle/{slug_route}")
+    @put(f"priority/circle/{slug_route}", guards=[requires_active_user])
     async def circle_priority(self, service: "SprintlogService", slug: str) -> Model:
         return await self._circle_priority(service, slug, 0)
 
@@ -312,6 +314,6 @@ class ApiController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @put(f"status/circle/{slug_route}")
+    @put(f"status/circle/{slug_route}", guards=[requires_active_user])
     async def circle_status(self, service: "SprintlogService", slug: str) -> Model:
         return await self.update_status(service, slug, 0)
