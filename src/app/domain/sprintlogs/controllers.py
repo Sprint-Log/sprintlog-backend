@@ -156,6 +156,7 @@ class ApiController(Controller):
         self,
         service: "SprintlogService",
         slug: str,
+        authorized: bool = False,
     ) -> Model:
         obj = await service.repository.get_by_slug(slug)
         progress_list = list(Progress)
@@ -164,7 +165,7 @@ class ApiController(Controller):
             next_idx = 0 if current_idx == len(progress_list) else len(progress_list) - 1
             obj.progress = Progress(progress_list[next_idx])
             if obj.status == Status.checked_in:
-                obj.status = Status.completed
+                obj.status = Status.completed if authorized else Status.checked_in
             else:
                 obj.status = Status.checked_in
             return await service.update(obj, obj.id)
