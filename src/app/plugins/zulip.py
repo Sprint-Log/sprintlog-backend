@@ -133,7 +133,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
     def _format_content(self, data: SprintLog) -> dict:
         stream_name = _gen_stream_name(data.project_name, data.pin)
         topic_name = f"{data.progress} {data.title} {data.category}  {data.priority} {data.status}"
-        content = f"{data.description}\n[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**"
+        content = f"[{data.slug}] **:time::{data.due_date.strftime('%d-%m-%Y')}** @**{data.assignee_name}**\n{data.description}"
         return {
             "content": content,
             "stream_name": stream_name,
@@ -263,7 +263,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
         return data
 
-    async def _update_topic(
+    async def _update_task_message(
         self,
         data: SprintLog,
         meta_data: dict,
@@ -348,9 +348,9 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 log_info(status)
                 match self.status:
                     case StatusFlags.BACKLOG_UPDATE:
-                        return await self._update_topic(data, meta_data)
+                        return await self._update_task_message(data, meta_data)
                     case StatusFlags.SPRINT_UPDATE:
-                        return await self._update_topic(data, meta_data)
+                        return await self._update_task_message(data, meta_data)
                     case StatusFlags.SWITCH_TO_BACKLOG:
                         return await self._switch_topic(
                             data,

@@ -24,6 +24,8 @@ def requires_active_user(connection: ASGIConnection, _: BaseRouteHandler) -> Non
     Raises:
         PermissionDeniedException: Permission denied exception
     """
+    if connection.scope.get("method") == "OPTIONS":
+        return
     if connection.user.is_active:
         return
     msg = "Inactive account"
@@ -43,6 +45,8 @@ def requires_superuser(connection: ASGIConnection, _: BaseRouteHandler) -> None:
     Returns:
         None: Returns None when successful
     """
+    if connection.scope.get("method") == "OPTIONS":
+        return
     if connection.user.is_superuser:
         return
     raise PermissionDeniedException(detail="Insufficient privileges")
@@ -61,6 +65,8 @@ def requires_verified_user(connection: ASGIConnection, _: BaseRouteHandler) -> N
     Returns:
         None: Returns None when successful
     """
+    if connection.scope.get("method") == "OPTIONS":
+        return
     if connection.user.is_verified:
         return
     raise PermissionDeniedException(detail="User account is not verified.")
