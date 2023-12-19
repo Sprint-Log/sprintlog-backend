@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime  # noqa: TCH003
 
-from pydantic import UUID4, EmailStr  # noqa: TCH002
-from pydantic.types import SecretStr  # noqa: TCH002
+from pydantic import UUID4, EmailStr
+from pydantic.types import SecretStr
 
 from app.domain.teams.models import TeamRoles
 from app.lib.schema import CamelizedBaseModel

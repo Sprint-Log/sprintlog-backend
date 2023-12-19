@@ -8,7 +8,6 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
-from litestar.contrib.repository.exceptions import ConflictError, NotFoundError, RepositoryError
 from litestar.exceptions import (
     HTTPException,
     InternalServerException,
@@ -17,6 +16,7 @@ from litestar.exceptions import (
 )
 from litestar.middleware.exceptions._debug_response import create_debug_response
 from litestar.middleware.exceptions.middleware import create_exception_response
+from litestar.repository.exceptions import ConflictError, NotFoundError, RepositoryError
 from litestar.status_codes import HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR
 from structlog.contextvars import bind_contextvars
 
@@ -31,7 +31,6 @@ if TYPE_CHECKING:
 __all__ = (
     "AuthorizationError",
     "HealthCheckConfigurationError",
-    "MissingDependencyError",
     "ApplicationError",
     "after_exception_hook_handler",
 )
@@ -47,23 +46,6 @@ class ApplicationClientError(ApplicationError):
 
 class AuthorizationError(ApplicationClientError):
     """A user tried to do something they shouldn't have."""
-
-
-class MissingDependencyError(ApplicationError, ValueError):
-    """A required dependency is not installed."""
-
-    def __init__(self, module: str, config: str | None = None) -> None:
-        """Missing Dependency Error.
-
-        Args:
-        module: name of the package that should be installed
-        config: name of the extra to install the package.
-        """
-        config = config if config else module
-        super().__init__(
-            f"You enabled {config} configuration but package {module!r} is not installed. "
-            f'You may need to run: "poetry install litestar-saqlalchemy[{config}]"',
-        )
 
 
 class HealthCheckConfigurationError(ApplicationError):

@@ -117,7 +117,10 @@ def upgrade():
             ondelete="set null",
         ),
         sa.ForeignKeyConstraint(
-            ["team_id"], ["team.id"], name=op.f("fk_team_invitation_team_id_team"), ondelete="cascade"
+            ["team_id"],
+            ["team.id"],
+            name=op.f("fk_team_invitation_team_id_team"),
+            ondelete="cascade",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_team_invitation")),
     )
@@ -134,7 +137,10 @@ def upgrade():
         sa.Column("updated_at", sa.DateTimeUTC(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(["team_id"], ["team.id"], name=op.f("fk_team_member_team_id_team"), ondelete="cascade"),
         sa.ForeignKeyConstraint(
-            ["user_id"], ["user_account.id"], name=op.f("fk_team_member_user_id_user_account"), ondelete="cascade"
+            ["user_id"],
+            ["user_account.id"],
+            name=op.f("fk_team_member_user_id_user_account"),
+            ondelete="cascade",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_team_member")),
         sa.UniqueConstraint("user_id", "team_id", name=op.f("uq_team_member_user_id")),
@@ -181,7 +187,9 @@ def upgrade():
         sa.Column("created_at", sa.DateTimeUTC(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTimeUTC(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(
-            ["assignee_id"], ["user_account.id"], name=op.f("fk_sprint_log_assignee_id_user_account")
+            ["assignee_id"],
+            ["user_account.id"],
+            name=op.f("fk_sprint_log_assignee_id_user_account"),
         ),
         sa.ForeignKeyConstraint(["owner_id"], ["user_account.id"], name=op.f("fk_sprint_log_owner_id_user_account")),
         sa.ForeignKeyConstraint(["project_slug"], ["project.slug"], name=op.f("fk_sprint_log_project_slug_project")),

@@ -127,7 +127,7 @@ def fx_raw_teams() -> list[Team | dict[str, Any]]:
             "name": "Test Assessment Team",
             "description": "This is a description for a migration team.",
             "owner_id": "6ef29f3c-3560-4d15-ba6b-a2e5c721e4d3",
-        }
+        },
     ]
 
 
@@ -145,17 +145,16 @@ def _patch_sqlalchemy_plugin(is_unit_test: bool, monkeypatch: MonkeyPatch) -> No
 
 @pytest.fixture()
 def _patch_worker(
-    is_unit_test: bool, monkeypatch: MonkeyPatch, event_loop: Iterator[asyncio.AbstractEventLoop]
+    is_unit_test: bool,
+    monkeypatch: MonkeyPatch,
+    event_loop: Iterator[asyncio.AbstractEventLoop],
 ) -> None:
     """We don't want the worker to start for unit tests."""
     if is_unit_test:
-        from app.lib import worker
+        from litestar_saq import base
 
-        monkeypatch.setattr(worker.Worker, "on_app_startup", MagicMock())
-        monkeypatch.setattr(worker.Worker, "stop", MagicMock())
-    from app.lib.worker import commands
-
-    monkeypatch.setattr(commands, "_create_event_loop", event_loop)
+        monkeypatch.setattr(base.Worker, "on_app_startup", MagicMock())
+        monkeypatch.setattr(base.Worker, "stop", MagicMock())
 
 
 @pytest.fixture(name="cap_logger")
@@ -164,7 +163,7 @@ def fx_cap_logger(monkeypatch: MonkeyPatch) -> CapturingLogger:
     import app.lib
 
     app.lib.log.configure(
-        app.lib.log.default_processors  # type:ignore[arg-type]
+        app.lib.log.default_processors,  # type:ignore[arg-type]
     )
     # clear context for every test
     clear_contextvars()

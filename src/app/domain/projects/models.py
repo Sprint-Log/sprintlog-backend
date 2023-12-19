@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from datetime import UTC, date, datetime
 from typing import Annotated, Any
 from uuid import UUID
@@ -6,20 +7,20 @@ from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
 from litestar.dto import DTOConfig, Mark, dto_field
 from sqlalchemy import ARRAY, ForeignKey, String
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import InstrumentedAttribute, Mapped, relationship
 from sqlalchemy.orm import mapped_column as m_col
 
 from app.domain.accounts.models import User
 from app.lib import log
 from app.lib.db import orm
 from app.lib.plugin import ProjectPlugin
-from app.lib.service.sqlalchemy import SQLAlchemyAsyncRepositoryService
+from app.lib.service import SQLAlchemyAsyncRepositoryService
 
 __all__ = [
     "Project",
     "ReadDTO",
     "Repository",
-    "Service",
+    "ProjectService",
     "WriteDTO",
 ]
 
@@ -43,7 +44,10 @@ class Project(orm.TimestampedDatabaseModel):
     sprint_amount: Mapped[int | None] = m_col(default=3)
     sprint_checkup_day: Mapped[int | None] = m_col(default=1)
     repo_urls: Mapped[list[str]] = m_col(ARRAY(String))
-    plugin_meta: Mapped[dict] = m_col(default=lambda: dict, info=dto_field(Mark.READ_ONLY))  # Relationships
+    plugin_meta: Mapped[dict | None] = m_col(
+        default=lambda: dict,
+        info=dto_field(Mark.READ_ONLY),
+    )  # Relationships
     owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id), nullable=True)
     owner: Mapped["User"] = relationship(
         "User",
@@ -52,7 +56,7 @@ class Project(orm.TimestampedDatabaseModel):
         info=dto_field(Mark.PRIVATE),
     )
 
-    def __init__(self, **kw: Any):
+    def __init__(self, **kw: Any) -> None:
         super().__init__(**kw)
 
 
@@ -60,7 +64,7 @@ class Repository(SQLAlchemyAsyncRepository[Project]):
     model_type = Project
 
 
-class Service(SQLAlchemyAsyncRepositoryService[Project]):
+class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
     repository_type = Repository
     plugins: set[ProjectPlugin] = set()
 
@@ -88,14 +92,29 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
 
         return obj
 
-    async def update(self, item_id: Any, data: Project | dict[str, Any]) -> Project:
+    async def update(
+        self,
+        data: Project | dict[str, Any],
+        item_id: Any = None,
+        attribute_names: Iterable[str] | None = None,
+        with_for_update: bool | None = None,
+        auto_commit: bool | None = None,
+        auto_expunge: bool | None = None,
+        auto_refresh: bool | None = None,
+        id_attribute: str | InstrumentedAttribute | None = None,
+    ) -> Project:
         # Call the before_update hook for each registered plugin
+        old_data = await self.repository.get(item_id)
         data = await super().to_model(data, "update")
 
         for plugin in self.plugins:
-            data = await plugin.before_update(item_id=item_id, data=data)
+            data = await plugin.before_update(
+                item_id=item_id,
+                data=data,
+                old_data=old_data,
+            )
 
-        obj = await super().update(item_id, data)
+        obj = await super().update(item_id=item_id, data=data)
 
         # Call the after_update hook for each registered plugin
         for plugin in self.plugins:
@@ -103,12 +122,18 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
 
         return obj
 
-    async def delete(self, item_id: Any) -> Project:
+    async def delete(
+        self,
+        item_id: Any,
+        auto_commit: bool | None = None,
+        auto_expunge: bool | None = None,
+        id_attribute: str | InstrumentedAttribute | None = None,
+    ) -> Project:
         # Call the before_delete hook for each registered plugin
         for plugin in self.plugins:
             await plugin.before_delete(item_id=item_id)
 
-        obj: Project = await super().delete(item_id)
+        obj: Project = await super().delete(item_id=item_id)
 
         # Call the after_delete hook for each registered plugin
         for plugin in self.plugins:
@@ -118,6 +143,18 @@ class Service(SQLAlchemyAsyncRepositoryService[Project]):
 
 
 WriteDTO = SQLAlchemyDTO[
-    Annotated[Project, DTOConfig(exclude={"id", "created_at", "updated_at", "sprintlogs", "plugin_meta", "owner"})]
+    Annotated[
+        Project,
+        DTOConfig(
+            exclude={
+                "id",
+                "created_at",
+                "updated_at",
+                "sprintlogs",
+                "plugin_meta",
+                "owner",
+            },
+        ),
+    ]
 ]
 ReadDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"sprintlogs"})]]

@@ -1,12 +1,13 @@
 import os
 import sys
-from collections.abc import AsyncIterator, Generator
+from collections.abc import AsyncGenerator, AsyncIterator, Generator
 from pathlib import Path
 from typing import Any
 
 import pytest
 from httpx import AsyncClient
 from litestar import Litestar
+from litestar_saq.cli import get_saq_plugin
 from redis.asyncio import Redis
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
@@ -15,7 +16,7 @@ from sqlalchemy.pool import NullPool
 from app.domain.accounts.models import User
 from app.domain.security import auth
 from app.domain.teams.models import Team
-from app.lib import db, worker
+from app.lib import db
 from tests.docker_service import DockerServiceRegistry, postgres_responsive, redis_responsive
 
 here = Path(__file__).parent
@@ -79,8 +80,9 @@ def fx_session_maker_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSes
 
 
 @pytest.fixture(name="session")
-def fx_session(sessionmaker: async_sessionmaker[AsyncSession]) -> AsyncSession:
-    return sessionmaker()
+async def fx_session(sessionmaker: async_sessionmaker[AsyncSession]) -> AsyncGenerator[AsyncSession, None]:
+    async with sessionmaker() as session:
+        yield session
 
 
 @pytest.fixture(autouse=True)
@@ -116,7 +118,7 @@ async def _seed_db(
             await teams_services.create(raw_team)
         await teams_services.repository.session.commit()
 
-    yield
+    return None  # type: ignore[return-value]
 
 
 @pytest.fixture(autouse=True)
@@ -154,9 +156,11 @@ async def fx_redis(docker_ip: str, redis_service: None) -> Redis:
 def _patch_redis(app: "Litestar", redis: Redis, monkeypatch: pytest.MonkeyPatch) -> None:
     cache_config = app.response_cache_config
     assert cache_config is not None
+    saq_plugin = get_saq_plugin(app)
     monkeypatch.setattr(app.stores.get(cache_config.store), "_redis", redis)
-    for queue in worker.queues.values():
-        monkeypatch.setattr(queue, "redis", redis)
+    if saq_plugin._config.queue_instances is not None:
+        for queue in saq_plugin._config.queue_instances.values():
+            monkeypatch.setattr(queue, "redis", redis)
 
 
 @pytest.fixture(name="client")

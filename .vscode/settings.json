@@ -33,7 +33,7 @@
     "python.linting.flake8Args": [
         "--max-line-length=120"
     ],
-    "python.linting.pylintEnabled": true,
+    "python.linting.pylintEnabled": false,
     "python.linting.pylintArgs": [
         "--load-plugins pylint_pydantic",
         "--rcfile=pylintrc"
@@ -53,7 +53,7 @@
     "[python]": {
         "editor.formatOnPaste": false,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-python.python",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {
             "source.organizeImports": false,
             "source.fixAll": true

@@ -7,7 +7,10 @@ from pathlib import Path
 from typing import Any, Final, Literal
 
 from dotenv import load_dotenv
-from litestar.data_extractors import RequestExtractorField, ResponseExtractorField  # noqa: TCH002
+from litestar.data_extractors import (
+    RequestExtractorField,
+    ResponseExtractorField,
+)
 from pydantic import ValidationError, field_validator
 from pydantic_settings import (
     BaseSettings,
@@ -44,7 +47,10 @@ class ServerSettings(BaseSettings):
     """Server configurations."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="SERVER_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="SERVER_",
+        case_sensitive=False,
     )
 
     APP_LOC: str = "app.asgi:create_app"
@@ -95,7 +101,10 @@ class AppSettings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="APP_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="APP_",
+        case_sensitive=False,
     )
 
     BUILD_NUMBER: str = ""
@@ -138,10 +147,7 @@ class AppSettings(BaseSettings):
         return utils.slugify(self.NAME)
 
     @field_validator("BACKEND_CORS_ORIGINS")
-    def assemble_cors_origins(
-        cls,
-        value: str | list[str],
-    ) -> list[str] | str:
+    def assemble_cors_origins(cls, value: str | list[str]) -> list[str] | str:
         """Parse a list of origins."""
         if isinstance(value, list):
             return value
@@ -152,20 +158,19 @@ class AppSettings(BaseSettings):
         raise ValueError(value)
 
     @field_validator("SECRET_KEY")
-    def generate_secret_key(
-        cls,
-        value: str | None,
-    ) -> str:
+    def generate_secret_key(cls, value: str | None) -> str:
         """Generate a secret key."""
-        if value is None:
-            return os.urandom(32).decode()
-        return value
+        return os.urandom(32).decode() if value is None else value
 
 
 class LogSettings(BaseSettings):
     """Logging config for the application."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="LOG_")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="LOG_",
+    )
 
     # https://stackoverflow.com/a/1845097/6560549
     EXCLUDE_PATHS: str = r"\A(?!x)x"
@@ -236,7 +241,10 @@ class OpenAPISettings(BaseSettings):
     """Configures OpenAPI for the application."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="OPENAPI_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="OPENAPI_",
+        case_sensitive=False,
     )
 
     CONTACT_NAME: str = "Hexcode Technologies"
@@ -268,47 +276,19 @@ class WorkerSettings(BaseSettings):
     """Global SAQ Job configuration."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="WORKER_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="WORKER_",
+        case_sensitive=False,
     )
 
-    JOB_TIMEOUT: int = 10
-    """Max time a job can run for, in seconds.
-
-    Set to `0` for no timeout.
-    """
-    JOB_HEARTBEAT: int = 0
-    """Max time a job can survive without emitting a heartbeat. `0` to disable.
-
-    `job.update()` will trigger a heartbeat.
-    """
-    JOB_RETRIES: int = 10
-    """Max attempts for any job."""
-    JOB_TTL: int = 600
-    """Lifetime of available job information, in seconds.
-
-    0: indefinite
-    -1: disabled (no info retained)
-    """
-    JOB_RETRY_DELAY: float = 1.0
-    """Seconds to delay before retrying a job."""
-    JOB_RETRY_BACKOFF: bool | float = 60
-    """If true, use exponential backoff for retry delays.
-
-    - The first retry will have whatever retry_delay is.
-    - The second retry will have retry_delay*2. The third retry will have retry_delay*4. And so on.
-    - This always includes jitter, where the final retry delay is a random number between 0 and the calculated retry delay.
-    - If retry_backoff is set to a number, that number is the maximum retry delay, in seconds."
-    """
     CONCURRENCY: int = 10
     """The number of concurrent jobs allowed to execute per worker.
 
     Default is set to 10.
     """
-    WEB_ENABLED: bool = False
+    WEB_ENABLED: bool = True
     """If true, the worker admin UI is launched on worker startup.."""
-    WEB_PORT: int = 8081
-    """Port to use for the worker web UI."""
-    INIT_METHOD: Literal["integrated", "standalone"] = "integrated"
     """Initialization method for the worker process."""
 
 
@@ -316,7 +296,10 @@ class DatabaseSettings(BaseSettings):
     """Configures the database for the application."""
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", env_prefix="DB_", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="DB_",
+        case_sensitive=False,
     )
 
     ECHO: bool = False
@@ -354,7 +337,11 @@ class DatabaseSettings(BaseSettings):
 class RedisSettings(BaseSettings):
     """Redis settings for the application."""
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", env_prefix="REDIS_")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="REDIS_",
+    )
 
     URL: str = "redis://localhost:6379/0"
     """A Redis connection URL."""
@@ -380,7 +367,7 @@ class PluginSettings(BaseSettings):
         env_prefix = "PLUGIN_"
 
     """Disable or enable zulip plugin"""
-    PLUGINS: list[str]
+    ENABLED: list[str]
 
 
 @lru_cache
@@ -443,8 +430,8 @@ def load_settings() -> (
         HTTPClientSettings.model_validate({})
 
     except ValidationError as e:
-        print("Could not load settings. %s", e)  # noqa: T201
-        raise e from e
+        print("Could not load settings.", e)  # noqa: T201
+        raise
     return (
         app,
         redis,
@@ -457,13 +444,4 @@ def load_settings() -> (
     )
 
 
-(
-    app,
-    redis,
-    db,
-    openapi,
-    server,
-    log,
-    worker,
-    plugin,
-) = load_settings()
+(app, redis, db, openapi, server, log, worker, plugin) = load_settings()

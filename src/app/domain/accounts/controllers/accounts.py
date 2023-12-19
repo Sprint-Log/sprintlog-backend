@@ -25,7 +25,7 @@ __all__ = ["AccountController"]
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from litestar.contrib.repository.filters import FilterTypes
+    from advanced_alchemy.filters import FilterTypes
     from litestar.dto import DTOData
     from litestar.pagination import OffsetPagination
 
@@ -113,7 +113,7 @@ class AccountController(Controller):
         ),
     ) -> User:
         """Create a new user."""
-        db_obj = await users_service.update(user_id, data.as_builtins())
+        db_obj = await users_service.update(item_id=user_id, data=data.as_builtins())
         return users_service.to_dto(db_obj)
 
     @delete(

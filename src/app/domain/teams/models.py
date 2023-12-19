@@ -40,16 +40,6 @@ class Team(orm.DatabaseModel, orm.AuditColumns, orm.SlugKey):
         lazy="noload",
         passive_deletes=True,
     )
-    invitations: Mapped[list[TeamInvitation]] = relationship(
-        back_populates="team",
-        cascade="all, delete",
-        lazy="noload",
-    )
-    pending_invitations: Mapped[list[TeamInvitation]] = relationship(
-        primaryjoin="and_(TeamInvitation.team_id==Team.id, TeamInvitation.is_accepted == False)",
-        viewonly=True,
-        lazy="noload",
-    )
     tags: Mapped[list[Tag]] = relationship(
         secondary=lambda: team_tag,
         back_populates="teams",

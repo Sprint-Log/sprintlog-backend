@@ -25,7 +25,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 poetry.toml
-
+.pdm-python
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -111,6 +111,8 @@ ENV/
 env.bak/
 venv.bak/
 .venv
+media/
+!media/.gitkeep
 
 # Spyder project settings
 .spyderproject

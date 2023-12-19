@@ -48,7 +48,8 @@ async def test_list_authors(client: AsyncClient) -> None:
 
 async def test_create_author(client: AsyncClient) -> None:
     response = await client.post(
-        "/v1/authors", json={"name": "James Patterson", "dob": "1974-03-22", "nationality": None}
+        "/v1/authors",
+        json={"name": "James Patterson", "dob": "1974-03-22", "nationality": None},
     )
     assert response.json() == {
         "id": ANY,

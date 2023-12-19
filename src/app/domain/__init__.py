@@ -5,21 +5,24 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from litestar.contrib.jwt import OAuth2Login
-from litestar.contrib.repository.filters import FilterTypes
 from litestar.dto import DTOData
 from litestar.pagination import OffsetPagination
 from litestar.types import TypeEncodersMap
 from pydantic import UUID4
-from saq.types import QueueInfo
+from saq import Queue
 
-from app.domain.accounts.dtos import AccountLogin, AccountRegister, UserCreate, UserUpdate
+from app.domain.accounts.dtos import (
+    AccountLogin,
+    AccountRegister,
+    UserCreate,
+    UserUpdate,
+)
 from app.domain.accounts.models import User
 from app.domain.analytics.dtos import NewUsersByWeek
+from app.domain.projects.models import ProjectService
+from app.domain.sprintlogs.models import SprintlogService
 from app.domain.tags.models import Tag
-from app.domain.teams.models import Team
-from app.lib import settings, worker
-from app.lib.service.generic import Service
-from app.lib.worker.controllers import WorkerController
+from app.domain.teams.models import Team, TeamMember
 
 from . import (
     accounts,
@@ -57,12 +60,7 @@ routes: list[ControllerRouterHandler] = [
     system.controllers.SystemController,
 ]
 
-if settings.worker.WEB_ENABLED:
-    routes.append(WorkerController)
-
 __all__ = [
-    "tasks",
-    "scheduled_tasks",
     "system",
     "accounts",
     "teams",
@@ -77,32 +75,13 @@ __all__ = [
     "projects",
     "signature_namespace",
 ]
-tasks: dict[worker.Queue, list[worker.WorkerFunction]] = {
-    worker.queues.get("system-tasks"): [  # type: ignore[dict-item]
-        worker.tasks.system_task,
-        worker.tasks.system_upkeep,
-    ],
-    worker.queues.get("background-tasks"): [  # type: ignore[dict-item]
-        worker.tasks.background_worker_task,
-    ],
-}
-scheduled_tasks: dict[worker.Queue, list[worker.CronJob]] = {
-    worker.queues.get("system-tasks"): [  # type: ignore[dict-item]
-        worker.CronJob(function=worker.tasks.system_upkeep, unique=True, cron="0 * * * *", timeout=500),
-    ],
-    worker.queues.get("background-tasks"): [  # type: ignore[dict-item]
-        worker.CronJob(function=worker.tasks.background_worker_task, unique=True, cron="* * * * *", timeout=300),
-    ],
-}
-
 
 signature_namespace: Mapping[str, Any] = {
-    "Service": Service,
-    "FilterTypes": FilterTypes,
     "UUID": UUID,
     "UUID4": UUID4,
     "User": User,
     "Team": Team,
+    "TeamMember": TeamMember,
     "UserCreate": UserCreate,
     "UserUpdate": UserUpdate,
     "AccountLogin": AccountLogin,
@@ -111,14 +90,14 @@ signature_namespace: Mapping[str, Any] = {
     "Tag": Tag,
     "OAuth2Login": OAuth2Login,
     "OffsetPagination": OffsetPagination,
+    "SprintlogService": SprintlogService,
+    "ProjectService": ProjectService,
     "UserService": accounts.services.UserService,
     "TeamService": teams.services.TeamService,
     "TagService": tags.services.TagService,
     "TeamInvitationService": teams.services.TeamInvitationService,
     "TeamMemberService": teams.services.TeamMemberService,
-    "Queue": worker.Queue,
-    "QueueInfo": QueueInfo,
-    "Job": worker.Job,
     "DTOData": DTOData,
+    "Queue": Queue,
     "TypeEncodersMap": TypeEncodersMap,
 }

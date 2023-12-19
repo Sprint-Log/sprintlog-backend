@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 if TYPE_CHECKING:
@@ -19,11 +19,20 @@ class SprintlogPlugin(ABC):
         return data
 
     @abstractmethod
-    async def before_update(self, item_id: str, data: "SprintLog") -> "SprintLog":
+    async def before_update(
+        self,
+        item_id: Any | None,
+        data: "SprintLog",
+        old_data: "SprintLog|dict|None" = None,
+    ) -> "SprintLog":
         return data
 
     @abstractmethod
-    async def after_update(self, data: "SprintLog") -> "SprintLog":
+    async def after_update(
+        self,
+        data: "SprintLog",
+        old_data: "SprintLog|dict|None" = None,
+    ) -> "SprintLog":
         return data
 
     @abstractmethod
@@ -45,7 +54,12 @@ class ProjectPlugin(ABC):
         return data
 
     @abstractmethod
-    async def before_update(self, item_id: str, data: "Project") -> "Project":
+    async def before_update(
+        self,
+        item_id: UUID,
+        data: "Project",
+        old_data: "Project|None" = None,
+    ) -> "Project":
         return data
 
     @abstractmethod

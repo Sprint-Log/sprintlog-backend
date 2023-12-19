@@ -20,6 +20,8 @@ def requires_team_membership(connection: ASGIConnection, _: BaseRouteHandler) ->
         PermissionDeniedException: _description_
     """
     team_id = connection.path_params["team_id"]
+    if connection.scope.get("method") == "OPTIONS":
+        return
     if connection.user.is_superuser:
         return
     if any(membership.team.id == team_id for membership in connection.user.teams):
@@ -38,6 +40,8 @@ def requires_team_admin(connection: ASGIConnection, _: BaseRouteHandler) -> None
         PermissionDeniedException: _description_
     """
     team_id = connection.path_params["team_id"]
+    if connection.scope.get("method") == "OPTIONS":
+        return
     if connection.user.is_superuser:
         return
     if any(
@@ -58,8 +62,35 @@ def requires_team_ownership(connection: ASGIConnection, _: BaseRouteHandler) -> 
         PermissionDeniedException: _description_
     """
     team_id = UUID(connection.path_params["team_id"])
+    if connection.scope.get("method") == "OPTIONS":
+        return
     if connection.user.is_superuser:
         return
     if any(membership.team.id == team_id and membership.is_owner for membership in connection.user.teams):
         return
-    raise PermissionDeniedException("Insufficient permissions to access team.")
+    msg = "Insufficient permissions to access team."
+    raise PermissionDeniedException(msg)
+
+
+def requires_membership(connection: ASGIConnection, route: BaseRouteHandler) -> None:
+    if connection.scope.get("method") == "OPTIONS":
+        return
+    if connection.user.is_superuser:
+        return
+    if any(membership.team.name == route.opt.get("membership") for membership in connection.user.teams):
+        return
+    msg = "Insufficient permissions to access team."
+    raise PermissionDeniedException(msg)
+
+
+def requires_membership_name(connection: ASGIConnection) -> None:
+    if connection.scope.get("method") == "OPTIONS":
+        return
+    if connection.user.is_superuser:
+        return
+    team_name = UUID(connection.path_params["team_name"])
+
+    if any(membership.team.name == team_name for membership in connection.user.teams):
+        return
+    msg = "Insufficient permissions to access team."
+    raise PermissionDeniedException(msg)

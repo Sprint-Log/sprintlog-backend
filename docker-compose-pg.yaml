@@ -83,7 +83,7 @@ services:
       dockerfile: Dockerfile.bullseye
       no_cache: true
     restart: "no"
-    command: poetry run litestar database upgrade-database
+    command: poetry run litestar database upgrade
     env_file:
       - .env
     depends_on:

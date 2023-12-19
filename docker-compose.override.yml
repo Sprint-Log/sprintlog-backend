@@ -6,7 +6,7 @@ x-development-volumes: &development-volumes
     - ./src:/workspace/app/src/
     - ./Makefile:/workspace/app/Makefile
     - ./pyproject.toml:/workspace/app/pyproject.toml
-    - ./poetry.lock:/workspace/app/poetry.lock
+    - ./pdm.lock:/workspace/app/pdm.lock
     - ./mkdocs.yml:/workspace/app/mkdocs.yml
     - ./tsconfig.json:/workspace/app/tsconfig.json
     - ./package.json:/workspace/app/package.json
@@ -38,7 +38,7 @@ services:
       - .env.example
   migrator:
     image: sprintlog:latest-dev
-    command: litestar database upgrade-database
+    command: litestar database upgrade --no-prompt
     restart: "no"
     <<: *development-volumes
     env_file:
