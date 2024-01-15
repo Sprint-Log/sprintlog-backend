@@ -52,6 +52,7 @@ class ApiController(Controller):
     tags = ["Sprintlogs"]
     detail_route = "/detail/{row_id:uuid}"
     project_route = "/project/{project_type:str}"
+    user_route = "project/user/{user_id:uuid}"
     slug_route = "{slug:str}"
 
     @get(guards=[requires_active_user])
@@ -125,6 +126,19 @@ class ApiController(Controller):
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
         )
+
+    @get(user_route, guards=[requires_active_user])
+    async def retrieve_by_user(self, service: "SprintlogService", user_id: "UUID", limit_offset: "LimitOffset",) -> "OffsetPagination[Model]":
+        results, total = await service.list_and_count(
+            limit_offset,
+            assignee_id=user_id,
+        )
+        return OffsetPagination(
+            items=cast(list, results),
+            total=total,
+            limit=limit_offset.limit,
+            offset=limit_offset.offset,
+        )   
 
     async def _update_progress(
         self,
