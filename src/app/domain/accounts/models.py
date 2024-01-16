@@ -27,6 +27,12 @@ class User(orm.TimestampedDatabaseModel):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_verified: Mapped[bool] = mapped_column(default=False)
     verified_at: Mapped[datetime | None] = mapped_column(info=dto.dto_field("read-only"))
+    # address:Mapped[str|None]
+    # position:Mapped[str|None]
+    # Kpay:Mapped[str|None]
+    # KBZ:Mapped[str|None]
+    # AYA:Mapped[str|None]
+    
     # -----------
     # ORM Relationships
     # ------------

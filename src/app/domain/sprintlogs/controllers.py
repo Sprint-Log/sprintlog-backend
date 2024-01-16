@@ -1,6 +1,6 @@
 # ruff: noqa: B008
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast, Dict, List
 
 from litestar import Controller, delete, get, post, put
 from litestar.di import Provide
@@ -22,6 +22,10 @@ from app.domain.sprintlogs.models import (
 )
 from app.domain.sprintlogs.models import SprintLog as Model
 from app.lib import log
+# from sqlalchemy import select, func
+from collections import defaultdict
+from datetime import datetime
+from dataclasses import dataclass
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -30,12 +34,18 @@ if TYPE_CHECKING:
 from litestar.pagination import OffsetPagination
 
 __all__ = [
-    "ApiController",
+    "ApiController","ActiveProject"
 ]
-
 
 logger = log.get_logger()
 
+@dataclass
+class ActiveProject:
+    project_slug: str
+    task_assigned: int = 0
+    completed_task: int = 0
+    remaining_task: int = 0
+    task_due: int = 0
 
 def log_info(message: str) -> None:
     logger.error(message)
@@ -52,7 +62,8 @@ class ApiController(Controller):
     tags = ["Sprintlogs"]
     detail_route = "/detail/{row_id:uuid}"
     project_route = "/project/{project_type:str}"
-    user_route = "project/user/{user_id:uuid}"
+    user_route = "/tasks/user/{user_id:uuid}"
+    active_project_route = "/projects/user/{user_id:uuid}"
     slug_route = "{slug:str}"
 
     @get(guards=[requires_active_user])
@@ -127,19 +138,62 @@ class ApiController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @get(user_route, guards=[requires_active_user])
-    async def retrieve_by_user(self, service: "SprintlogService", user_id: "UUID", limit_offset: "LimitOffset",) -> "OffsetPagination[Model]":
-        results, total = await service.list_and_count(
-            limit_offset,
-            assignee_id=user_id,
-        )
+    @get(active_project_route, guards=[requires_active_user])
+    async def retrieve_project_by_user(self, service: "SprintlogService", user_id: "UUID", limit_offset: "LimitOffset") -> "OffsetPagination[ActiveProject]":
+        sprintlogs = await service.list(assignee_id=user_id)
+        
+        active_projects_data = await self.get_active_projects(sprintlogs, limit_offset)
+        
+        print("offset limitation:")
+        print(limit_offset.limit)
+
         return OffsetPagination(
-            items=cast(list, results),
-            total=total,
+            items=active_projects_data['projects'],
+            total=active_projects_data['total'],
             limit=limit_offset.limit,
             offset=limit_offset.offset,
-        )   
+        )
+        
+    async def get_active_projects(self, tasks: List[Model]  , limit_offset: "LimitOffset") -> Dict[str, List[ActiveProject]]:
+        project_map = defaultdict(lambda: ActiveProject(project_slug=''))
+        limit = limit_offset.limit
+        offset = limit_offset.offset
 
+        for sprintlog in tasks:
+            project_slug = sprintlog.project_slug
+
+            if not project_map[project_slug].project_slug:
+                project_map[project_slug].project_slug = project_slug
+
+            project = project_map[project_slug]
+
+            # Incrementing counts based on the sprintlog's status
+            if sprintlog.status in [Status.new, Status.started, Status.checked_in]:
+                project.task_assigned += 1
+            elif sprintlog.status == Status.completed:
+                project.completed_task += 1
+                project.task_assigned += 1
+
+            # Checking whether the task is due or not
+            if (
+                sprintlog.status != Status.completed
+                and sprintlog.due_date < datetime.now().date()
+            ):
+                project.task_due += 1
+
+        # Calculating the remaining tasks for each project
+        for project in project_map.values():
+            project.remaining_task = project.task_assigned - project.completed_task
+
+        paginated_projects = list(project_map.values())[offset : offset + limit]
+        total_active_projects = len(project_map)
+
+        return {'projects': paginated_projects, 'total':total_active_projects }
+        
+    @get(user_route, guards=[requires_active_user])
+    async def retrieve_tasks_by_user(self, service: "SprintlogService", user_id: "UUID") -> list[Model]:
+        return await service.list(assignee_id=user_id)
+         
     async def _update_progress(
         self,
         service: "SprintlogService",
