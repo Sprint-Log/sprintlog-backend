@@ -22,10 +22,10 @@ if TYPE_CHECKING:
 
     from advanced_alchemy.filters import FilterTypes
 
-    from app.domain.projects.models import ProjectService
-from app.domain.projects.dependencies import provides_service
-from app.domain.projects.models import Project as Model
-from app.domain.projects.models import ReadDTO, WriteDTO
+    from app.domain.projects.services import ProjectService
+from app.domain.projects.dependencies import provide_project_service
+from app.db.models import Project as Model
+from app.domain.projects.dtos import ReadDTO, WriteDTO
 
 __all__ = ["ApiController"]
 
@@ -37,7 +37,7 @@ class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
     path = "/api/projects"
-    dependencies = {"service": Provide(provides_service, sync_to_thread=True)}
+    dependencies = {"service": Provide(provide_project_service, sync_to_thread=True)}
     tags = ["Projects API"]
     DETAIL_ROUTE = "/{row_id:uuid}"
 

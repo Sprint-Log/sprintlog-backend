@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 if TYPE_CHECKING:
-    from app.domain.projects.models import Project
+    from app.db.models import Project
     from app.domain.sprintlogs.models import SprintLog
 
 __all__ = ["SprintlogPlugin", "ProjectPlugin"]

@@ -1,6 +1,6 @@
 # ruff: noqa: B008
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, cast, Dict, List
+from typing import TYPE_CHECKING, Any, cast, Dict
 
 from litestar import Controller, delete, get, post, put
 from litestar.di import Provide
@@ -9,35 +9,34 @@ from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 
 from app.domain.accounts.guards import requires_active_user
-from app.domain.accounts.models import User
-from app.domain.sprintlogs.dependencies import provides_service
-from app.domain.sprintlogs.models import (
+from app.db.models import User
+from app.domain.sprintlogs.dependencies import provide_sprintlog_service
+from app.domain.sprintlogs.schemas import (
     ItemType,
     Priority,
     Progress,
-    ReadDTO,
-    SprintlogService,
     Status,
-    WriteDTO,
 )
-from app.domain.sprintlogs.models import SprintLog as Model
-from app.lib import log
+from app.domain.sprintlogs.dtos import ReadDTO, WriteDTO
+
+from app.db.models import SprintLog as Model
+from structlog import get_logger
+
 # from sqlalchemy import select, func
 from collections import defaultdict
 from datetime import datetime
 from dataclasses import dataclass
+from litestar.pagination import OffsetPagination
 
 if TYPE_CHECKING:
     from uuid import UUID
-
+    from app.domain.sprintlogs.service import SprintLogService
     from advanced_alchemy.filters import FilterTypes, LimitOffset
-from litestar.pagination import OffsetPagination
 
-__all__ = [
-    "ApiController","ActiveProject"
-]
+__all__ = ["ApiController", "ActiveProject"]
 
-logger = log.get_logger()
+logger = get_logger()
+
 
 @dataclass
 class ActiveProject:
@@ -46,6 +45,7 @@ class ActiveProject:
     completed_task: int = 0
     remaining_task: int = 0
     task_due: int = 0
+
 
 def log_info(message: str) -> None:
     logger.error(message)
@@ -58,7 +58,7 @@ class ApiController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
     path = "/api/sprintlogs"
-    dependencies = {"service": Provide(provides_service, sync_to_thread=False)}
+    dependencies = {"service": Provide(provide_sprintlog_service, sync_to_thread=False)}
     tags = ["Sprintlogs"]
     detail_route = "/detail/{row_id:uuid}"
     project_route = "/project/{project_type:str}"
@@ -69,7 +69,7 @@ class ApiController(Controller):
     @get(guards=[requires_active_user])
     async def filter(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         filters: list["FilterTypes"] = validation_skip,
     ) -> Sequence[Model]:
         return await service.list(*filters)
@@ -79,7 +79,7 @@ class ApiController(Controller):
         self,
         data: Model,
         current_user: User,
-        service: "SprintlogService",
+        service: "SprintLogService",
     ) -> Model:
         if not data.owner_id:
             data.owner_id = current_user.id
@@ -88,7 +88,7 @@ class ApiController(Controller):
         return await service.create(data)
 
     @get(detail_route, guards=[requires_active_user])
-    async def retrieve(self, service: "SprintlogService", row_id: "UUID") -> Model:
+    async def retrieve(self, service: "SprintLogService", row_id: "UUID") -> Model:
         return await service.get(row_id)
 
     @put(detail_route, guards=[requires_active_user])
@@ -96,7 +96,7 @@ class ApiController(Controller):
         self,
         data: Model,
         current_user: User,
-        service: "SprintlogService",
+        service: "SprintLogService",
         row_id: "UUID",
     ) -> Model:
         old_data = await service.get(row_id)
@@ -107,13 +107,13 @@ class ApiController(Controller):
         return await service.update(data, row_id, old_data=old_data)
 
     @delete(detail_route, guards=[requires_active_user], status_code=HTTP_200_OK)
-    async def delete(self, service: "SprintlogService", row_id: "UUID") -> Model:
+    async def delete(self, service: "SprintLogService", row_id: "UUID") -> Model:
         return await service.delete(row_id)
 
     @get(project_route, guards=[requires_active_user])
     async def filter_by_project_type(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         project_type: str,
         limit_offset: "LimitOffset",
     ) -> "OffsetPagination[Model]":
@@ -129,7 +129,7 @@ class ApiController(Controller):
         )
 
     @get(f"/slug/{slug_route}", guards=[requires_active_user])
-    async def retrieve_by_slug(self, service: "SprintlogService", slug: str) -> Model:
+    async def retrieve_by_slug(self, service: "SprintLogService", slug: str) -> Model:
         obj: Model | None = await service.repository.get_by_slug(slug)
         if obj:
             return obj
@@ -139,23 +139,25 @@ class ApiController(Controller):
         )
 
     @get(active_project_route, guards=[requires_active_user])
-    async def retrieve_project_by_user(self, service: "SprintlogService", user_id: "UUID", limit_offset: "LimitOffset") -> "OffsetPagination[ActiveProject]":
+    async def retrieve_project_by_user(
+        self, service: "SprintLogService", user_id: "UUID", limit_offset: "LimitOffset"
+    ) -> "OffsetPagination[ActiveProject]":
         sprintlogs = await service.list(assignee_id=user_id)
-        
+
         active_projects_data = await self.get_active_projects(sprintlogs, limit_offset)
-        
+
         print("offset limitation:")
         print(limit_offset.limit)
 
         return OffsetPagination(
-            items=active_projects_data['projects'],
-            total=active_projects_data['total'],
+            items=active_projects_data["projects"],
+            total=active_projects_data["total"],
             limit=limit_offset.limit,
             offset=limit_offset.offset,
         )
-        
-    async def get_active_projects(self, tasks: List[Model]  , limit_offset: "LimitOffset") -> Dict[str, List[ActiveProject]]:
-        project_map = defaultdict(lambda: ActiveProject(project_slug=''))
+
+    async def get_active_projects(self, tasks: Sequence[Model], limit_offset: "LimitOffset") -> Dict[str, Any]:
+        project_map = defaultdict(lambda: ActiveProject(project_slug=""))
         limit = limit_offset.limit
         offset = limit_offset.offset
 
@@ -175,10 +177,7 @@ class ApiController(Controller):
                 project.task_assigned += 1
 
             # Checking whether the task is due or not
-            if (
-                sprintlog.status != Status.completed
-                and sprintlog.due_date < datetime.now().date()
-            ):
+            if sprintlog.status != Status.completed and sprintlog.due_date < datetime.now().date():
                 project.task_due += 1
 
         # Calculating the remaining tasks for each project
@@ -188,15 +187,15 @@ class ApiController(Controller):
         paginated_projects = list(project_map.values())[offset : offset + limit]
         total_active_projects = len(project_map)
 
-        return {'projects': paginated_projects, 'total':total_active_projects }
-        
+        return {"projects": paginated_projects, "total": total_active_projects}
+
     @get(user_route, guards=[requires_active_user])
-    async def retrieve_tasks_by_user(self, service: "SprintlogService", user_id: "UUID") -> list[Model]:
+    async def retrieve_tasks_by_user(self, service: "SprintLogService", user_id: "UUID") -> Sequence[Model]:
         return await service.list(assignee_id=user_id)
-         
+
     async def _update_progress(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         slug: str,
         delta: int,
     ) -> Model:
@@ -222,7 +221,7 @@ class ApiController(Controller):
 
     async def _toggle_completion(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         slug: str,
         authorized: bool = False,
     ) -> Model:
@@ -242,7 +241,7 @@ class ApiController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    async def _circle_progress(self, service: "SprintlogService", slug: str) -> Model:
+    async def _circle_progress(self, service: "SprintLogService", slug: str) -> Model:
         obj = await service.repository.get_by_slug(slug)
         progress_list = list(Progress)
         if obj:
@@ -264,21 +263,21 @@ class ApiController(Controller):
         )
 
     @put(f"progress/up/{slug_route}", guards=[requires_active_user])
-    async def increase_progress(self, service: "SprintlogService", slug: str) -> Model:
+    async def increase_progress(self, service: "SprintLogService", slug: str) -> Model:
         return await self._update_progress(service, slug, 1)
 
     @put(
         f"progress/complete/{slug_route}",
         guards=[requires_active_user],
     )
-    async def toggle_complete(self, service: "SprintlogService", slug: str, current_user: User) -> Model:
+    async def toggle_complete(self, service: "SprintLogService", slug: str, current_user: User) -> Model:
         if current_user.is_superuser:
             return await self._toggle_completion(service, slug, authorized=True)
         return await self._toggle_completion(service, slug)
 
     async def _update_type(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         slug: str,
         typ: str,
     ) -> Model:
@@ -298,24 +297,24 @@ class ApiController(Controller):
         )
 
     @put(f"switch/task/{slug_route}", guards=[requires_active_user])
-    async def switch_to_backlog(self, service: "SprintlogService", slug: str) -> Model:
+    async def switch_to_backlog(self, service: "SprintLogService", slug: str) -> Model:
         return await self._update_type(service, slug, "task")
 
     @put(f"switch/backlog/{slug_route}", guards=[requires_active_user])
-    async def switch_to_task(self, service: "SprintlogService", slug: str) -> Model:
+    async def switch_to_task(self, service: "SprintLogService", slug: str) -> Model:
         return await self._update_type(service, slug, "backlog")
 
     @put(f"progress/down/{slug_route}", guards=[requires_active_user])
-    async def decrease_progress(self, service: "SprintlogService", slug: str) -> Model:
+    async def decrease_progress(self, service: "SprintLogService", slug: str) -> Model:
         return await self._update_progress(service, slug, -1)
 
     @put(f"progress/circle/{slug_route}", guards=[requires_active_user])
-    async def circle_progress(self, service: "SprintlogService", slug: str) -> Model:
+    async def circle_progress(self, service: "SprintLogService", slug: str) -> Model:
         return await self._circle_progress(service, slug)
 
     async def _update_priority(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         slug: str,
         delta: int,
     ) -> Model:
@@ -337,7 +336,7 @@ class ApiController(Controller):
 
     async def _circle_priority(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         slug: str,
         delta: int,
     ) -> Model:
@@ -358,12 +357,12 @@ class ApiController(Controller):
         )
 
     @put(f"priority/circle/{slug_route}", guards=[requires_active_user])
-    async def circle_priority(self, service: "SprintlogService", slug: str) -> Model:
+    async def circle_priority(self, service: "SprintLogService", slug: str) -> Model:
         return await self._circle_priority(service, slug, 0)
 
     async def update_status(
         self,
-        service: "SprintlogService",
+        service: "SprintLogService",
         slug: str,
         delta: int,
     ) -> Model:
@@ -384,5 +383,5 @@ class ApiController(Controller):
         )
 
     @put(f"status/circle/{slug_route}", guards=[requires_active_user])
-    async def circle_status(self, service: "SprintlogService", slug: str) -> Model:
+    async def circle_status(self, service: "SprintLogService", slug: str) -> Model:
         return await self.update_status(service, slug, 0)

@@ -56,7 +56,7 @@
     "editor.insertSpaces": true,
     "editor.tabSize": 4,
     "editor.trimAutoWhitespace": true,
-    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.codeActionsOnSave": {
       "source.fixAll": "explicit",
       "source.organizeImports": "explicit"

@@ -1,4 +1,5 @@
-"""User Account Controllers."""
+"""Sprintlog Service Provider."""
+
 from __future__ import annotations
 
 import pkgutil
@@ -8,45 +9,54 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 import app.plugins
-from app.domain.sprintlogs.models import SprintLog, SprintlogService
-from app.lib import log
+from app.config.base import get_settings
+from app.db.models import SprintLog
+from app.lib.deps import create_service_provider
 from app.lib.plugin import SprintlogPlugin
-from app.lib.settings import plugin
-
-__all__ = ["provides_service"]
-
-
-logger = log.get_logger()
-
-
-def log_info(message: str) -> None:
-    logger.info(message)
-
+from app.domain.sprintlogs.service import SprintLogService
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator
-
+    from typing import Set
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def provides_service(
-    db_session: AsyncSession,
-) -> AsyncGenerator[SprintlogService, None]:
-    plugins = []
-    for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
-        if name not in plugin.ENABLED:
+settings = get_settings()
+
+
+def load_plugins() -> Set[SprintlogPlugin]:
+    """Scan and load all enabled SprintlogPlugins from app.plugins."""
+    found_plugins = set()
+    for _, name, _ in pkgutil.iter_modules(list(app.plugins.__path__)):
+        if name not in settings.plugin.ENABLED:
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
         for obj_name in dir(module):
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, SprintlogPlugin) and obj is not SprintlogPlugin:
-                plugins.append(obj())
-    async with SprintlogService.new(
-        session=db_session,
-        statement=select(SprintLog).order_by(SprintLog.updated_at.desc()).options(joinedload(SprintLog.project)),
-    ) as service:
-        service.plugins = set(plugins)
-        try:
-            yield service
-        finally:
-            ...
+                found_plugins.add(obj())
+    return found_plugins
+
+
+PLUGINS = load_plugins()
+
+
+class ExtendedSprintlogService(SprintLogService):
+    """SprintlogService subclass that automatically loads plugins and sets statement."""
+
+    def __init__(self, session: AsyncSession):
+        super().__init__(
+            session=session,
+            statement=select(SprintLog).order_by(SprintLog.updated_at.desc()).options(joinedload(SprintLog.project)),
+        )
+        # Attach the pre-loaded plugins
+        self.plugins = PLUGINS
+
+
+provide_sprintlog_service = create_service_provider(
+    ExtendedSprintlogService,
+    load=[],
+    error_messages={
+        "duplicate_key": "This sprintlog item already exists.",
+        "integrity": "Sprintlog operation failed.",
+    },
+)
