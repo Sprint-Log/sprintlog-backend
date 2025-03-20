@@ -1,3 +1,3 @@
-from app.domain.tags import controllers, dependencies, dtos, models, services
+from . import controllers, services, urls
 
-__all__ = ["models", "controllers", "services", "dtos", "dependencies"]
+__all__ = ["controllers", "services", "urls"]

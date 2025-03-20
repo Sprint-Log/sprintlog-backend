@@ -1,19 +1,22 @@
 """User Account Controllers."""
 from __future__ import annotations
 
-import pkgutil
 from typing import TYPE_CHECKING
 
+from structlog import get_logger
+import pkgutil
 import app.plugins
 from app.domain.projects.models import ProjectService
-from app.lib import log
+ 
 from app.lib.plugin import ProjectPlugin
-from app.lib.settings import plugin
+from app.config.base import get_settings
+
+settings = get_settings()
 
 __all__ = ["provides_service"]
 
 
-logger = log.get_logger()
+logger = get_logger()
 
 
 def log_info(message: str) -> None:
@@ -30,9 +33,9 @@ async def provides_service(
     db_session: AsyncSession,
 ) -> AsyncGenerator[ProjectService, None]:
     plugins = []
-    for _, name, _ in pkgutil.iter_modules([app.plugins.__path__[0]]):
+    for _, name, _ in pkgutil.iter_modules(list(app.plugins.__path__)):
         log_info(f"checking plugin {name}")
-        if name not in plugin.ENABLED:
+        if name not in settings.plugin.ENABLED:
             log_info(f"skipped {name} plugin in sprintlog")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])

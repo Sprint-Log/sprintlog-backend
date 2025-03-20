@@ -1,18 +1,12 @@
 from collections.abc import Iterable
-from datetime import UTC, date, datetime
 from typing import Annotated, Any
-from uuid import UUID
 
 from litestar.contrib.sqlalchemy.dto import SQLAlchemyDTO
 from litestar.contrib.sqlalchemy.repository import SQLAlchemyAsyncRepository
-from litestar.dto import DTOConfig, Mark, dto_field
-from sqlalchemy import ARRAY, ForeignKey, String
-from sqlalchemy.orm import InstrumentedAttribute, Mapped, relationship
-from sqlalchemy.orm import mapped_column as m_col
+from litestar.dto import DTOConfig
+from sqlalchemy.orm import InstrumentedAttribute
 
-from app.domain.accounts.models import User
 from app.lib import log
-from app.lib.db import orm
 from app.lib.plugin import ProjectPlugin
 from app.lib.service import SQLAlchemyAsyncRepositoryService
 
@@ -31,33 +25,6 @@ def log_info(message: str) -> None:
     logger.info(message)
 
 
-class Project(orm.TimestampedDatabaseModel):
-    slug: Mapped[str] = m_col(unique=True)
-    name: Mapped[str]
-    description: Mapped[str]
-    pin: Mapped[bool] = m_col(default=False)
-    labels: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
-    documents: Mapped[list[str]] = m_col(ARRAY(String), nullable=True)
-    start_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
-    end_date: Mapped[date] = m_col(default=datetime.now(tz=UTC).date())
-    sprint_weeks: Mapped[int | None] = m_col(default=2)
-    sprint_amount: Mapped[int | None] = m_col(default=3)
-    sprint_checkup_day: Mapped[int | None] = m_col(default=1)
-    repo_urls: Mapped[list[str]] = m_col(ARRAY(String))
-    plugin_meta: Mapped[dict | None] = m_col(
-        default=lambda: dict,
-        info=dto_field(Mark.READ_ONLY),
-    )  # Relationships
-    owner_id: Mapped[UUID | None] = m_col(ForeignKey(User.id), nullable=True)
-    owner: Mapped["User"] = relationship(
-        "User",
-        uselist=False,
-        lazy="joined",
-        info=dto_field(Mark.PRIVATE),
-    )
-
-    def __init__(self, **kw: Any) -> None:
-        super().__init__(**kw)
 
 
 class Repository(SQLAlchemyAsyncRepository[Project]):

@@ -1,17 +1,9 @@
-from __future__ import annotations
+from __future__ import annotations  # noqa: A005
 
+import asyncio
 import base64
-import logging
 
-from litestar.utils.sync import AsyncCallable
 from passlib.context import CryptContext
-from pydantic import SecretBytes, SecretStr
-
-__all__ = ["get_encryption_key", "get_password_hash", "verify_password"]
-
-
-logger = logging.getLogger()
-
 
 password_crypt_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
@@ -30,7 +22,7 @@ def get_encryption_key(secret: str) -> bytes:
     return base64.urlsafe_b64encode(secret.encode())
 
 
-async def get_password_hash(password: SecretBytes | SecretStr | str | bytes) -> str:
+async def get_password_hash(password: str | bytes) -> str:
     """Get password hash.
 
     Args:
@@ -38,25 +30,23 @@ async def get_password_hash(password: SecretBytes | SecretStr | str | bytes) -> 
     Returns:
         str: Hashed password
     """
-    if isinstance(password, SecretBytes | SecretStr):
-        password = password.get_secret_value()
-    return await AsyncCallable(password_crypt_context.hash)(secret=password)
+    return await asyncio.get_running_loop().run_in_executor(None, password_crypt_context.hash, password)
 
 
-async def verify_password(plain_password: SecretBytes | SecretStr | str | bytes, hashed_password: str) -> bool:
+async def verify_password(plain_password: str | bytes, hashed_password: str) -> bool:
     """Verify Password.
 
     Args:
-        plain_password (SecretBytes | SecretStr): Password input
-        hashed_password (str): Password hash to verify against
+        plain_password (str | bytes): The string or byte password
+        hashed_password (str): the hash of the password
 
     Returns:
-        bool: True if the password hashes match
+        bool: True if password matches hash.
     """
-    if isinstance(plain_password, SecretBytes | SecretStr):
-        plain_password = plain_password.get_secret_value()
-    valid, _ = await AsyncCallable(password_crypt_context.verify_and_update)(
-        secret=plain_password,
-        hash=hashed_password,
+    valid, _ = await asyncio.get_running_loop().run_in_executor(
+        None,
+        password_crypt_context.verify_and_update,
+        plain_password,
+        hashed_password,
     )
     return bool(valid)

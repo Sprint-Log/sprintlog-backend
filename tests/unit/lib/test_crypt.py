@@ -4,9 +4,10 @@ from __future__ import annotations
 import base64
 
 import pytest
-from pydantic import SecretBytes, SecretStr
 
 from app.lib import crypt
+
+pytestmark = pytest.mark.anyio
 
 
 @pytest.mark.parametrize(
@@ -31,8 +32,8 @@ async def test_get_encryption_key(secret_key: str, expected_value: str) -> None:
 
 async def test_get_password_hash() -> None:
     """Test that the encryption key is formatted correctly."""
-    secret_str = SecretStr("This is a password!")
-    secret_bytes = SecretBytes(b"This is a password too!")
+    secret_str = "This is a password!"  # noqa: S105
+    secret_bytes = b"This is a password too!"
     secret_str_hash = await crypt.get_password_hash(secret_str)
     secret_bytes_hash = await crypt.get_password_hash(secret_bytes)
 

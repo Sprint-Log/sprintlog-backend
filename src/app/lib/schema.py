@@ -1,28 +1,16 @@
-from pydantic import BaseModel as _BaseModel
+from typing import Any
 
-from app.utils import camel_case
-
-__all__ = ["BaseModel", "CamelizedBaseModel"]
+import msgspec
 
 
-class BaseModel(_BaseModel):
-    """Base Settings."""
-
-    class Config:
-        """Base Settings Config."""
-
-        case_sensitive = False
-        validate_assignment = True
-        orm_mode = True
-        use_enum_values = True
-        arbitrary_types_allowed = True
+class BaseStruct(msgspec.Struct):
+    def to_dict(self) -> dict[str, Any]:
+        return {f: getattr(self, f) for f in self.__struct_fields__ if getattr(self, f, None) != msgspec.UNSET}
 
 
-class CamelizedBaseModel(BaseModel):
-    """Camelized Base pydantic schema."""
+class CamelizedBaseStruct(BaseStruct, rename="camel"):
+    """Camelized Base Struct"""
 
-    class Config:
-        """Camel Case config."""
 
-        allow_population_by_field_name = True
-        alias_generator = camel_case
+class Message(CamelizedBaseStruct):
+    message: str

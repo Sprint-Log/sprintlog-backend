@@ -1,9 +1,8 @@
-version: "3.9"
 services:
   cache:
-    image: redis:latest
+    image: valkey/valkey:latest
     ports:
-      - "6379:6379"
+      - "16379:6379"
     hostname: cache
     command: redis-server --appendonly yes
     volumes:
@@ -26,7 +25,7 @@ services:
   db:
     image: postgres:latest
     ports:
-      - "5432:5432"
+      - "15432:5432"
     hostname: db
     environment:
       POSTGRES_PASSWORD: "app"
@@ -48,12 +47,11 @@ services:
       interval: 2s
       timeout: 3s
       retries: 40
-  sprintlog:
-    tty: true
+  app:
     build:
       context: .
       dockerfile: deploy/docker/run/Dockerfile
-    restart: "no"
+    restart: always
     depends_on:
       db:
         condition: service_healthy
@@ -61,14 +59,31 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+    environment:
+      SAQ_USE_SERVER_LIFESPAN: "false"
     env_file:
-      - .env.example
-
+      - .env.docker.example
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/docker/run/Dockerfile
+    command: litestar workers run
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    env_file:
+      - .env.docker.example
   migrator:
+    build:
+      context: .
+      dockerfile: deploy/docker/run/Dockerfile
     restart: "no"
     command: litestar database upgrade --no-prompt
     env_file:
-      - .env.example
+      - .env.docker.example
     depends_on:
       db:
         condition: service_healthy

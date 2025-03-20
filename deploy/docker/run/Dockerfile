@@ -1,82 +1,116 @@
-ARG PYTHON_BUILDER_IMAGE=3.11-slim-bookworm
+ARG BUILDER_IMAGE=python:3.13-slim-bookworm
 
-## ---------------------------------------------------------------------------------- ##
-## ------------------------- Python base -------------------------------------------- ##
-## ---------------------------------------------------------------------------------- ##
-FROM python:${PYTHON_BUILDER_IMAGE} as python-base
-ENV PIP_DEFAULT_TIMEOUT=100 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_ROOT_USER_ACTION=ignore \
+# ---------------------------------------------------------------------------------- #
+# ------------------------- Python base -------------------------------------------- #
+# ---------------------------------------------------------------------------------- #
+FROM ${BUILDER_IMAGE} AS python-base
+
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends tini \
+  && apt-get autoremove -y \
+  && apt-get clean -y \
+  && rm -rf /root/.cache \
+  && rm -rf /var/apt/lists/* \
+  && rm -rf /var/cache/apt/* \
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && mkdir -p /workspace/app
+
+# Copy uv executables from the published uv image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# ---------------------------------------------------------------------------------- #
+# ------------------------- Python build base -------------------------------------- #
+# ---------------------------------------------------------------------------------- #
+FROM python-base AS builder
+
+ARG UV_INSTALL_ARGS="--no-dev"
+ENV GRPC_PYTHON_BUILD_WITH_CYTHON=1 \
+    UV_LINK_MODE=copy \
+    UV_NO_CACHE=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_INSTALL_ARGS="${UV_INSTALL_ARGS}" \
+    UV_SYSTEM_PYTHON=1 \
+    PATH="/workspace/app/.venv/bin:/usr/local/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     PYTHONHASHSEED=random \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends git tini \
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /root/.cache \
-    && rm -rf /var/apt/lists/* \
-    && rm -rf /var/cache/apt/* \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false\
-    && mkdir -p /workspace/app \
-    && pip install --quiet -U pip wheel setuptools virtualenv
 
-## ---------------------------------------------------------------------------------- ##
-## ------------------------- Python build base -------------------------------------- ##
-## ---------------------------------------------------------------------------------- ##
-FROM python-base AS build-base
-ARG PDM_INSTALL_ARGS=""
-ENV PDM_INSTALL_ARGS="${PDM_INSTALL_ARGS}" \
-    GRPC_PYTHON_BUILD_WITH_CYTHON=1 \
-    PATH="/workspace/app/.venv/bin:/usr/local/bin:$PATH"
-## -------------------------- add build packages ----------------------------------- ##
-RUN apt-get install -y --no-install-recommends build-essential curl \
-    && apt-get autoremove -y \
-    && apt-get clean -y \
-    && rm -rf /root/.cache \
-    && rm -rf /var/apt/lists/* \
-    && rm -rf /var/cache/apt/* \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+# Install build dependencies (C toolchain, git, etc.)
+RUN apt-get install -y --no-install-recommends git build-essential curl \
+  && apt-get autoremove -y \
+  && apt-get clean -y \
+  && rm -rf /root/.cache \
+  && rm -rf /var/apt/lists/* \
+  && rm -rf /var/cache/apt/* \
+  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+  && mkdir -p /cloudsql
 
-## -------------------------- install application ----------------------------------- ##
 WORKDIR /workspace/app
-COPY pyproject.toml pdm.lock README.md mkdocs.yml .pre-commit-config.yaml .pylintrc LICENSE Makefile \
-    package.json package-lock.json vite.config.ts tsconfig.json \
-    ./
-COPY scripts ./scripts/
-RUN python -m venv --copies /workspace/app/.venv \
-    && /workspace/app/.venv/bin/pip install --quiet pdm nodeenv cython  \
-    && pdm install ${PDM_INSTALL_ARGS} --no-self  \
-    && pdm export ${PDM_INSTALL_ARGS} --without-hashes --prod --output=requirements.txt
+
+# Copy only Python-related build files (no Node/JS files)
+COPY pyproject.toml uv.lock README.md .pre-commit-config.yaml LICENSE Makefile ./
+
+# Create a virtual environment & install Python dependencies
+RUN uv venv \
+  && uv sync ${UV_INSTALL_ARGS} --frozen --no-install-project --no-editable \
+  && uv export ${UV_INSTALL_ARGS} --frozen --no-hashes --output-file=requirements.txt
+
+# Copy source code and perform any additional sync or build steps
 COPY src ./src/
-RUN pdm build
 
+RUN uv sync ${UV_INSTALL_ARGS} --frozen --no-install-project --no-editable \
+  && uv export ${UV_INSTALL_ARGS} --frozen --no-hashes --output-file=requirements.txt
 
-## ---------------------------------------------------------------------------------- ##
-## -------------------------------- runtime build ----------------------------------- ##
-## ---------------------------------------------------------------------------------- ##
-## ------------------------- use base image  ---------------------------------------- ##
+# Build your Python distribution/wheels
+RUN uv build
 
-FROM python-base as run-image
+# ---------------------------------------------------------------------------------- #
+# ----------------------------- Runtime Image --------------------------------------- #
+# ---------------------------------------------------------------------------------- #
+FROM python-base AS runner
+
 ARG ENV_SECRETS="runtime-secrets"
-ENV ENV_SECRETS="${ENV_SECRETS}"
+ARG LITESTAR_APP="app.asgi:create_app"
+
+ENV ENV_SECRETS="${ENV_SECRETS}" \
+    PATH="/workspace/app/.venv/bin:/usr/local/bin:$PATH" \
+    UV_LINK_MODE=copy \
+    UV_NO_CACHE=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_SYSTEM_PYTHON=1 \
+    UV_INSTALL_ARGS="${UV_INSTALL_ARGS}" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    LITESTAR_APP="${LITESTAR_APP}"
+
+# Create nonroot user and set permissions
 RUN addgroup --system --gid 65532 nonroot \
-    && adduser --no-create-home --system --uid 65532 nonroot \
-    && chown -R nonroot:nonroot /workspace
-## -------------------------- install application ----------------------------------- ##
-COPY --from=build-base --chown=65532:65532 /workspace/app/requirements.txt /tmp/requirements.txt
-COPY --from=build-base --chown=65532:65532 /workspace/app/dist /tmp/
+  && adduser --no-create-home --system --uid 65532 nonroot \
+  && chown -R nonroot:nonroot /workspace
+
+# Copy the build artifacts (wheels) from builder
+COPY --from=builder --chown=65532:65532 /cloudsql /cloudsql
+COPY --from=builder --chown=65532:nonroot /workspace/app/dist /tmp/
+
 WORKDIR /workspace/app
-RUN pip install --quiet --disable-pip-version-check --no-deps --requirement=/tmp/requirements.txt
-RUN pip install --quiet --disable-pip-version-check --no-deps /tmp/*.whl
+
+# Install the built wheel(s)
+RUN uv pip ${UV_INSTALL_ARGS} install --quiet --disable-pip-version-check /tmp/*.whl \
+  && rm -rf /tmp/* \
+  && chown -R nonroot:nonroot /workspace/app
+
 USER nonroot
 STOPSIGNAL SIGINT
+
 EXPOSE 8000
-ENTRYPOINT ["tini","--" ]
-CMD [ "litestar","run","--host","0.0.0.0"]
+ENTRYPOINT ["tini","--"]
+CMD [ "app", "run", "--port", "8000", "--host", "0.0.0.0" ]
 VOLUME /workspace/app

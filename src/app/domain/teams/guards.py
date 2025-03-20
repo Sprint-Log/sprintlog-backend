@@ -4,7 +4,8 @@ from litestar.connection import ASGIConnection
 from litestar.exceptions import PermissionDeniedException
 from litestar.handlers.base import BaseRouteHandler
 
-from app.domain.teams.models import TeamRoles
+from app.config import constants
+from app.db.models import TeamRoles
 
 __all__ = ["requires_team_admin", "requires_team_membership", "requires_team_ownership"]
 
@@ -20,13 +21,15 @@ def requires_team_membership(connection: ASGIConnection, _: BaseRouteHandler) ->
         PermissionDeniedException: _description_
     """
     team_id = connection.path_params["team_id"]
-    if connection.scope.get("method") == "OPTIONS":
+    has_system_role = any(
+        assigned_role.role_name
+        for assigned_role in connection.user.roles
+        if assigned_role.role.name in {constants.SUPERUSER_ACCESS_ROLE}
+    )
+    has_team_role = any(membership.team.id == team_id for membership in connection.user.teams)
+    if connection.user.is_superuser or has_system_role or has_team_role:
         return
-    if connection.user.is_superuser:
-        return
-    if any(membership.team.id == team_id for membership in connection.user.teams):
-        return
-    raise PermissionDeniedException(detail="Insufficient permissions to access workspace.")
+    raise PermissionDeniedException(detail="Insufficient permissions to access team.")
 
 
 def requires_team_admin(connection: ASGIConnection, _: BaseRouteHandler) -> None:
@@ -40,13 +43,15 @@ def requires_team_admin(connection: ASGIConnection, _: BaseRouteHandler) -> None
         PermissionDeniedException: _description_
     """
     team_id = connection.path_params["team_id"]
-    if connection.scope.get("method") == "OPTIONS":
-        return
-    if connection.user.is_superuser:
-        return
-    if any(
+    has_system_role = any(
+        assigned_role.role_name
+        for assigned_role in connection.user.roles
+        if assigned_role.role.name in {constants.SUPERUSER_ACCESS_ROLE}
+    )
+    has_team_role = any(
         membership.team.id == team_id and membership.role == TeamRoles.ADMIN for membership in connection.user.teams
-    ):
+    )
+    if connection.user.is_superuser or has_system_role or has_team_role:
         return
     raise PermissionDeniedException(detail="Insufficient permissions to access team.")
 
@@ -62,35 +67,14 @@ def requires_team_ownership(connection: ASGIConnection, _: BaseRouteHandler) -> 
         PermissionDeniedException: _description_
     """
     team_id = UUID(connection.path_params["team_id"])
-    if connection.scope.get("method") == "OPTIONS":
+    has_system_role = any(
+        assigned_role.role.name
+        for assigned_role in connection.user.roles
+        if assigned_role.role.name in {constants.SUPERUSER_ACCESS_ROLE}
+    )
+    has_team_role = any(membership.team.id == team_id and membership.is_owner for membership in connection.user.teams)
+    if connection.user.is_superuser or has_system_role or has_team_role:
         return
-    if connection.user.is_superuser:
-        return
-    if any(membership.team.id == team_id and membership.is_owner for membership in connection.user.teams):
-        return
+
     msg = "Insufficient permissions to access team."
-    raise PermissionDeniedException(msg)
-
-
-def requires_membership(connection: ASGIConnection, route: BaseRouteHandler) -> None:
-    if connection.scope.get("method") == "OPTIONS":
-        return
-    if connection.user.is_superuser:
-        return
-    if any(membership.team.name == route.opt.get("membership") for membership in connection.user.teams):
-        return
-    msg = "Insufficient permissions to access team."
-    raise PermissionDeniedException(msg)
-
-
-def requires_membership_name(connection: ASGIConnection) -> None:
-    if connection.scope.get("method") == "OPTIONS":
-        return
-    if connection.user.is_superuser:
-        return
-    team_name = UUID(connection.path_params["team_name"])
-
-    if any(membership.team.name == team_name for membership in connection.user.teams):
-        return
-    msg = "Insufficient permissions to access team."
-    raise PermissionDeniedException(msg)
+    raise PermissionDeniedException(detail=msg)

@@ -15,7 +15,7 @@ from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 
 from app.domain.accounts.guards import requires_active_user
-from app.domain.accounts.models import User
+from app.db.models import User
 
 if TYPE_CHECKING:
     from uuid import UUID

@@ -1,19 +1,22 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, cast
 
-from httpx import AsyncClient
+import pytest
 from litestar import get
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.lib import db
+from litestar.testing import AsyncTestClient
 
 if TYPE_CHECKING:
     from litestar import Litestar
     from litestar.stores.redis import RedisStore
     from redis.asyncio import Redis as AsyncRedis
-    from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
+    from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+
+pytestmark = pytest.mark.anyio
 
 
-def test_cache_on_app(app: "Litestar", redis: "AsyncRedis") -> None:
+@pytest.mark.anyio
+async def test_cache_on_app(app: "Litestar", redis: "AsyncRedis") -> None:
     """Test that the app's cache is patched.
 
     Args:
@@ -23,27 +26,7 @@ def test_cache_on_app(app: "Litestar", redis: "AsyncRedis") -> None:
     assert cast("RedisStore", app.stores.get("response_cache"))._redis is redis
 
 
-def test_engine_on_app(app: "Litestar", engine: "AsyncEngine") -> None:
-    """Test that the app's engine is patched.
-
-    Args:
-        app: The test Litestar instance
-        engine: The test SQLAlchemy engine instance.
-    """
-    assert app.state[db.config.engine_app_state_key] is engine
-
-
-def test_sessionmaker(app: "Litestar", sessionmaker: "async_sessionmaker[AsyncSession]") -> None:
-    """Test that the sessionmaker is patched.
-
-    Args:
-        app: The test Litestar instance
-        sessionmaker: The test SQLAlchemy sessionmaker factory.
-    """
-    assert db.async_session_factory is sessionmaker
-    assert db.base.async_session_factory is sessionmaker
-
-
+@pytest.mark.anyio
 async def test_db_session_dependency(app: "Litestar", engine: "AsyncEngine") -> None:
     """Test that handlers receive session attached to patched engine.
 
@@ -58,6 +41,6 @@ async def test_db_session_dependency(app: "Litestar", engine: "AsyncEngine") -> 
 
     app.register(db_session_dependency_patched)
     # can't use test client as it always starts its own event loop
-    async with AsyncClient(app=app, base_url="http://testserver") as client:
+    async with AsyncTestClient(app) as client:
         response = await client.get("/db-session-test")
         assert response.json()["result"] == "db_session.bind is engine = True"

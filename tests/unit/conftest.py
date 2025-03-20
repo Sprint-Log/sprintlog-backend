@@ -6,9 +6,24 @@ import pytest
 from litestar import Litestar, get
 from litestar.datastructures import State
 from litestar.enums import ScopeType
+from litestar.testing import AsyncTestClient
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from litestar.types import HTTPResponseBodyEvent, HTTPResponseStartEvent, HTTPScope
+
+pytestmark = pytest.mark.anyio
+
+
+@pytest.fixture(name="client")
+async def fx_client(app: Litestar) -> AsyncGenerator[AsyncTestClient, None]:
+    """Test client fixture for making calls on the global app instance."""
+    try:
+        async with AsyncTestClient(app=app) as client:
+            yield client
+    except Exception:  # noqa: BLE001
+        ...
 
 
 @pytest.fixture()
@@ -38,12 +53,12 @@ def http_scope(app: Litestar) -> HTTPScope:
     """Minimal ASGI HTTP connection scope."""
 
     @get()
-    async def handler() -> None:
-        ...
+    async def handler() -> None: ...
 
     return {
         "headers": [],
         "app": app,
+        "litestar_app": app,
         "asgi": {"spec_version": "whatever", "version": "3.0"},
         "auth": None,
         "client": None,
@@ -53,6 +68,7 @@ def http_scope(app: Litestar) -> HTTPScope:
         "path_params": {},
         "query_string": b"",
         "raw_path": b"/wherever",
+        "path_template": "template.j2",
         "root_path": "/",
         "route_handler": handler,
         "scheme": "http",

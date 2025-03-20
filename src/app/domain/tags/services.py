@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from app.domain.tags.models import Tag
-from app.lib.repository import SQLAlchemyAsyncRepository
-from app.lib.service import SQLAlchemyAsyncRepositoryService
+from advanced_alchemy.repository import SQLAlchemyAsyncRepository
+from advanced_alchemy.service import SQLAlchemyAsyncRepositoryService
 
-__all__ = ["TagService", "TagRepository"]
+from app.db import models as m
 
-
-class TagRepository(SQLAlchemyAsyncRepository[Tag]):
-    """Tag Repository."""
-
-    model_type = Tag
+__all__ = ("TagService",)
 
 
-class TagService(SQLAlchemyAsyncRepositoryService[Tag]):
+class TagService(SQLAlchemyAsyncRepositoryService[m.Tag]):
     """Handles basic lookup operations for an Tag."""
 
-    repository_type = TagRepository
+    class Repository(SQLAlchemyAsyncRepository[m.Tag]):
+        """Tag Repository."""
+
+        model_type = m.Tag
+
+    repository_type = Repository
     match_fields = ["name"]

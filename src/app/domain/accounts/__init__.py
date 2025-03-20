@@ -1,4 +1,5 @@
 """User Account domain logic."""
-from . import controllers, dependencies, dtos, guards, models, services
 
-__all__ = ["models", "guards", "services", "controllers", "dependencies", "dtos"]
+from app.domain.accounts import controllers, deps, guards, schemas, services, signals, urls
+
+__all__ = ("controllers", "deps", "guards", "schemas", "services", "signals", "urls")

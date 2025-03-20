@@ -1,99 +1,113 @@
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TCH003
+from datetime import datetime  # noqa: TC003
+from uuid import UUID  # noqa: TC003
 
-from pydantic import UUID4, EmailStr
-from pydantic.types import SecretStr
+import msgspec
 
-from app.domain.teams.models import TeamRoles
-from app.lib.schema import CamelizedBaseModel
+from app.db.models.team_roles import TeamRoles
+from app.lib.schema import CamelizedBaseStruct
 
-__all__ = [
+__all__ = (
+    "AccountLogin",
+    "AccountRegister",
     "User",
     "UserCreate",
-    "UserLogin",
-    "UserPasswordConfirm",
-    "UserPasswordUpdate",
-    "UserRegister",
+    "UserRole",
+    "UserRoleAdd",
+    "UserRoleRevoke",
     "UserTeam",
     "UserUpdate",
-]
+)
 
 
-class User(CamelizedBaseModel):
-    """User properties to use for a response."""
-
-    id: UUID4
-    email: EmailStr
-    name: str | None
-    is_superuser: bool
-    is_active: bool
-    is_verified: bool
-    created_at: datetime
-    updated_at: datetime
-    teams: list[UserTeam] = []
-
-
-class UserTeam(CamelizedBaseModel):
-    """Holds teams details for a user.
+class UserTeam(CamelizedBaseStruct):
+    """Holds team details for a user.
 
     This is nested in the User Model for 'team'
     """
 
-    team_id: UUID4
+    team_id: UUID
     team_name: str
     is_owner: bool = False
     role: TeamRoles = TeamRoles.MEMBER
 
 
-class UserRegister(CamelizedBaseModel):
-    """User Registration Input."""
+class UserRole(CamelizedBaseStruct):
+    """Holds role details for a user.
 
-    email: EmailStr
-    password: SecretStr
+    This is nested in the User Model for 'roles'
+    """
+
+    role_id: UUID
+    role_slug: str
+    role_name: str
+    assigned_at: datetime
+
+
+class OauthAccount(CamelizedBaseStruct):
+    """Holds linked Oauth details for a user."""
+
+    id: UUID
+    oauth_name: str
+    access_token: str
+    account_id: str
+    account_email: str
+    expires_at: int | None = None
+    refresh_token: str | None = None
+
+
+class User(CamelizedBaseStruct):
+    """User properties to use for a response."""
+
+    id: UUID
+    email: str
     name: str | None = None
+    is_superuser: bool = False
+    is_active: bool = False
+    is_verified: bool = False
+    has_password: bool = False
+    teams: list[UserTeam] = []
+    roles: list[UserRole] = []
+    oauth_accounts: list[OauthAccount] = []
 
 
-class UserLogin(CamelizedBaseModel):
-    """Properties required to log in."""
+class UserCreate(CamelizedBaseStruct):
+    email: str
+    password: str
+    name: str | None = None
+    is_superuser: bool = False
+    is_active: bool = True
+    is_verified: bool = False
 
+
+class UserUpdate(CamelizedBaseStruct, omit_defaults=True):
+    email: str | None | msgspec.UnsetType = msgspec.UNSET
+    password: str | None | msgspec.UnsetType = msgspec.UNSET
+    name: str | None | msgspec.UnsetType = msgspec.UNSET
+    is_superuser: bool | None | msgspec.UnsetType = msgspec.UNSET
+    is_active: bool | None | msgspec.UnsetType = msgspec.UNSET
+    is_verified: bool | None | msgspec.UnsetType = msgspec.UNSET
+
+
+class AccountLogin(CamelizedBaseStruct):
     username: str
-    password: SecretStr
+    password: str
 
 
-class UserPasswordUpdate(CamelizedBaseModel):
-    """Properties to receive for user updates."""
-
-    current_password: SecretStr
-    new_password: SecretStr
-
-
-class UserPasswordConfirm(CamelizedBaseModel):
-    """Confirm Password DTO."""
-
-    password: SecretStr
-
-
-# Properties to receive via API on creation
-class UserCreate(CamelizedBaseModel):
-    """User Create DTO."""
-
-    email: EmailStr
-    password: SecretStr
+class AccountRegister(CamelizedBaseStruct):
+    email: str
+    password: str
     name: str | None = None
-    is_superuser: bool | None = False
-    is_active: bool | None = True
-    is_verified: bool | None = False
 
 
-class UserUpdate(CamelizedBaseModel):
-    """User update DTO."""
+class UserRoleAdd(CamelizedBaseStruct):
+    """User role add ."""
 
-    email: EmailStr | None = None
-    name: str | None = None
-    is_superuser: bool | None = False
-    is_active: bool | None = False
-    is_verified: bool | None = False
+    user_name: str
 
 
-User.update_forward_refs()
+class UserRoleRevoke(CamelizedBaseStruct):
+    """User role revoke ."""
+
+    user_name: str
