@@ -10,7 +10,7 @@ from app.config.app import alchemy
 from app.config.base import get_settings
 from app.db import models as m
 from app.domain.accounts import urls
-from app.domain.accounts.deps import provide_users_service
+
 
 if TYPE_CHECKING:
     from litestar.connection import ASGIConnection
@@ -92,6 +92,8 @@ async def current_user_from_token(token: Token, connection: ASGIConnection[Any, 
     Returns:
         User: User record mapped to the JWT identifier
     """
+    from app.domain.accounts.deps import provide_users_service
+
     service = await anext(provide_users_service(alchemy.provide_session(connection.app.state, connection.scope)))
     user = await service.get_one_or_none(email=token.sub)
     return user if user and user.is_active else None

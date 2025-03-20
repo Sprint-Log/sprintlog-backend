@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 from advanced_alchemy.repository import (
@@ -7,13 +8,10 @@ from advanced_alchemy.service import (
     ModelDictT,
     SQLAlchemyAsyncRepositoryService,
 )
-
+ 
 from app.lib.plugin import ProjectPlugin
 from typing import Any, override
 from app.db.models import Project
-
-__all__ = ["ProjectService"]
-
 
 class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
     """Handles database operations for projects."""
@@ -22,10 +20,11 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
         """Project SQLAlchemy Repository."""
 
         model_type = Project
-
+        
     repository_type = ProjectRepository
     plugins: set[ProjectPlugin] = set()
-
+    
+    
     def __init__(self, **repo_kwargs: Any) -> None:
         self.repository: ProjectService.ProjectRepository = self.repository_type(**repo_kwargs)
         self.model_type = self.repository.model_type
@@ -83,7 +82,7 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
             await plugin.after_update(data=obj)
 
         return obj
-
+    
     @override
     async def delete(
         self,

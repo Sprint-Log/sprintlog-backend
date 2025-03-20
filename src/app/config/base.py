@@ -4,7 +4,7 @@ import json
 import binascii
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, cast, Callable
+from typing import Any, Final, cast, Callable
 from advanced_alchemy.utils.text import slugify
 from litestar.serialization import decode_json, encode_json
 from litestar.utils.module_loader import module_to_os_path
@@ -15,8 +15,7 @@ from redis.asyncio import Redis
 from ._utils import get_env
 from functools import lru_cache
 
-if TYPE_CHECKING:
-    from litestar.data_extractors import ResponseExtractorField, RequestExtractorField
+from litestar.data_extractors import ResponseExtractorField, RequestExtractorField
 
 DEFAULT_MODULE_NAME = "app"
 BASE_DIR: Final[Path] = module_to_os_path(DEFAULT_MODULE_NAME)

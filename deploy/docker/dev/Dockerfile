@@ -82,5 +82,5 @@ RUN uv sync ${UV_INSTALL_ARGS}
 STOPSIGNAL SIGINT
 EXPOSE 8000
 ENTRYPOINT ["tini","--"]
-CMD [ "litestar","run","--host","0.0.0.0","--port","8000"]
+CMD [ "litestar","run","--host","0.0.0.0"]
 VOLUME /workspace/app

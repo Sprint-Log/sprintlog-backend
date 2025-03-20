@@ -17,9 +17,6 @@ if TYPE_CHECKING:
 settings = get_settings()
 
 
-__all__ = ("provide_project_service",)
-
-
 def load_plugins() -> Set[ProjectPlugin]:
     """Scan and load all enabled ProjectPlugins from app.plugins."""
     loaded_plugins = set()

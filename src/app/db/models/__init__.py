@@ -8,6 +8,7 @@ from .team_roles import TeamRoles
 from .team_tag import team_tag
 from .user import User
 from .user_role import UserRole
+
 from .project import Project
 from .sprintlog import SprintLog
 from .audit import Audit
@@ -25,5 +26,5 @@ __all__ = (
     "team_tag",
     "Project",
     "SprintLog",
-    "Audit"
+    "Audit",
 )

@@ -10,10 +10,10 @@ from sqlalchemy.orm import joinedload
 
 import app.plugins
 from app.config.base import get_settings
+from app.db.models import SprintLog
 from app.lib.deps import create_service_provider
 from app.lib.plugin import SprintlogPlugin
 from app.domain.sprintlogs.service import SprintLogService
-from app.db.models import SprintLog
 
 if TYPE_CHECKING:
     from typing import Set
@@ -21,8 +21,6 @@ if TYPE_CHECKING:
 
 
 settings = get_settings()
-
-__all__ = ("provide_sprintlog_service",)
 
 
 def load_plugins() -> Set[SprintlogPlugin]:

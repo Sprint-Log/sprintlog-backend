@@ -4,12 +4,19 @@ from uuid import UUID
 from datetime import UTC, date, datetime
 from sqlalchemy import String, ARRAY, ForeignKey
 from sqlalchemy.orm import Mapped, relationship, mapped_column
-from advanced_alchemy.base import UUIDAuditBase 
+from advanced_alchemy.base import UUIDAuditBase
 from litestar.dto import Mark, dto_field
-from app.db.models import User
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .user import User
+
+
+__all__ = ["Project"]
+
 
 class Project(UUIDAuditBase):
+    __tablename__ = "project"
     slug: Mapped[str] = mapped_column(unique=True)
     name: Mapped[str]
     description: Mapped[str]
@@ -26,7 +33,7 @@ class Project(UUIDAuditBase):
         default=lambda: dict,
         info=dto_field(Mark.READ_ONLY),
     )  # Relationships
-    owner_id: Mapped[UUID | None] = mapped_column(ForeignKey(User.id), nullable=True)
+    owner_id: Mapped[UUID | None] = mapped_column(ForeignKey("user_account.id"), nullable=True)
     owner: Mapped["User"] = relationship(
         "User",
         uselist=False,

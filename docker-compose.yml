@@ -47,8 +47,7 @@ services:
       interval: 2s
       timeout: 3s
       retries: 40
-  sprintlog:
-    tty: true
+  app:
     build:
       context: .
       dockerfile: deploy/docker/run/Dockerfile

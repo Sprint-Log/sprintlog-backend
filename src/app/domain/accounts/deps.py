@@ -13,6 +13,8 @@ from app.lib.deps import create_service_provider
 if TYPE_CHECKING:
     from litestar import Request
 
+
+__all__ = ("provide_users_service", "provide_user")
 # create a hard reference to this since it's used oven
 provide_users_service = create_service_provider(
     UserService,

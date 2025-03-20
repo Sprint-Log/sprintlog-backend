@@ -5,22 +5,78 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from advanced_alchemy.base import UUIDAuditBase
 from litestar.dto import Mark, dto_field
- 
-from app.domain.sprintlogs.schemas import (
-    Progress,
-    Priority,
-    Status,
-    ItemType,
-    Category,
-)
+from enum import StrEnum
+
+# from app.domain.sprintlogs.schemas import (
+#     Progress,
+#     Priority,
+#     Status,
+#     ItemType,
+#     Category,
+# )
 from typing import TYPE_CHECKING, cast
 from sqlalchemy.ext.hybrid import hybrid_property
- 
+
 
 if TYPE_CHECKING:
-    from app.db.models import User, Project, Audit
+    from .user import User
+    from .project import Project
+    from .audit import Audit
+
+__all__ = ["SprintLog", "Priority", "Progress", "Status", "Category", "ItemType"]
+from enum import StrEnum
+
+
+class Priority(StrEnum):
+    low = "🟢"
+    med = "🟡"
+    hi = "🔴"
+
+
+class Progress(StrEnum):
+    empty = "⬜⬜⬜"
+    in_progress = "🟩⬜⬜"
+    half_way = "🟩🟩⬜"
+    ready = "🟩🟩🟩"
+
+
+class Status(StrEnum):
+    new = "☀️"
+    started = "🛠️"
+    checked_in = "🔳"
+    completed = "✅"
+    cancelled = "🚫"
+
+
+class Category(StrEnum):
+    ideas = "💡"
+    issues = "⚠️"
+    maintenance = "🔨"
+    finances = "💰"
+    innovation = "🚀"
+    bugs = "🐞"
+    features = "🎁"
+    security = "🔒"
+    attention = "🚩"
+    backend = "📡"
+    database = "💾"
+    desktop = "🖥️"
+    mobile = "📱"
+    intl = "🌍"
+    design = "🎨"
+    analytics = "📈"
+    automation = "🤖"
+
+
+class ItemType(StrEnum):
+    backlog = "backlog"
+    task = "task"
+    draft = "draft"
+    self = "self"
+
 
 class SprintLog(UUIDAuditBase):
+    __tablename__ = "sprint_log"
     title: Mapped[str] = mapped_column(String(length=200), index=True)
     description: Mapped[str | None]
     slug: Mapped[str] = mapped_column(
@@ -67,9 +123,9 @@ class SprintLog(UUIDAuditBase):
         info=dto_field(Mark.READ_ONLY),
         nullable=True,
     )  # Relationships
-    assignee_id: Mapped[UUID | None] = mapped_column(ForeignKey(User.id))
-    owner_id: Mapped[UUID | None] = mapped_column(ForeignKey(User.id))
-    project_slug: Mapped[str] = mapped_column(ForeignKey(Project.slug), nullable=True)
+    assignee_id: Mapped[UUID | None] = mapped_column(ForeignKey("user_account.id"))
+    owner_id: Mapped[UUID | None] = mapped_column(ForeignKey("user_account.id"))
+    project_slug: Mapped[str] = mapped_column(ForeignKey("project.slug"), nullable=True)
     project: Mapped["Project"] = relationship(
         "Project",
         uselist=False,
@@ -126,8 +182,8 @@ class SprintLog(UUIDAuditBase):
             "SQLColumnExpression[String | None]",
             cls.project_slug + "_" + cls.type,
         )
-        
-        
+
+
 SprintLog.registry.update_type_annotation_map(
     {Category: String, Priority: String, Progress: String, ItemType: String},
 )
