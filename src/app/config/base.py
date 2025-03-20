@@ -1,28 +1,22 @@
 from __future__ import annotations
-
-import binascii
-import json
 import os
+import json
+import binascii
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, cast
-
+from typing import TYPE_CHECKING, Any, Final, cast, Callable
 from advanced_alchemy.utils.text import slugify
-from litestar.data_extractors import RequestExtractorField
 from litestar.serialization import decode_json, encode_json
 from litestar.utils.module_loader import module_to_os_path
-from redis.asyncio import Redis
 from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.pool import NullPool
-
+from redis.asyncio import Redis
 from ._utils import get_env
+from functools import lru_cache
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from litestar.data_extractors import ResponseExtractorField
+    from litestar.data_extractors import ResponseExtractorField, RequestExtractorField
 
 DEFAULT_MODULE_NAME = "app"
 BASE_DIR: Final[Path] = module_to_os_path(DEFAULT_MODULE_NAME)
@@ -128,6 +122,7 @@ class DatabaseSettings:
                         format="binary",
                     ),
                 )
+
         elif self.URL.startswith("sqlite+aiosqlite"):
             engine = create_async_engine(
                 url=self.URL,
@@ -153,6 +148,7 @@ class DatabaseSettings:
             def _sqla_on_begin(dbapi_connection: Any) -> Any:  # pragma: no cover
                 """Emits a custom begin"""
                 dbapi_connection.exec_driver_sql("BEGIN")
+
         else:
             engine = create_async_engine(
                 url=self.URL,
@@ -172,6 +168,7 @@ class DatabaseSettings:
         self._engine_instance = engine
         return self._engine_instance
 
+
 @dataclass
 class ServerSettings:
     """Server configurations."""
@@ -186,29 +183,29 @@ class ServerSettings:
     """Turn on hot reloading."""
     RELOAD_DIRS: list[str] = field(default_factory=get_env("LITESTAR_RELOAD_DIRS", [f"{BASE_DIR}"]))
     """Directories to watch for reloading."""
-    HTTP_WORKERS: int | None = None
+    HTTP_WORKERS: int | None = field(default_factory=get_env("LITESTAR_HTTP_WORKERS", None))
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
-    LIVE_API_KEY: str = ""
     """Live API key. for LiveKit server"""
-    LIVE_API_SECRET: str = ""
+    LIVE_API_SECRET: str = field(default_factory=get_env("SERVER_LIVE_API_SECRET", ""))
     """Live API Secret. for LiveKit server"""
-    LIVE_API_URL: str = ""
+    LIVE_API_URL: str = field(default_factory=get_env("SERVER_LIVE_API_URL", ""))
     """Zulip API URL. for zulip server"""
-    ZULIP_API_URL: str = ""
+    ZULIP_API_URL: str = field(default_factory=get_env("SERVER_ZULIP_API_URL", ""))
     """Zulip Send Message API URL. for zulip server"""
-    ZULIP_SEND_MESSAGE_URL: str = ""
+    ZULIP_SEND_MESSAGE_URL: str = field(default_factory=get_env("SERVER_ZULIP_SEND_MESSAGE_URL", ""))
     """Zulip Create Stream API URL. for zulip server"""
-    ZULIP_CREATE_STREAM_URL: str = ""
+    ZULIP_CREATE_STREAM_URL: str = field(default_factory=get_env("SERVER_ZULIP_CREATE_STREAM_URL", ""))
     """Zulip Update Message API URL. for zulip server"""
-    ZULIP_UPDATE_MESSAGE_URL: str = ""
+    ZULIP_UPDATE_MESSAGE_URL: str = field(default_factory=get_env("SERVER_ZULIP_UPDATE_MESSAGE_URL", ""))
     """Zulip Delete Message API URL. for zulip server"""
-    ZULIP_DELETE_MESSAGE_URL: str = ""
+    ZULIP_DELETE_MESSAGE_URL: str = field(default_factory=get_env("SERVER_ZULIP_DELETE_MESSAGE_URL", ""))
     """Zulip Bot Email Address. for zulip server"""
-    ZULIP_EMAIL_ADDRESS: str = ""
+    ZULIP_EMAIL_ADDRESS: str = field(default_factory=get_env("SERVER_ZULIP_EMAIL_ADDRESS", ""))
     """Zulip Bot API key. for zulip server"""
-    ZULIP_API_KEY: str = ""
+    ZULIP_API_KEY: str = field(default_factory=get_env("SERVER_ZULIP_API_KEY", ""))
     """Zulip admins. for zulip server"""
-    ZULIP_ADMIN_EMAIL: list[str] = ["phyoakl@hexcode.tech"]
+    ZULIP_ADMIN_EMAIL: list[str] = field(default_factory=get_env("SERVER_ZULIP_ADMIN_EMAIL", ["phyoakl@hexcode.tech"]))
+
 
 @dataclass
 class SaqSettings:
@@ -332,6 +329,7 @@ class RedisSettings:
             health_check_interval=self.HEALTH_CHECK_INTERVAL,
         )
 
+
 @dataclass
 class PluginSettings:
     """Server configurations."""
@@ -343,6 +341,7 @@ class PluginSettings:
 
     """Disable or enable zulip plugin"""
     ENABLED: list[str] = field(default_factory=list)
+
 
 @dataclass
 class AppSettings:
@@ -399,7 +398,6 @@ class AppSettings:
                 self.ALLOWED_CORS_ORIGINS = [host.strip() for host in self.ALLOWED_CORS_ORIGINS.split(",")]
 
 
-
 @dataclass
 class Settings:
     app: AppSettings = field(default_factory=AppSettings)
@@ -408,8 +406,7 @@ class Settings:
     log: LogSettings = field(default_factory=LogSettings)
     redis: RedisSettings = field(default_factory=RedisSettings)
     saq: SaqSettings = field(default_factory=SaqSettings)
-    plugin: PluginSettings =field(default_factory=PluginSettings)
-    
+    plugin: PluginSettings = field(default_factory=PluginSettings)
 
     @classmethod
     def from_env(cls, dotenv_filename: str = ".env") -> Settings:

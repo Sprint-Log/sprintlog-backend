@@ -71,7 +71,7 @@ RUN apt-get install -y --no-install-recommends git build-essential curl \
 
 WORKDIR /workspace/app
 
-COPY pyproject.toml uv.lock README.md .pre-commit-config.yaml LICENSE Makefile  ./
+COPY pyproject.toml uv.lock README.md LICENSE Makefile  ./
 
 RUN uv sync ${UV_INSTALL_ARGS} --no-install-project
 

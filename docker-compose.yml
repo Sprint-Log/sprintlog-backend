@@ -25,7 +25,7 @@ services:
   db:
     image: postgres:latest
     ports:
-      - "15432:5432"
+      - "5432:5432"
     hostname: db
     environment:
       POSTGRES_PASSWORD: "app"
@@ -47,7 +47,8 @@ services:
       interval: 2s
       timeout: 3s
       retries: 40
-  app:
+  sprintlog:
+    tty: true
     build:
       context: .
       dockerfile: deploy/docker/run/Dockerfile

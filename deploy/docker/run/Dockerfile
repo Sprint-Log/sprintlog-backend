@@ -52,7 +52,7 @@ RUN apt-get install -y --no-install-recommends git build-essential curl \
 WORKDIR /workspace/app
 
 # Copy only Python-related build files (no Node/JS files)
-COPY pyproject.toml uv.lock README.md .pre-commit-config.yaml LICENSE Makefile ./
+COPY pyproject.toml uv.lock README.md LICENSE Makefile ./
 
 # Create a virtual environment & install Python dependencies
 RUN uv venv \
