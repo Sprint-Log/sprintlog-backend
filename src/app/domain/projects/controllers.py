@@ -24,10 +24,10 @@ from app.lib.deps import create_filter_dependencies
 from structlog import getLogger
 from app.domain.accounts.guards import requires_active_user
 
+
 if TYPE_CHECKING:
     from app.db import models as m
     from advanced_alchemy.filters import FilterTypes
-    from advanced_alchemy.service import OffsetPagination
 
 
 logger = getLogger()
@@ -60,7 +60,7 @@ class ProjectController(Controller):
     DETAIL_ROUTE = "/{row_id:uuid}"
 
     @get()
-    async def filter(
+    async def list_project(
         self,
         service: ProjectService,
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
@@ -70,7 +70,7 @@ class ProjectController(Controller):
         return await service.list(*filters)
 
     @post()
-    async def create(
+    async def create_project(
         self,
         data: m.Project,
         current_user: m.User,
@@ -82,12 +82,12 @@ class ProjectController(Controller):
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
-    async def retrieve(self, service: ProjectService, row_id: UUID) -> m.Project:
+    async def get_project(self, service: ProjectService, row_id: UUID) -> m.Project:
         """Get Model by ID."""
         return await service.get(row_id)
 
     @put(DETAIL_ROUTE)
-    async def update(
+    async def update_project(
         self,
         data: m.Project,
         current_user: m.User,
@@ -99,6 +99,6 @@ class ProjectController(Controller):
         return await service.update(item_id=row_id, data=data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
-    async def delete(self, service: ProjectService, row_id: "UUID") -> m.Project:
+    async def delete_project(self, service: ProjectService, row_id: "UUID") -> m.Project:
         """Delete Author by ID."""
         return await service.delete(row_id)

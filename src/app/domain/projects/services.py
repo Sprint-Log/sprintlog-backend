@@ -24,13 +24,14 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
         model_type = Project
 
     repository_type = ProjectRepository
+
     plugins: set[ProjectPlugin] = set()
 
     def __init__(self, **repo_kwargs: Any) -> None:
-        self.repository: ProjectService.ProjectRepository = self.repository_type(**repo_kwargs)
-        self.model_type = self.repository.model_type
 
         super().__init__(**repo_kwargs)
+
+        self.model_type = self.repository.model_type
 
     async def create(
         self,

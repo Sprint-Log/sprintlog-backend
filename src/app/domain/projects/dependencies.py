@@ -4,51 +4,42 @@ from __future__ import annotations
 
 import pkgutil
 from typing import TYPE_CHECKING
-
+from structlog import get_logger
 import app.plugins
 from app.config.base import get_settings
 from app.domain.projects.services import ProjectService
-from app.lib.deps import create_service_provider
 from app.lib.plugin import ProjectPlugin
 
 if TYPE_CHECKING:
-    from typing import Set
+    from collections.abc import AsyncGenerator
+    from sqlalchemy.ext.asyncio import AsyncSession
+
 
 settings = get_settings()
-
+logger = get_logger()
 
 __all__ = ("provide_project_service",)
 
 
-def load_plugins() -> Set[ProjectPlugin]:
-    """Scan and load all enabled ProjectPlugins from app.plugins."""
-    loaded_plugins = set()
-    for _, plugin_name, _ in pkgutil.iter_modules(list(app.plugins.__path__)):
-        if plugin_name not in settings.plugin.ENABLED:
+async def provide_project_service(
+    db_session: AsyncSession,
+) -> AsyncGenerator[ProjectService, None]:
+    plugins = []
+    for _, name, _ in pkgutil.iter_modules(list(app.plugins.__path__)):
+        logger.info(f"checking plugin {name}")
+        if name not in settings.plugin.ENABLED:
+            logger.info(f"skipped {name} plugin in sprintlog")
             continue
-        module = __import__(f"{app.plugins.__name__}.{plugin_name}", fromlist=["*"])
+        module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
+        logger.info(f"module name: {module}")
         for obj_name in dir(module):
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:
-                loaded_plugins.add(obj())
-
-    return loaded_plugins
-
-
-# Pre-load the plugins
-PLUGINS = load_plugins()
-
-
-class ExtendedProjectService(ProjectService):
-    """ProjectService subclass that automatically attaches scanned plugins."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.plugins = PLUGINS
-
-
-provide_project_service = create_service_provider(
-    ExtendedProjectService,
-    load=[],
-    error_messages={"duplicate_key": "This project already exists.", "integrity": "Project operation failed."},
-)
+                plugins.append(obj())
+    """Construct repository and ProjectService objects for the request."""
+    async with ProjectService.new(session=db_session) as service:
+        service.plugins = set(plugins)
+        try:
+            yield service
+        finally:
+            ...
