@@ -26,6 +26,7 @@ dependencies = [
   "httptools",
   "httpx-oauth>=0.16.1",
   "msgspec>=0.19.0",
+  "livekit-api>=0.8.2",
 ]
 description = "Opinionated template for a Litestar application."
 keywords = ["litestar", "sqlalchemy", "alembic", "fullstack", "api", "asgi", "litestar", "spa"]

@@ -186,6 +186,8 @@ class ServerSettings:
     """Number of HTTP Worker processes to be spawned by Uvicorn."""
     """Live API key. for LiveKit server"""
     LIVE_API_SECRET: str = field(default_factory=get_env("SERVER_LIVE_API_SECRET", ""))
+    """Live API Key. for LiveKit server"""
+    LIVE_API_KEY: str = field(default_factory=get_env("SERVER_LIVE_API_KEY", ""))
     """Live API Secret. for LiveKit server"""
     LIVE_API_URL: str = field(default_factory=get_env("SERVER_LIVE_API_URL", ""))
     """Zulip API URL. for zulip server"""
