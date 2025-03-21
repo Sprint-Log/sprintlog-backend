@@ -7,12 +7,17 @@ from advanced_alchemy.base import UUIDAuditBase
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from .team_roles import TeamRoles
+from enum import Enum
 
 if TYPE_CHECKING:
     from .team import Team
     from .user import User
+
+class TeamRoles(str, Enum):
+    """Valid Values for Team Roles."""
+
+    ADMIN = "ADMIN"
+    MEMBER = "MEMBER"
 
 
 class TeamMember(UUIDAuditBase):

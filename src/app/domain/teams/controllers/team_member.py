@@ -16,6 +16,7 @@ from app.domain.teams import urls
 from app.domain.teams.schemas import Team, TeamMemberModify
 from app.domain.teams.services import TeamMemberService, TeamService
 from app.lib.deps import create_service_provider
+from app.db.models.team_member import TeamRoles
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -54,7 +55,7 @@ class TeamMemberController(Controller):
         if is_member:
             msg = "User is already a member of the team."
             raise IntegrityError(msg)
-        team_obj.members.append(m.TeamMember(user_id=user_obj.id, role=m.TeamRoles.MEMBER))
+        team_obj.members.append(m.TeamMember(user_id=user_obj.id, role=TeamRoles.MEMBER))
         team_obj = await teams_service.update(item_id=team_id, data=team_obj)
         return teams_service.to_schema(schema_type=Team, data=team_obj)
 

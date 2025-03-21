@@ -3,8 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from litestar.exceptions import PermissionDeniedException
-from litestar.security.jwt import OAuth2PasswordBearerAuth
-
+from litestar.security.jwt import JWTAuth
 from app.config import constants
 from app.config.app import alchemy
 from app.config.base import get_settings
@@ -95,14 +94,13 @@ async def current_user_from_token(token: Token, connection: ASGIConnection[Any, 
     from app.domain.accounts.deps import provide_users_service
 
     service = await anext(provide_users_service(alchemy.provide_session(connection.app.state, connection.scope)))
-    user = await service.get_one_or_none(email=token.sub)
+    user = await service.get_one_or_none(id=token.sub)
     return user if user and user.is_active else None
 
 
-auth = OAuth2PasswordBearerAuth[m.User](
+auth = JWTAuth[m.User](
     retrieve_user_handler=current_user_from_token,
     token_secret=settings.app.SECRET_KEY,
-    token_url=urls.ACCOUNT_LOGIN,
     exclude=[
         constants.HEALTH_ENDPOINT,
         urls.ACCOUNT_LOGIN,

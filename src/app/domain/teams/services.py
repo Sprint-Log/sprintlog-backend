@@ -18,6 +18,7 @@ from uuid_utils.compat import uuid4
 
 from app.config import constants
 from app.db import models as m
+from app.db.models.team_member import TeamRoles
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -61,11 +62,6 @@ class TeamService(SQLAlchemyAsyncRepositoryService[m.Team]):
     def can_view_all(user: m.User) -> bool:
         return bool(
             user.is_superuser
-            or any(
-                assigned_role.role.name
-                for assigned_role in user.roles
-                if assigned_role.role.name in {constants.SUPERUSER_ACCESS_ROLE}
-            ),
         )
 
     async def _populate_slug(self, data: ModelDictT[m.Team]) -> ModelDictT[m.Team]:
@@ -92,9 +88,9 @@ class TeamService(SQLAlchemyAsyncRepositoryService[m.Team]):
                     ],
                 )
             if owner:
-                data.members.append(m.TeamMember(user=owner, role=m.TeamRoles.ADMIN, is_owner=True))
+                data.members.append(m.TeamMember(user=owner, role=TeamRoles.ADMIN, is_owner=True))
             elif owner_id:
-                data.members.append(m.TeamMember(user_id=owner_id, role=m.TeamRoles.ADMIN, is_owner=True))
+                data.members.append(m.TeamMember(user_id=owner_id, role=TeamRoles.ADMIN, is_owner=True))
 
         if operation == "update" and is_dict(data):
             tags_updated = data.pop("tags", None)

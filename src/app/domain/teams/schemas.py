@@ -4,7 +4,7 @@ from uuid import UUID  # noqa: TC003
 
 import msgspec
 
-from app.db.models.team_roles import TeamRoles
+from app.db.models.team_member import TeamRoles
 from app.lib.schema import CamelizedBaseStruct
 
 

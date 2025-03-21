@@ -3,7 +3,6 @@ import logging
 import sys
 from functools import lru_cache
 import structlog
-from httpx_oauth.clients.github import GitHubOAuth2
 from litestar.config.compression import CompressionConfig
 from litestar.config.cors import CORSConfig
 from litestar.config.csrf import CSRFConfig
@@ -44,12 +43,7 @@ alchemy = SQLAlchemyAsyncConfig(
         script_location=settings.db.MIGRATION_PATH,
     ),
 )
-
-github_oauth = GitHubOAuth2(
-    client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID,
-    client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
-)
-
+ 
 saq = SAQConfig(
     web_enabled=settings.saq.WEB_ENABLED,
     worker_processes=settings.saq.PROCESSES,

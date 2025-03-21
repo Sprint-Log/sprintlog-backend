@@ -368,11 +368,7 @@ class AppSettings:
     CSRF_COOKIE_SECURE: bool = field(default_factory=get_env("CSRF_COOKIE_SECURE", False))
     """JWT Encryption Algorithm"""
     JWT_ENCRYPTION_ALGORITHM: str = field(default_factory=lambda: "HS256")
-    """Github OAuth2 Client ID"""
-    GITHUB_OAUTH2_CLIENT_ID: str = field(default_factory=get_env("GITHUB_OAUTH2_CLIENT_ID", ""))
-    """Github OAuth2 Client Secret"""
-    GITHUB_OAUTH2_CLIENT_SECRET: str = field(default_factory=get_env("GITHUB_OAUTH2_CLIENT_SECRET", ""))
-
+    """JWT Encryption Algorithm"""
     @property
     def slug(self) -> str:
         """Return a slugified name.

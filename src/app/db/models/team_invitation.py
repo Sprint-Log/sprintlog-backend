@@ -7,7 +7,7 @@ from advanced_alchemy.base import UUIDAuditBase
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.models.team_roles import TeamRoles
+from app.db.models.team_member import TeamRoles
 
 if TYPE_CHECKING:
     from .team import Team

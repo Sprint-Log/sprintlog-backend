@@ -12,7 +12,6 @@ from litestar.security.jwt import OAuth2Login
 from litestar.stores.redis import RedisStore
 from litestar.stores.registry import StoreRegistry
 
-from app.domain.accounts.services import UserRoleService
 
 if TYPE_CHECKING:
     from click import Group
@@ -63,10 +62,10 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.config import constants, get_settings
         from app.db import models as m
         from app.domain.accounts import signals as account_signals
-        from app.domain.accounts.controllers import AccessController, UserController, UserRoleController
+        from app.domain.accounts.controllers import AccessController, UserController 
         from app.domain.accounts.deps import provide_user
         from app.domain.accounts.guards import auth as jwt_auth
-        from app.domain.accounts.services import RoleService, UserService
+        from app.domain.accounts.services import UserService
         from app.domain.system.controllers import SystemController
         from app.domain.tags.controllers import TagController
 
@@ -106,7 +105,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 plugins.granian,
                 plugins.alchemy,
                 plugins.saq,
-                plugins.oauth,
             ],
         )
 
@@ -117,7 +115,6 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 AccessController,
                 UserController,
                 TeamController,
-                UserRoleController,
                 TeamMemberController,
                 TagController,
                 WebController,
@@ -136,10 +133,8 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 "m": m,
                 "UUID": UUID,
                 "UserService": UserService,
-                "RoleService": RoleService,
                 "TeamService": TeamService,
                 "TeamMemberService": TeamMemberService,
-                "UserRoleService": UserRoleService,
             },
         )
         # exception handling

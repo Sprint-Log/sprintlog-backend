@@ -9,9 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from .oauth_account import UserOauthAccount
     from .team_member import TeamMember
-    from .user_role import UserRole
 
 
 class User(UUIDAuditBase):
@@ -33,12 +31,6 @@ class User(UUIDAuditBase):
     # ORM Relationships
     # ------------
 
-    roles: Mapped[list[UserRole]] = relationship(
-        back_populates="user",
-        lazy="selectin",
-        uselist=True,
-        cascade="all, delete",
-    )
     teams: Mapped[list[TeamMember]] = relationship(
         back_populates="user",
         lazy="selectin",
@@ -46,13 +38,6 @@ class User(UUIDAuditBase):
         cascade="all, delete",
         viewonly=True,
     )
-    oauth_accounts: Mapped[list[UserOauthAccount]] = relationship(
-        back_populates="user",
-        lazy="noload",
-        cascade="all, delete",
-        uselist=True,
-    )
-
     @hybrid_property
     def has_password(self) -> bool:
         return self.hashed_password is not None

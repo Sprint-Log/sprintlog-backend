@@ -14,7 +14,6 @@ It includes the following capabilities out of the box:
 
   - User creation, authentication, and authorization via `UserController` and `AccessController`
   - Endpoints for listing, creating, updating, and deleting users
-  - Login, logout, and signup functionalities with OAuth2 support
   - Profile management for authenticated users
   - Role-based access control using `RoleService` and guards
   - Job/Task Queues via :doc:`SAQ <saq:index>`
