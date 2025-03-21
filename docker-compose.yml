@@ -62,7 +62,7 @@ services:
     environment:
       SAQ_USE_SERVER_LIFESPAN: "false"
     env_file:
-      - .env.docker.example
+      - .env
   worker:
     build:
       context: .
@@ -75,7 +75,7 @@ services:
       cache:
         condition: service_healthy
     env_file:
-      - .env.docker.example
+      - .env
   migrator:
     build:
       context: .
@@ -83,7 +83,7 @@ services:
     restart: "no"
     command: litestar database upgrade --no-prompt
     env_file:
-      - .env.docker.example
+      - .env
     depends_on:
       db:
         condition: service_healthy

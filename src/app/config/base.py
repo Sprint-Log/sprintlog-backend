@@ -348,30 +348,30 @@ class PluginSettings:
 class AppSettings:
     """Application configuration"""
 
-    APP_LOC: str = "app.asgi:create_app"
     """Path to app executable, or factory."""
-    URL: str = field(default_factory=get_env("APP_URL", "http://localhost:8000"))
+    APP_LOC: str = "app.asgi:create_app"
     """The frontend base URL"""
-    DEBUG: bool = field(default_factory=get_env("LITESTAR_DEBUG", False))
+    URL: str = field(default_factory=get_env("APP_URL", "http://localhost:8000"))
     """Run `Litestar` with `debug=True`."""
+    DEBUG: bool = field(default_factory=get_env("LITESTAR_DEBUG", False))
+    """Application secret key."""
     SECRET_KEY: str = field(
         default_factory=get_env("SECRET_KEY", binascii.hexlify(os.urandom(32)).decode(encoding="utf-8")),
     )
-    """Application secret key."""
-    NAME: str = field(default_factory=lambda: "app")
     """Application name."""
-    ALLOWED_CORS_ORIGINS: list[str] | str = field(default_factory=get_env("ALLOWED_CORS_ORIGINS", ["*"], list[str]))
+    NAME: str = field(default_factory=lambda: "app")
     """Allowed CORS Origins"""
-    CSRF_COOKIE_NAME: str = field(default_factory=get_env("CSRF_COOKIE_NAME", "XSRF-TOKEN"))
+    ALLOWED_CORS_ORIGINS: list[str] | str = field(default_factory=get_env("ALLOWED_CORS_ORIGINS", "*"))
     """CSRF Cookie Name"""
-    CSRF_COOKIE_SECURE: bool = field(default_factory=get_env("CSRF_COOKIE_SECURE", False))
+    CSRF_COOKIE_NAME: str = field(default_factory=get_env("CSRF_COOKIE_NAME", "XSRF-TOKEN"))
     """CSRF Secure Cookie"""
-    JWT_ENCRYPTION_ALGORITHM: str = field(default_factory=lambda: "HS256")
+    CSRF_COOKIE_SECURE: bool = field(default_factory=get_env("CSRF_COOKIE_SECURE", False))
     """JWT Encryption Algorithm"""
-    GITHUB_OAUTH2_CLIENT_ID: str = field(default_factory=get_env("GITHUB_OAUTH2_CLIENT_ID", ""))
+    JWT_ENCRYPTION_ALGORITHM: str = field(default_factory=lambda: "HS256")
     """Github OAuth2 Client ID"""
-    GITHUB_OAUTH2_CLIENT_SECRET: str = field(default_factory=get_env("GITHUB_OAUTH2_CLIENT_SECRET", ""))
+    GITHUB_OAUTH2_CLIENT_ID: str = field(default_factory=get_env("GITHUB_OAUTH2_CLIENT_ID", ""))
     """Github OAuth2 Client Secret"""
+    GITHUB_OAUTH2_CLIENT_SECRET: str = field(default_factory=get_env("GITHUB_OAUTH2_CLIENT_SECRET", ""))
 
     @property
     def slug(self) -> str:

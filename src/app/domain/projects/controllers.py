@@ -13,7 +13,6 @@ from litestar import (
 from litestar.di import Provide
 from litestar.params import Dependency
 
-from app.domain.accounts.guards import requires_active_user
 from app.domain.projects.dependencies import provide_project_service
 from litestar.status_codes import HTTP_200_OK
 
@@ -22,8 +21,7 @@ from app.domain.projects.services import ProjectService
 from uuid import UUID
 from app.lib.deps import create_filter_dependencies
 from structlog import getLogger
-from app.domain.accounts.guards import requires_active_user
-
+from app.domain.projects.dtos import WriteDTO, ReadDTO
 
 if TYPE_CHECKING:
     from app.db import models as m
@@ -39,10 +37,10 @@ __all__ = ["ProjectController"]
 
 
 class ProjectController(Controller):
-    # dto = WriteDTO
-    # return_dto = ReadDTO
+    dto = WriteDTO
+    return_dto = ReadDTO
     path = "/api/projects"
-    guards = [requires_active_user]
+    guards = []
     dependencies = {"service": Provide(provide_project_service)} | create_filter_dependencies(
         {
             "id_filter": UUID,
@@ -69,7 +67,7 @@ class ProjectController(Controller):
 
         return await service.list(*filters)
 
-    @post()
+    @post("create")
     async def create_project(
         self,
         data: m.Project,

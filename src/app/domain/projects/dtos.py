@@ -11,14 +11,7 @@ WriteDTO = SQLAlchemyDTO[
     Annotated[
         Project,
         DTOConfig(
-            exclude={
-                "id",
-                "created_at",
-                "updated_at",
-                "sprintlogs",
-                "plugin_meta",
-                "owner",
-            },
+            exclude={"id", "created_at", "updated_at", "sprintlogs", "plugin_meta", "owner", "owner_id"},
         ),
     ]
 ]

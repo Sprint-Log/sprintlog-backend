@@ -1,8 +1,7 @@
+from typing import cast
 import logging
 import sys
 from functools import lru_cache
-from typing import cast
-
 import structlog
 from httpx_oauth.clients.github import GitHubOAuth2
 from litestar.config.compression import CompressionConfig
@@ -45,7 +44,7 @@ alchemy = SQLAlchemyAsyncConfig(
         script_location=settings.db.MIGRATION_PATH,
     ),
 )
- 
+
 github_oauth = GitHubOAuth2(
     client_id=settings.app.GITHUB_OAUTH2_CLIENT_ID,
     client_secret=settings.app.GITHUB_OAUTH2_CLIENT_SECRET,
