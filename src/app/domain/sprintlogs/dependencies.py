@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import pkgutil
 from typing import TYPE_CHECKING
+import pkgutil
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -13,7 +13,7 @@ from app.config.base import get_settings
 from app.lib.deps import create_service_provider
 from app.lib.plugin import SprintlogPlugin
 from app.domain.sprintlogs.service import SprintLogService
-from app.db.models import SprintLog
+from app.db import models as m
 
 if TYPE_CHECKING:
     from typing import Set
@@ -48,7 +48,9 @@ class ExtendedSprintlogService(SprintLogService):
     def __init__(self, session: AsyncSession):
         super().__init__(
             session=session,
-            statement=select(SprintLog).order_by(SprintLog.updated_at.desc()).options(joinedload(SprintLog.project)),
+            statement=select(m.SprintLog)
+            .order_by(m.SprintLog.updated_at.desc())
+            .options(joinedload(m.SprintLog.project)),
         )
         # Attach the pre-loaded plugins
         self.plugins = PLUGINS

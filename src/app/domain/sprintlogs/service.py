@@ -9,7 +9,7 @@ from advanced_alchemy.repository import (
 from advanced_alchemy.service import SQLAlchemyAsyncRepositoryService, ModelDictT
 from app.lib.plugin import SprintlogPlugin
 from typing import Any
-from app.db.models.sprintlog import SprintLog
+from app.db.models import SprintLog
 
 
 __all__ = ["SprintLogService"]

@@ -10,7 +10,7 @@ from .user import User
 from .user_role import UserRole
 
 from .project import Project
-from .sprintlog import SprintLog
+from .sprintLog import SprintLog
 from .audit import Audit
 
 __all__ = (

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from uuid import UUID
 from datetime import UTC, date, datetime
 from sqlalchemy import ForeignKey, String, ARRAY, ForeignKey, SQLColumnExpression
@@ -5,74 +7,17 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from advanced_alchemy.base import UUIDAuditBase
 from litestar.dto import Mark, dto_field
-from enum import StrEnum
 
-# from app.domain.sprintlogs.schemas import (
-#     Progress,
-#     Priority,
-#     Status,
-#     ItemType,
-#     Category,
-# )
 from typing import TYPE_CHECKING, cast
 from sqlalchemy.ext.hybrid import hybrid_property
-
+from .enums import Priority, Progress, Status, Category, ItemType
 
 if TYPE_CHECKING:
     from .user import User
     from .project import Project
     from .audit import Audit
 
-__all__ = ["SprintLog", "Priority", "Progress", "Status", "Category", "ItemType"]
-from enum import StrEnum
-
-
-class Priority(StrEnum):
-    low = "🟢"
-    med = "🟡"
-    hi = "🔴"
-
-
-class Progress(StrEnum):
-    empty = "⬜⬜⬜"
-    in_progress = "🟩⬜⬜"
-    half_way = "🟩🟩⬜"
-    ready = "🟩🟩🟩"
-
-
-class Status(StrEnum):
-    new = "☀️"
-    started = "🛠️"
-    checked_in = "🔳"
-    completed = "✅"
-    cancelled = "🚫"
-
-
-class Category(StrEnum):
-    ideas = "💡"
-    issues = "⚠️"
-    maintenance = "🔨"
-    finances = "💰"
-    innovation = "🚀"
-    bugs = "🐞"
-    features = "🎁"
-    security = "🔒"
-    attention = "🚩"
-    backend = "📡"
-    database = "💾"
-    desktop = "🖥️"
-    mobile = "📱"
-    intl = "🌍"
-    design = "🎨"
-    analytics = "📈"
-    automation = "🤖"
-
-
-class ItemType(StrEnum):
-    backlog = "backlog"
-    task = "task"
-    draft = "draft"
-    self = "self"
+__all__ = ["SprintLog"]
 
 
 class SprintLog(UUIDAuditBase):

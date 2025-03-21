@@ -69,6 +69,10 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.accounts.services import RoleService, UserService
         from app.domain.system.controllers import SystemController
         from app.domain.tags.controllers import TagController
+
+        from app.domain.projects.controllers import ProjectController
+
+        from app.domain.sprintlogs.controllers import SprintLogController
         from app.domain.teams import signals as team_signals
         from app.domain.teams.controllers import TeamController, TeamMemberController
         from app.domain.teams.services import TeamMemberService, TeamService
@@ -93,7 +97,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         app_config = jwt_auth.on_app_init(app_config)
         # security
         app_config.cors_config = config.cors
-        
+
         # plugins
         app_config.plugins.extend(
             [
@@ -116,6 +120,8 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 TeamMemberController,
                 TagController,
                 WebController,
+                ProjectController,
+                SprintLogController,
             ],
         )
         # signatures
