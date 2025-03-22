@@ -39,10 +39,8 @@ class SprintLogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
     plugins: set[SprintlogPlugin] = set()
 
     def __init__(self, **repo_kwargs: Any) -> None:
-        self.repository: SprintLogService.SprintLogRepository = self.repository_type(**repo_kwargs)
-        self.model_type = self.repository.model_type
-
         super().__init__(**repo_kwargs)
+        self.model_type = self.repository.model_type
 
     async def to_model(
         self,

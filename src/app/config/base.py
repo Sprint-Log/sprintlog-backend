@@ -341,7 +341,7 @@ class PluginSettings:
         env_prefix = "PLUGIN_"
 
     """Disable or enable zulip plugin"""
-    ENABLED: list[str] = field(default_factory=list)
+    ENABLED: list[str] = field(default_factory=get_env("PLUGIN_ENABLED", [""]))
 
 
 @dataclass
@@ -369,6 +369,7 @@ class AppSettings:
     """JWT Encryption Algorithm"""
     JWT_ENCRYPTION_ALGORITHM: str = field(default_factory=lambda: "HS256")
     """JWT Encryption Algorithm"""
+
     @property
     def slug(self) -> str:
         """Return a slugified name.
