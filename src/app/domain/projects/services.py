@@ -1,5 +1,7 @@
 from __future__ import annotations
-
+from typing import Any
+import re
+import unicodedata
 from advanced_alchemy.repository import (
     SQLAlchemyAsyncSlugRepository,
 )
@@ -9,10 +11,13 @@ from advanced_alchemy.service import (
 )
 
 from app.lib.plugin import ProjectPlugin
-from typing import Any, override
+
 from app.db.models import Project
+from structlog import getLogger
 
 __all__ = ["ProjectService"]
+
+logger = getLogger()
 
 
 class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
@@ -43,6 +48,19 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
         error_messages: dict[str, str] | None = None,
     ) -> Project:
         # Call the before_create hook for each registered plugin
+        if not isinstance(data, dict):
+            data = data.to_dict()
+
+        name = data["name"]
+        slug = self._slugify(name)
+
+        is_unique = await self._is_slug_unique(slug=slug)
+        if not is_unique:
+            raise ValueError("Slug is not unique")
+        logger.info(f"slug: {slug}")
+        logger.info(f"is unique: {is_unique}")
+        data["slug"] = slug
+
         data = await super().to_model(data, "create")
 
         for plugin in self.plugins:
@@ -86,7 +104,6 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
 
         return obj
 
-    @override
     async def delete(
         self,
         item_id: Any,
@@ -102,3 +119,30 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
             await plugin.after_delete(data=obj)
 
         return obj
+
+    def _slugify(self, value: str) -> str:
+        """slugify.
+        Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+        dashes to single dashes. Remove characters that aren't alphanumerics,
+        underscores, or hyphens. Convert to lowercase. Also strip leading and
+        trailing whitespace, dashes, and underscores.
+
+        Args:
+            value (str): the string to slugify
+        Returns:
+            str: a slugified string of the value parameter
+        """
+
+        value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+
+        value = re.sub(r"[^\w\s-]", "", value.lower())
+
+        return re.sub(r"[-\s]+", "_", value).strip("-_")
+
+    async def _is_slug_unique(
+        self,
+        slug: str,
+        **kwargs: Any,
+    ) -> bool:
+
+        return await self.get_one_or_none(slug=slug) is None

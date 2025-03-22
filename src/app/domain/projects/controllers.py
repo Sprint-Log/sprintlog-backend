@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated, Sequence
+from typing import TYPE_CHECKING, Annotated, Sequence, Any
 from uuid import UUID
+
 
 from litestar import (
     Controller,
@@ -21,6 +22,7 @@ from uuid import UUID
 from app.lib.deps import create_filter_dependencies
 from structlog import getLogger
 from app.domain.projects.dtos import WriteDTO, ReadDTO
+from litestar import Response
 
 if TYPE_CHECKING:
     from app.db import models as m
@@ -73,11 +75,15 @@ class ProjectController(Controller):
         data: m.Project,
         current_user: m.User,
         service: ProjectService,
-    ) -> m.Project:
+    ) -> Response[Any]:
         """Create an `Model`."""
 
         data.owner_id = current_user.id
-        return await service.create(data)
+        try:
+            project = await service.create(data)
+            return Response(status_code=HTTP_200_OK, content=project.to_dict())
+        except ValueError:
+            return Response(status_code=409, content={"message": "Slug is not unique"})
 
     @get(DETAIL_ROUTE)
     async def get_project(self, service: ProjectService, id: UUID) -> m.Project:
