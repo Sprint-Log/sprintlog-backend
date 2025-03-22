@@ -26,9 +26,9 @@ async def provide_project_service(
 ) -> AsyncGenerator[ProjectService, None]:
     plugins = []
     for _, name, _ in pkgutil.iter_modules(list(app.plugins.__path__)):
-        logger.info(f"checking plugin {name}")
+        logger.info(f"checking plugin from project {name}")
         if name not in settings.plugin.ENABLED:
-            logger.info(f"skipped {name} plugin in sprintlog")
+            logger.info(f"skipped {name} plugin in projects")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
         logger.info(f"module name: {module}")

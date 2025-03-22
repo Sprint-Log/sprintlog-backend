@@ -31,7 +31,7 @@ class Project(UUIDAuditBase, SlugKey):
     sprint_checkup_day: Mapped[int | None] = mapped_column(default=1)
     repo_urls: Mapped[list[str]] = mapped_column(ARRAY(String))
     plugin_meta: Mapped[dict | None] = mapped_column(
-        default=lambda: dict,
+        default=dict,
         info=dto_field(Mark.READ_ONLY),
     )  # Relationships
     owner_id: Mapped[UUID | None] = mapped_column(ForeignKey("user_account.id"), nullable=True)
