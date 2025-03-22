@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from litestar.exceptions import PermissionDeniedException
-from litestar.security.jwt import JWTAuth
+from litestar.security.jwt import JWTCookieAuth
 from app.config import constants
 from app.config.app import alchemy
 from app.config.base import get_settings
@@ -98,7 +98,7 @@ async def current_user_from_token(token: Token, connection: ASGIConnection[Any, 
     return user if user and user.is_active else None
 
 
-auth = JWTAuth[m.User](
+auth = JWTCookieAuth[m.User](
     retrieve_user_handler=current_user_from_token,
     token_secret=settings.app.SECRET_KEY,
     exclude=[

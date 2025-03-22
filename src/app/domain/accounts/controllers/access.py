@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-from advanced_alchemy.utils.text import slugify
 from litestar import Controller, Request, Response, get, post
 from litestar.di import Provide
 from litestar.enums import RequestEncodingType
@@ -14,13 +13,15 @@ from app.domain.accounts import urls
 from app.domain.accounts.deps import provide_users_service
 from app.domain.accounts.guards import auth, requires_active_user
 from app.domain.accounts.schemas import AccountLogin, AccountRegister, User
-from app.lib.deps import create_service_provider
+from structlog import get_logger
 
 if TYPE_CHECKING:
     from litestar.security.jwt import OAuth2Login
 
     from app.db import models as m
     from app.domain.accounts.services import UserService
+
+logger = get_logger()
 
 
 class AccessController(Controller):
@@ -38,9 +39,9 @@ class AccessController(Controller):
         data: Annotated[AccountLogin, Body(title="Login", media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[OAuth2Login]:
         """Authenticate a user."""
+        logger.info("it reached this thought")
         user = await users_service.authenticate(data.username, data.password)
         return auth.login(str(user.id))
-
 
     @post(operation_id="AccountRegister", path=urls.ACCOUNT_REGISTER)
     async def signup(
