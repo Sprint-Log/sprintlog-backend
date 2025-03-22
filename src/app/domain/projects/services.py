@@ -21,6 +21,7 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
     class ProjectRepository(SQLAlchemyAsyncSlugRepository[Project]):
         """Project SQLAlchemy Repository."""
 
+        slug_field = "slug"
         model_type = Project
 
     repository_type = ProjectRepository

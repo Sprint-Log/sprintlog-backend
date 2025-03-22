@@ -15,7 +15,6 @@ from litestar.params import Dependency
 
 from app.domain.projects.dependencies import provide_project_service
 from litestar.status_codes import HTTP_200_OK
-
 from app.domain.projects.services import ProjectService
 
 from uuid import UUID
@@ -55,7 +54,8 @@ class ProjectController(Controller):
     )
     tags = ["Projects API"]
 
-    DETAIL_ROUTE = "/{row_id:uuid}"
+    DETAIL_ROUTE = "/{id:uuid}"
+    SLUG_ROUTE = "/{slug:str}"
 
     @get()
     async def list_project(
@@ -80,9 +80,14 @@ class ProjectController(Controller):
         return await service.create(data)
 
     @get(DETAIL_ROUTE)
-    async def get_project(self, service: ProjectService, row_id: UUID) -> m.Project:
+    async def get_project(self, service: ProjectService, id: UUID) -> m.Project:
         """Get Model by ID."""
-        return await service.get(row_id)
+        return await service.get(id)
+
+    @get(SLUG_ROUTE)
+    async def get_project_by_slug(self, service: ProjectService, slug: str) -> m.Project:
+        """Get Model by ID."""
+        return await service.get(slug, id_attribute="slug")
 
     @put(DETAIL_ROUTE)
     async def update_project(
@@ -90,13 +95,13 @@ class ProjectController(Controller):
         data: m.Project,
         current_user: m.User,
         service: ProjectService,
-        row_id: UUID,
+        id: UUID,
     ) -> "m.Project":
         """Update an Model."""
         data.owner_id = current_user.id
-        return await service.update(item_id=row_id, data=data)
+        return await service.update(item_id=id, data=data)
 
     @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
-    async def delete_project(self, service: ProjectService, row_id: "UUID") -> m.Project:
+    async def delete_project(self, service: ProjectService, id: UUID) -> m.Project:
         """Delete Author by ID."""
-        return await service.delete(row_id)
+        return await service.delete(id)

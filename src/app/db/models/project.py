@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, relationship, mapped_column
 from advanced_alchemy.base import UUIDAuditBase
 from litestar.dto import Mark, dto_field
 from typing import Any, TYPE_CHECKING
+from advanced_alchemy.mixins import SlugKey
 
 if TYPE_CHECKING:
     from .user import User
@@ -15,9 +16,9 @@ if TYPE_CHECKING:
 __all__ = ["Project"]
 
 
-class Project(UUIDAuditBase):
+class Project(UUIDAuditBase, SlugKey):
     __tablename__ = "project"
-    slug: Mapped[str] = mapped_column(unique=True)
+
     name: Mapped[str]
     description: Mapped[str]
     pin: Mapped[bool] = mapped_column(default=False)
