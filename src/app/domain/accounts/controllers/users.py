@@ -42,7 +42,7 @@ class UserController(Controller):
         },
     )
 
-    @get(operation_id="ListUsers", path=urls.ACCOUNT_LIST, cache=60)
+    @get(operation_id="ListUsers", path=urls.ACCOUNT_LIST)
     async def list_users(
         self,
         users_service: UserService,
