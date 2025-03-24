@@ -14,6 +14,7 @@ from litestar import (
 from litestar.di import Provide
 from litestar.params import Dependency
 
+from app.domain.accounts.guards import requires_active_user
 from app.domain.projects.dependencies import provide_project_service
 from litestar.status_codes import HTTP_200_OK
 from app.domain.projects.services import ProjectService
@@ -23,6 +24,7 @@ from app.lib.deps import create_filter_dependencies
 from structlog import getLogger
 from app.domain.projects.dtos import WriteDTO, ReadDTO
 from litestar import Response
+from app.domain.projects import urls
 
 if TYPE_CHECKING:
     from app.db import models as m
@@ -40,8 +42,8 @@ __all__ = ["ProjectController"]
 class ProjectController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
-    path = "/api/projects"
-    guards = []
+    guards = [requires_active_user]
+    tags = ["Projects API"]
     dependencies = {"service": Provide(provide_project_service)} | create_filter_dependencies(
         {
             "id_filter": UUID,
@@ -54,12 +56,8 @@ class ProjectController(Controller):
             "sort_order": "asc",
         },
     )
-    tags = ["Projects API"]
 
-    DETAIL_ROUTE = "/{id:uuid}"
-    SLUG_ROUTE = "/{slug:str}"
-
-    @get()
+    @get(urls.PROJECT_LIST)
     async def list_project(
         self,
         service: ProjectService,
@@ -69,7 +67,7 @@ class ProjectController(Controller):
 
         return await service.list(*filters)
 
-    @post("create")
+    @post(urls.PROJECT_CREATE)
     async def create_project(
         self,
         data: m.Project,
@@ -85,17 +83,17 @@ class ProjectController(Controller):
         except ValueError:
             return Response(status_code=409, content={"message": "Slug is not unique"})
 
-    @get(DETAIL_ROUTE)
+    @get(urls.PROJECT_DETAIL)
     async def get_project(self, service: ProjectService, id: UUID) -> m.Project:
         """Get Model by ID."""
         return await service.get(id)
 
-    @get(SLUG_ROUTE)
+    @get(urls.PROJECT_DETAIL_BY_SLUG)
     async def get_project_by_slug(self, service: ProjectService, slug: str) -> m.Project:
         """Get Model by ID."""
-        return await service.get(slug, id_attribute="slug")
+        return await service.repository.get_by_slug(slug)
 
-    @put(DETAIL_ROUTE)
+    @put(urls.PROJECT_UPDATE)
     async def update_project(
         self,
         data: m.Project,
@@ -107,7 +105,7 @@ class ProjectController(Controller):
         data.owner_id = current_user.id
         return await service.update(item_id=id, data=data)
 
-    @delete(DETAIL_ROUTE, status_code=HTTP_200_OK)
+    @delete(urls.PROJECT_DELETE, status_code=HTTP_200_OK)
     async def delete_project(self, service: ProjectService, id: UUID) -> m.Project:
         """Delete Author by ID."""
         return await service.delete(id)

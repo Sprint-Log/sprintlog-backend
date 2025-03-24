@@ -30,6 +30,7 @@ from litestar.pagination import OffsetPagination
 from app.domain.sprintlogs.service import SprintLogService
 from app.lib.deps import create_filter_dependencies
 from uuid import UUID
+from app.domain.sprintlogs import urls
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes, LimitOffset
@@ -56,7 +57,7 @@ def log_info(message: str) -> None:
 class SprintLogController(Controller):
     dto = WriteDTO
     return_dto = ReadDTO
-    path = "/api/sprintlogs"
+
     dependencies = {"service": Provide(provide_sprintlog_service)} | create_filter_dependencies(
         {
             "id_filter": UUID,
@@ -76,16 +77,16 @@ class SprintLogController(Controller):
     active_project_route = "/projects/user/{user_id:uuid}"
     slug_route = "{slug:str}"
 
-    @get(guards=[requires_active_user])
-    async def filter(
+    @get(urls.SPRINTLOG_LIST, guards=[requires_active_user])
+    async def get_sprintlogs(
         self,
         service: SprintLogService,
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> Sequence[m.SprintLog]:
         return await service.list(*filters)
 
-    @post(guards=[requires_active_user])
-    async def create(
+    @post(urls.SPRINTLOG_CREATE, guards=[requires_active_user])
+    async def create_sprintlog(
         self,
         data: m.SprintLog,
         current_user: m.User,
@@ -97,11 +98,11 @@ class SprintLogController(Controller):
             data.assignee_id = current_user.id
         return await service.create(data)
 
-    @get(detail_route, guards=[requires_active_user])
+    @get(urls.SPRINTLOG_DETAIL, guards=[requires_active_user])
     async def retrieve(self, service: SprintLogService, row_id: UUID) -> m.SprintLog:
         return await service.get(row_id)
 
-    @put(detail_route, guards=[requires_active_user])
+    @put(urls.SPRINTLOG_UPDATE, guards=[requires_active_user])
     async def update(
         self,
         data: m.SprintLog,
@@ -116,17 +117,20 @@ class SprintLogController(Controller):
             data.assignee_id = current_user.id
         return await service.update(data, row_id, old_data=old_data)
 
-    @delete(detail_route, guards=[requires_active_user], status_code=HTTP_200_OK)
+    @delete(urls.SPRINTLOG_DELETE, guards=[requires_active_user], status_code=HTTP_200_OK)
     async def delete(self, service: SprintLogService, row_id: UUID) -> m.SprintLog:
         return await service.delete(row_id)
 
-    @get(project_route, guards=[requires_active_user])
-    async def filter_by_project_type(
+    @get(urls.SPRINTLOG_BACKLOG_TASK_BY_PROJECT, guards=[requires_active_user])
+    async def get_sprintlog_backlog_task_by_project(
         self,
         service: SprintLogService,
         project_type: str,
         limit_offset: LimitOffset,
     ) -> OffsetPagination[m.SprintLog]:
+        """
+        Get backlog if the project type is concat with '_backlog' and get task if the project type is concat with '_task'
+        """
         results, total = await service.list_and_count(
             limit_offset,
             project_type=project_type,
@@ -138,8 +142,8 @@ class SprintLogController(Controller):
             offset=limit_offset.offset,
         )
 
-    @get(f"/slug/{slug_route}", guards=[requires_active_user])
-    async def retrieve_by_slug(self, service: SprintLogService, slug: str) -> m.SprintLog:
+    @get(urls.SPRINTLOG_DETAIL_BY_SLUG, guards=[requires_active_user])
+    async def get_sprintlog_by_slug(self, service: SprintLogService, slug: str) -> m.SprintLog:
         obj: m.SprintLog | None = await service.repository.get_by_slug(slug)
         if obj:
             return obj
@@ -148,16 +152,13 @@ class SprintLogController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @get(active_project_route, guards=[requires_active_user])
-    async def retrieve_project_by_user(
+    @get(urls.SPRINTLOG_PROJECT_BY_USER, guards=[requires_active_user])
+    async def get_project_by_user(
         self, service: SprintLogService, user_id: UUID, limit_offset: LimitOffset
     ) -> OffsetPagination[ActiveProject]:
         sprintlogs = await service.list(assignee_id=user_id)
 
         active_projects_data = await self.get_active_projects(sprintlogs, limit_offset)
-
-        print("offset limitation:")
-        print(limit_offset.limit)
 
         return OffsetPagination(
             items=active_projects_data["projects"],
@@ -165,6 +166,47 @@ class SprintLogController(Controller):
             limit=limit_offset.limit,
             offset=limit_offset.offset,
         )
+
+    @get(urls.SPRINTLOG_TASK_BY_USER, guards=[requires_active_user])
+    async def retrieve_tasks_by_user(self, service: SprintLogService, user_id: UUID) -> Sequence[m.SprintLog]:
+        return await service.list(assignee_id=user_id)
+
+    @put(urls.SPRINTLOG_PROGRESS_UP, guards=[requires_active_user])
+    async def increase_progress(self, service: SprintLogService, slug: str) -> m.SprintLog:
+        return await self._update_progress(service, slug, 1)
+
+    @put(
+        urls.SPRINTLOG_PROGRESS_COMPLETE,
+        guards=[requires_active_user],
+    )
+    async def toggle_complete(self, service: SprintLogService, slug: str, current_user: m.User) -> m.SprintLog:
+        if current_user.is_superuser:
+            return await self._toggle_completion(service, slug, authorized=True)
+        return await self._toggle_completion(service, slug)
+
+    @put(urls.SPRINTLOG_PROGRESS_DOWN, guards=[requires_active_user])
+    async def decrease_progress(self, service: SprintLogService, slug: str) -> m.SprintLog:
+        return await self._update_progress(service, slug, -1)
+
+    @put(urls.SPRINTLOG_PROGRESS_CIRCLE, guards=[requires_active_user])
+    async def circle_progress(self, service: SprintLogService, slug: str) -> m.SprintLog:
+        return await self._circle_progress(service, slug)
+
+    @put(urls.SPRINTLOG_PRIORITY_CIRCLE, guards=[requires_active_user])
+    async def circle_priority(self, service: SprintLogService, slug: str) -> m.SprintLog:
+        return await self._circle_priority(service, slug, 0)
+
+    @put(urls.SPRINTLOG_STATUS_CIRCLE, guards=[requires_active_user])
+    async def circle_status(self, service: SprintLogService, slug: str) -> m.SprintLog:
+        return await self.update_status(service, slug, 0)
+
+    @put(urls.SPRINTLOG_SWITCH_TASK, guards=[requires_active_user])
+    async def switch_to_backlog(self, service: SprintLogService, slug: str) -> m.SprintLog:
+        return await self._update_type(service, slug, "task")
+
+    @put(urls.SPRINTLOG_SWITCH_BACKLOG, guards=[requires_active_user])
+    async def switch_to_task(self, service: SprintLogService, slug: str) -> m.SprintLog:
+        return await self._update_type(service, slug, "backlog")
 
     async def get_active_projects(self, tasks: Sequence[m.SprintLog], limit_offset: LimitOffset) -> Dict[str, Any]:
         project_map = defaultdict(lambda: ActiveProject(project_slug=""))
@@ -198,10 +240,6 @@ class SprintLogController(Controller):
         total_active_projects = len(project_map)
 
         return {"projects": paginated_projects, "total": total_active_projects}
-
-    @get(user_route, guards=[requires_active_user])
-    async def retrieve_tasks_by_user(self, service: SprintLogService, user_id: UUID) -> Sequence[m.SprintLog]:
-        return await service.list(assignee_id=user_id)
 
     async def _update_progress(
         self,
@@ -272,19 +310,6 @@ class SprintLogController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @put(f"progress/up/{slug_route}", guards=[requires_active_user])
-    async def increase_progress(self, service: SprintLogService, slug: str) -> m.SprintLog:
-        return await self._update_progress(service, slug, 1)
-
-    @put(
-        f"progress/complete/{slug_route}",
-        guards=[requires_active_user],
-    )
-    async def toggle_complete(self, service: SprintLogService, slug: str, current_user: m.User) -> m.SprintLog:
-        if current_user.is_superuser:
-            return await self._toggle_completion(service, slug, authorized=True)
-        return await self._toggle_completion(service, slug)
-
     async def _update_type(
         self,
         service: SprintLogService,
@@ -305,22 +330,6 @@ class SprintLogController(Controller):
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
         )
-
-    @put(f"switch/task/{slug_route}", guards=[requires_active_user])
-    async def switch_to_backlog(self, service: SprintLogService, slug: str) -> m.SprintLog:
-        return await self._update_type(service, slug, "task")
-
-    @put(f"switch/backlog/{slug_route}", guards=[requires_active_user])
-    async def switch_to_task(self, service: SprintLogService, slug: str) -> m.SprintLog:
-        return await self._update_type(service, slug, "backlog")
-
-    @put(f"progress/down/{slug_route}", guards=[requires_active_user])
-    async def decrease_progress(self, service: SprintLogService, slug: str) -> m.SprintLog:
-        return await self._update_progress(service, slug, -1)
-
-    @put(f"progress/circle/{slug_route}", guards=[requires_active_user])
-    async def circle_progress(self, service: SprintLogService, slug: str) -> m.SprintLog:
-        return await self._circle_progress(service, slug)
 
     async def _update_priority(
         self,
@@ -366,10 +375,6 @@ class SprintLogController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @put(f"priority/circle/{slug_route}", guards=[requires_active_user])
-    async def circle_priority(self, service: SprintLogService, slug: str) -> m.SprintLog:
-        return await self._circle_priority(service, slug, 0)
-
     async def update_status(
         self,
         service: SprintLogService,
@@ -391,7 +396,3 @@ class SprintLogController(Controller):
             status_code=404,
             detail=f"Sprintlog.slug {slug} not available",
         )
-
-    @put(f"status/circle/{slug_route}", guards=[requires_active_user])
-    async def circle_status(self, service: SprintLogService, slug: str) -> m.SprintLog:
-        return await self.update_status(service, slug, 0)
