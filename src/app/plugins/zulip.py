@@ -80,7 +80,7 @@ async def send_msg(stream_name: str, topic_name: str, content: str | None = "") 
             await create_stream(
                 stream_name,
                 "Stream rebuild due to inexistance",
-                principals=[*server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS],
+                principals=[server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS],
             )
             response = await client.post(url, auth=auth, data=data)
             return dict(response.json())
@@ -211,7 +211,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
                 await create_stream(
                     stream_name,
                     "Stream rebuild due to inexistance",
-                    principals=[*server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS],
+                    principals=[server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS],
                 )
             msg = f"{response.status_code}, {response.text}"
             raise httpx.HTTPError(msg)
@@ -411,7 +411,7 @@ class ZulipProjectPlugin(ProjectPlugin):
     async def after_create(self, data: "Project") -> "Project":
         try:
             email = "" if data.owner.email is None else data.owner.email
-            principals = [*server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS, email]
+            principals = [server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS, email]
             stream_name = _gen_stream_name(data.name, data.pin)
 
             response = await create_stream(stream_name, data.description, principals)

@@ -205,7 +205,7 @@ class ServerSettings:
     """Zulip Bot API key. for zulip server"""
     ZULIP_API_KEY: str = field(default_factory=get_env("SERVER_ZULIP_API_KEY", ""))
     """Zulip admins. for zulip server"""
-    ZULIP_ADMIN_EMAIL: list[str] = field(default_factory=get_env("SERVER_ZULIP_ADMIN_EMAIL", ["phyoakl@hexcode.tech"]))
+    ZULIP_ADMIN_EMAIL: str = field(default_factory=get_env("SERVER_ZULIP_ADMIN_EMAIL", "phyoakl@hexcode.tech"))
 
 
 @dataclass
