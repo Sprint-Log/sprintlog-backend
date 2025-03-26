@@ -89,6 +89,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      app:
+        condition: service_started
 volumes:
   db-data: {}
   cache-data: {}

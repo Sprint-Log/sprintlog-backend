@@ -361,7 +361,7 @@ class AppSettings:
     """Application name."""
     NAME: str = field(default_factory=lambda: "app")
     """Allowed CORS Origins"""
-    ALLOWED_CORS_ORIGINS: list[str] | str = field(default_factory=get_env("ALLOWED_CORS_ORIGINS", "*"))
+    ALLOWED_CORS_ORIGINS: list[str] | str = field(default_factory=get_env("ALLOWED_CORS_ORIGINS", ["*"]))
     """CSRF Cookie Name"""
     CSRF_COOKIE_NAME: str = field(default_factory=get_env("CSRF_COOKIE_NAME", "XSRF-TOKEN"))
     """CSRF Secure Cookie"""
