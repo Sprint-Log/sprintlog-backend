@@ -26,6 +26,8 @@ from app.domain.projects.dtos import WriteDTO, ReadDTO
 from litestar import Response
 from app.domain.projects import urls
 
+from advanced_alchemy.filters import OrderBy
+
 if TYPE_CHECKING:
     from app.db import models as m
     from advanced_alchemy.filters import FilterTypes
@@ -64,8 +66,8 @@ class ProjectController(Controller):
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> Sequence[m.Project]:
         """Get a list of Models."""
-
-        return await service.list(*filters)
+        default_filters = [OrderBy(field_name="created_at", sort_order="desc")] + (filters or [])
+        return await service.list(*default_filters)
 
     @post(urls.PROJECT_CREATE)
     async def create_project(

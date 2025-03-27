@@ -172,13 +172,3 @@ def data_upgrades() -> None:
 
 def data_downgrades() -> None:
     """Add any optional data downgrade migrations here!"""
-
-    # ### end Alembic commands ###
-
-
-def data_upgrades() -> None:
-    """Add any optional data upgrade migrations here!"""
-
-
-def data_downgrades() -> None:
-    """Add any optional data downgrade migrations here!"""
