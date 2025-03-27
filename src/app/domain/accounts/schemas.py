@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime  # noqa: TC003
 from uuid import UUID  # noqa: TC003
 
-import msgspec
 
 from app.db.models.team_member import TeamRoles
 from app.lib.schema import CamelizedBaseStruct
@@ -80,12 +79,19 @@ class UserCreate(CamelizedBaseStruct):
 
 
 class UserUpdate(CamelizedBaseStruct, omit_defaults=True):
-    email: str | None | msgspec.UnsetType = msgspec.UNSET
-    password: str | None | msgspec.UnsetType = msgspec.UNSET
-    name: str | None | msgspec.UnsetType = msgspec.UNSET
-    is_superuser: bool | None | msgspec.UnsetType = msgspec.UNSET
-    is_active: bool | None | msgspec.UnsetType = msgspec.UNSET
-    is_verified: bool | None | msgspec.UnsetType = msgspec.UNSET
+    password: str
+    email: str
+    name: str | None = None
+    avatar_url: str | None = None
+    is_superuser: bool | None = None
+    is_active: bool | None = None
+    is_verified: bool | None = None
+
+
+class UserUpdatePassword(CamelizedBaseStruct):
+    old_password: str
+    new_password: str
+    confirm_password: str
 
 
 class AccountLogin(CamelizedBaseStruct):

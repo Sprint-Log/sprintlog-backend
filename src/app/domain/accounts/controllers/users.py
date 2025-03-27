@@ -5,20 +5,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
 
-from litestar import Controller, delete, get, patch, post
+from litestar import Controller, delete, get, patch, post, Response
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
 
 from app.domain.accounts import urls
 from app.domain.accounts.deps import provide_users_service
-from app.domain.accounts.guards import requires_superuser
-from app.domain.accounts.schemas import User, UserCreate, UserUpdate
+from app.domain.accounts.guards import requires_superuser, requires_active_user
+from app.domain.accounts.schemas import User, UserCreate, UserUpdate, UserUpdatePassword
 from app.lib.deps import create_filter_dependencies
+from app.lib.crypt import get_password_hash
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service import OffsetPagination
-
+    from app.db import models as m
     from app.domain.accounts.services import UserService
 
 
@@ -26,7 +27,6 @@ class UserController(Controller):
     """User Account Controller."""
 
     tags = ["User Accounts"]
-    guards = [requires_superuser]
     dependencies = {
         "users_service": Provide(provide_users_service),
     } | create_filter_dependencies(
@@ -42,7 +42,7 @@ class UserController(Controller):
         },
     )
 
-    @get(operation_id="ListUsers", path=urls.ACCOUNT_LIST)
+    @get(operation_id="ListUsers", path=urls.ACCOUNT_LIST, guards=[requires_superuser])
     async def list_users(
         self,
         users_service: UserService,
@@ -52,7 +52,7 @@ class UserController(Controller):
         results, total = await users_service.list_and_count(*filters)
         return users_service.to_schema(data=results, total=total, schema_type=User, filters=filters)
 
-    @get(operation_id="GetUser", path=urls.ACCOUNT_DETAIL)
+    @get(operation_id="GetUser", path=urls.ACCOUNT_DETAIL, guards=[requires_superuser])
     async def get_user(
         self,
         users_service: UserService,
@@ -62,28 +62,107 @@ class UserController(Controller):
         db_obj = await users_service.get(user_id)
         return users_service.to_schema(db_obj, schema_type=User)
 
-    @post(operation_id="CreateUser", path=urls.ACCOUNT_CREATE)
+    @post(operation_id="CreateUser", path=urls.ACCOUNT_CREATE, guards=[requires_superuser])
     async def create_user(self, users_service: UserService, data: UserCreate) -> User:
         """Create a new user."""
         db_obj = await users_service.create(data.to_dict())
         return users_service.to_schema(db_obj, schema_type=User)
 
-    @patch(operation_id="UpdateUser", path=urls.ACCOUNT_UPDATE)
+    @patch(
+        operation_id="UpdateUser",
+        path=urls.ACCOUNT_UPDATE,
+        guards=[requires_active_user],
+    )
     async def update_user(
         self,
         data: UserUpdate,
         users_service: UserService,
         user_id: UUID = Parameter(title="User ID", description="The user to update."),
-    ) -> User:
-        """Create a new user."""
-        db_obj = await users_service.update(item_id=user_id, data=data.to_dict())
-        return users_service.to_schema(db_obj, schema_type=User)
+    ) -> Response:
+        """Update user data."""
 
-    @delete(operation_id="DeleteUser", path=urls.ACCOUNT_DELETE)
-    async def delete_user(
+        user = await users_service.authenticate(username=data.email, password=data.password)
+        if not user:
+            return Response(
+                content="Only allow superuser to proceed this action!",
+                status_code=403,
+            )
+
+        update_data = {}
+
+        if "email" in data.to_dict():
+            update_data["email"] = data.email
+
+        if "name" in data.to_dict():
+            update_data["name"] = data.name
+
+        if "avatar_url" in data.to_dict():
+            update_data["avatar_url"] = data.avatar_url
+
+        if "is_superuser" in data.to_dict() and user.is_superuser:
+            update_data["is_superuser"] = data.is_superuser
+
+        db_obj = await users_service.update(item_id=user_id, data=update_data)
+
+        return Response(
+            content=users_service.to_schema(db_obj, schema_type=User),
+            status_code=200,
+        )
+
+    @patch(
+        operation_id="UpdateUserPassword",
+        path=urls.ACCOUNT_UPDATE_PASSWORD,
+        guards=[requires_active_user],
+    )
+    async def update_user_password(
+        self,
+        data: UserUpdatePassword,
+        users_service: UserService,
+        current_user: m.User,
+        user_id: UUID = Parameter(title="User ID", description="The user to update."),
+    ) -> Response:
+        """Update a user's password."""
+        # If the current user is not a superuser, verify the provided old password.
+        if data.new_password != data.confirm_password:
+            return Response(content="Confirm password and new password are not matched!", status_code=409)
+
+        if not current_user.is_superuser:
+            is_authorized = await users_service.authenticate(username=current_user.email, password=data.old_password)
+            if not is_authorized:
+                return Response(
+                    content="Only allow superuser to proceed this action!",
+                    status_code=403,
+                )
+
+            user_obj = current_user
+            current_password = data.old_password
+        else:
+            # If superuser, get the target user by id.
+            user_obj = await users_service.get(item_id=user_id)
+            current_password = user_obj.hashed_password
+
+        # Prevent non-superuser from updating other users’ passwords.
+        if user_id != current_user.id and not current_user.is_superuser:
+            return Response(
+                content="Only allow superuser to proceed this action!",
+                status_code=403,
+            )
+
+        hashed_password = get_password_hash(data.new_password)
+        paswd_data = {"hashed_password": hashed_password, "current_password": current_password}
+
+        await users_service.update_password(data=paswd_data, db_obj=user_obj)
+        return Response(
+            content="Password is successfully updated!",
+            status_code=200,
+        )
+
+    @delete(operation_id="DeactivateUser", path=urls.ACCOUNT_DELETE, guards=[requires_superuser])
+    async def deactivate_user(
         self,
         users_service: UserService,
         user_id: Annotated[UUID, Parameter(title="User ID", description="The user to delete.")],
-    ) -> None:
+    ) -> User:
         """Delete a user from the system."""
-        _ = await users_service.delete(user_id)
+        user_obj = await users_service.update(item_id=user_id, data={"is_active": False})
+        return users_service.to_schema(user_obj, schema_type=User)
