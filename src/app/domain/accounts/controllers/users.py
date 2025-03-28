@@ -71,6 +71,9 @@ class UserController(Controller):
     async def create_user(self, users_service: UserService, data: UserCreate) -> User:
         """Create a new user with optional bank accounts."""
         user_data = data.to_dict()
+        user_data["is_active"] = True
+        user_data["is_verified"] = False
+
         bank_accounts_data = user_data.pop("bank_accounts", [])
 
         user = await users_service.create(user_data, auto_commit=True)
@@ -140,6 +143,7 @@ class UserController(Controller):
             return Response(content="Confirm password and new password are not matched!", status_code=409)
 
         if not current_user.is_superuser:
+            # checked the credentials of the superuser
             user_obj = await users_service.authenticate(username=current_user.email, password=data.old_password)
 
             current_password = data.old_password

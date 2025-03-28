@@ -62,6 +62,9 @@ class User(CamelizedBaseStruct):
     id: UUID
     email: str
     name: str | None = None
+    position: str | None = None
+    address: str | None = None
+    avatar_url: str | None = None
     is_superuser: bool = False
     is_active: bool = True
     is_verified: bool = False
@@ -77,8 +80,6 @@ class UserCreate(CamelizedBaseStruct):
     position: str | None = None
     address: str | None = None
     is_superuser: bool = False
-    is_active: bool = True
-    is_verified: bool = False
     avatar_url: str | None = None
     bank_accounts: list[BankAccount] | None = None
 
