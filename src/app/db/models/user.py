@@ -30,7 +30,7 @@ class User(UUIDAuditBase):
     login_count: Mapped[int] = mapped_column(default=0)
     position: Mapped[str] = mapped_column(nullable=True, default=None)
     address: Mapped[str] = mapped_column(nullable=True, default=None)
-    bank_accounts: Mapped[list[BankAccount]] = relationship(
+    bank_accounts: Mapped[list["BankAccount"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", lazy="selectin"
     )
     # ORM Relationships

@@ -8,6 +8,7 @@ from uuid import UUID
 from litestar import Controller, delete, get, patch, post, Response
 from litestar.di import Provide
 from litestar.params import Dependency, Parameter
+from litestar.exceptions import NotFoundException, NotAuthorizedException, PermissionDeniedException
 
 from app.domain.accounts import urls
 from app.domain.accounts.deps import provide_users_service
@@ -78,15 +79,15 @@ class UserController(Controller):
         data: UserUpdate,
         users_service: UserService,
         user_id: UUID = Parameter(title="User ID", description="The user to update."),
-    ) -> Response:
+    ) -> User:
         """Update user data."""
 
         user = await users_service.authenticate(username=data.email, password=data.password)
         if not user:
-            return Response(
-                content="Only allow superuser to proceed this action!",
-                status_code=403,
-            )
+            raise NotAuthorizedException("Invalid credentials!")
+
+        if user_id != user.id and not user.is_superuser:
+            raise PermissionDeniedException("Only allow superuser to proceed this action!")
 
         update_data = {}
 
@@ -104,10 +105,7 @@ class UserController(Controller):
 
         db_obj = await users_service.update(item_id=user_id, data=update_data)
 
-        return Response(
-            content=users_service.to_schema(db_obj, schema_type=User),
-            status_code=200,
-        )
+        return users_service.to_schema(db_obj, schema_type=User)
 
     @patch(
         operation_id="UpdateUserPassword",
@@ -127,26 +125,19 @@ class UserController(Controller):
             return Response(content="Confirm password and new password are not matched!", status_code=409)
 
         if not current_user.is_superuser:
-            is_authorized = await users_service.authenticate(username=current_user.email, password=data.old_password)
-            if not is_authorized:
-                return Response(
-                    content="Only allow superuser to proceed this action!",
-                    status_code=403,
-                )
+            user_obj = await users_service.authenticate(username=current_user.email, password=data.old_password)
 
-            user_obj = current_user
             current_password = data.old_password
         else:
             # If superuser, get the target user by id.
-            user_obj = await users_service.get(item_id=user_id)
+            user_obj = await users_service.get_one_or_none(item_id=user_id)
+            if user_obj is None:
+                raise NotFoundException("User not found!")
             current_password = user_obj.hashed_password
 
         # Prevent non-superuser from updating other users’ passwords.
         if user_id != current_user.id and not current_user.is_superuser:
-            return Response(
-                content="Only allow superuser to proceed this action!",
-                status_code=403,
-            )
+            raise PermissionDeniedException("Only allow superuser to proceed this action!")
 
         hashed_password = get_password_hash(data.new_password)
         paswd_data = {"hashed_password": hashed_password, "current_password": current_password}
@@ -162,7 +153,7 @@ class UserController(Controller):
         self,
         users_service: UserService,
         user_id: Annotated[UUID, Parameter(title="User ID", description="The user to delete.")],
-    ) -> User:
+    ) -> None:
         """Delete a user from the system."""
         user_obj = await users_service.update(item_id=user_id, data={"is_active": False})
-        return users_service.to_schema(user_obj, schema_type=User)
+        _ = users_service.to_schema(user_obj, schema_type=User)
