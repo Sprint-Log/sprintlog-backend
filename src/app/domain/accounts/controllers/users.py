@@ -16,12 +16,16 @@ from app.domain.accounts.guards import requires_superuser, requires_active_user
 from app.domain.accounts.schemas import User, UserCreate, UserUpdate, UserUpdatePassword
 from app.lib.deps import create_filter_dependencies
 from app.lib.crypt import get_password_hash
+from app.db.models.enums import PaymentMethod
+from structlog import get_logger
+from app.db import models as m
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service import OffsetPagination
-    from app.db import models as m
     from app.domain.accounts.services import UserService
+
+logger = get_logger()
 
 
 class UserController(Controller):
@@ -65,9 +69,20 @@ class UserController(Controller):
 
     @post(operation_id="CreateUser", path=urls.ACCOUNT_CREATE, guards=[requires_superuser])
     async def create_user(self, users_service: UserService, data: UserCreate) -> User:
-        """Create a new user."""
-        db_obj = await users_service.create(data.to_dict())
-        return users_service.to_schema(db_obj, schema_type=User)
+        """Create a new user with optional bank accounts."""
+        user_data = data.to_dict()
+        bank_accounts_data = user_data.pop("bank_accounts", [])
+
+        user = await users_service.create(user_data, auto_commit=True)
+        if len(bank_accounts_data) > 0:
+            bank_account_objs = [
+                m.BankAccount(method=PaymentMethod(account.method), account_number=account.account_number)
+                for account in bank_accounts_data
+            ]
+
+            user.bank_accounts = bank_account_objs
+
+        return users_service.to_schema(user, schema_type=User)
 
     @patch(
         operation_id="UpdateUser",

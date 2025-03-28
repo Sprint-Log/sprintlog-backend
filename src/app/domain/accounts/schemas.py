@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime  # noqa: TC003
-from uuid import UUID  # noqa: TC003
+from uuid import UUID
 
 
 from app.db.models.team_member import TeamRoles
@@ -63,19 +63,39 @@ class User(CamelizedBaseStruct):
     email: str
     name: str | None = None
     is_superuser: bool = False
-    is_active: bool = False
+    is_active: bool = True
     is_verified: bool = False
     has_password: bool = False
     teams: list[UserTeam] = []
+    bank_accounts: list[BankAccount] = []
 
 
 class UserCreate(CamelizedBaseStruct):
     email: str
     password: str
     name: str | None = None
+    position: str | None = None
+    address: str | None = None
     is_superuser: bool = False
     is_active: bool = True
     is_verified: bool = False
+    avatar_url: str | None = None
+    bank_accounts: list[BankAccount] | None = None
+
+
+class BankAccount(CamelizedBaseStruct):
+    """Bank account details for a user."""
+
+    method: str
+    account_number: str
+
+
+class BankAccountDetail(CamelizedBaseStruct):
+    """Bank account details for a user."""
+
+    id: UUID
+    method: str
+    account_number: str
 
 
 class UserUpdate(CamelizedBaseStruct, omit_defaults=True):

@@ -22,6 +22,7 @@ provide_users_service = create_service_provider(
         selectinload(m.User.teams).options(
             joinedload(m.TeamMember.team, innerjoin=True).options(load_only(m.Team.name)),
         ),
+        selectinload(m.User.bank_accounts),
     ],
     error_messages={"duplicate_key": "This user already exists.", "integrity": "User operation failed."},
 )

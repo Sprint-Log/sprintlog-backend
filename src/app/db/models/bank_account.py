@@ -4,16 +4,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from advanced_alchemy.base import UUIDAuditBase
-from enum import Enum
+from .enums import PaymentMethod
 
 if TYPE_CHECKING:
     from .user import User
-
-
-class PaymentMethod(str, Enum):
-    K_PAY = "k-pay"
-    AYA_PAY = "aya-pay"
-    WAVE_PAY = "wave-pay"
 
 
 class BankAccount(UUIDAuditBase):

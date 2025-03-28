@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-__all__ = ["Priority", "Progress", "Status", "Category", "ItemType"]
+__all__ = ["Priority", "Progress", "Status", "Category", "ItemType", "PaymentMethod"]
 
 
 class Priority(StrEnum):
@@ -49,3 +49,9 @@ class ItemType(StrEnum):
     task = "task"
     draft = "draft"
     self = "self"
+
+
+class PaymentMethod(StrEnum):
+    K_PAY = "k-pay"
+    AYA_PAY = "aya-pay"
+    WAVE_PAY = "wave-pay"
