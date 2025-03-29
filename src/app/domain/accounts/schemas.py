@@ -107,6 +107,9 @@ class UserUpdate(CamelizedBaseStruct, omit_defaults=True):
     is_superuser: bool | None = None
     is_active: bool | None = None
     is_verified: bool | None = None
+    bank_accounts: list[BankAccount] | None = None
+    position: str | None = None
+    address: str | None = None
 
 
 class UserUpdatePassword(CamelizedBaseStruct):

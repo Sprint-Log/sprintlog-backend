@@ -96,32 +96,37 @@ class UserController(Controller):
         self,
         data: UserUpdate,
         users_service: UserService,
+        current_user: m.User,
         user_id: UUID = Parameter(title="User ID", description="The user to update."),
     ) -> User:
         """Update user data."""
 
-        user = await users_service.authenticate(username=data.email, password=data.password)
+        user = await users_service.authenticate(username=current_user.email, password=data.password)
         if not user:
             raise NotAuthorizedException("Invalid credentials!")
 
         if user_id != user.id and not user.is_superuser:
             raise PermissionDeniedException("Only allow superuser to proceed this action!")
 
-        update_data = {}
+        update_data = data.to_dict()
+        if "password" in update_data:
+            del update_data["password"]
+        if "hashed_password" in update_data:
+            del update_data["hashed_password"]
 
-        if "email" in data.to_dict():
-            update_data["email"] = data.email
-
-        if "name" in data.to_dict():
-            update_data["name"] = data.name
-
-        if "avatar_url" in data.to_dict():
-            update_data["avatar_url"] = data.avatar_url
-
-        if "is_superuser" in data.to_dict() and user.is_superuser:
-            update_data["is_superuser"] = data.is_superuser
+        if "is_superuser" in update_data and not user.is_superuser:
+            raise PermissionDeniedException("Only allow superuser to proceed this action!")
 
         db_obj = await users_service.update(item_id=user_id, data=update_data)
+
+        if "bank_accounts" in update_data:
+            bank_accounts_data = update_data["bank_accounts"]
+            bank_account_objs = [
+                m.BankAccount(method=PaymentMethod(account.method), account_number=account.account_number)
+                for account in bank_accounts_data
+            ]
+
+            db_obj.bank_accounts = bank_account_objs
 
         return users_service.to_schema(db_obj, schema_type=User)
 
