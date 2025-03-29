@@ -55,3 +55,11 @@ class PaymentMethod(StrEnum):
     K_PAY = "k-pay"
     AYA_PAY = "aya-pay"
     WAVE_PAY = "wave-pay"
+
+
+class ProjectStatus(StrEnum):
+    NOT_STARTED = "not_started"  # Project is created but not yet started
+    ACTIVE = "active"  # Project is ongoing
+    COMPLETED = "completed"  # Work is done
+    ON_HOLD = "on_hold"  # Temporarily paused
+    CANCELLED = "cancelled"  # Cancelled before completion

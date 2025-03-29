@@ -8,6 +8,7 @@ from advanced_alchemy.base import UUIDAuditBase
 from litestar.dto import Mark, dto_field
 from typing import Any, TYPE_CHECKING
 from advanced_alchemy.mixins import SlugKey
+from .enums import ProjectStatus
 
 if TYPE_CHECKING:
     from .user import User
@@ -30,6 +31,10 @@ class Project(UUIDAuditBase, SlugKey):
     sprint_amount: Mapped[int | None] = mapped_column(default=3)
     sprint_checkup_day: Mapped[int | None] = mapped_column(default=1)
     repo_urls: Mapped[list[str]] = mapped_column(ARRAY(String))
+    status: Mapped[ProjectStatus] = mapped_column(
+        String(length=50), nullable=False, default=ProjectStatus.NOT_STARTED, index=True
+    )
+    is_archived: Mapped[bool] = mapped_column(default=False, nullable=False)
     plugin_meta: Mapped[dict | None] = mapped_column(
         default=dict,
         info=dto_field(Mark.READ_ONLY),
