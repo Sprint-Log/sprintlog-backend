@@ -19,6 +19,8 @@ from app.lib.crypt import get_password_hash
 from app.db.models.enums import PaymentMethod
 from structlog import get_logger
 from app.db import models as m
+from advanced_alchemy.filters import OrderBy
+
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
@@ -54,7 +56,11 @@ class UserController(Controller):
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> OffsetPagination[User]:
         """List users."""
-        results, total = await users_service.list_and_count(*filters)
+        default_filters = [
+            OrderBy(field_name="is_active", sort_order="desc"),
+            OrderBy(field_name="created_at", sort_order="desc"),
+        ] + (filters or [])
+        results, total = await users_service.list_and_count(*default_filters)
         return users_service.to_schema(data=results, total=total, schema_type=User, filters=filters)
 
     @get(operation_id="GetUser", path=urls.ACCOUNT_DETAIL, guards=[requires_superuser])
