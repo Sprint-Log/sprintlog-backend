@@ -14,7 +14,7 @@ from litestar import (
 from litestar.di import Provide
 from litestar.params import Dependency
 
-from app.domain.accounts.guards import requires_active_user
+from app.domain.accounts.guards import requires_active_user, requires_superuser
 from app.domain.projects.dependencies import provide_project_service
 from litestar.status_codes import HTTP_200_OK
 from app.domain.projects.services import ProjectService
@@ -26,7 +26,7 @@ from app.domain.projects.dtos import WriteDTO, ReadDTO
 from litestar import Response
 from app.domain.projects import urls
 
-from advanced_alchemy.filters import OrderBy
+from advanced_alchemy.filters import OrderBy, CollectionFilter
 
 if TYPE_CHECKING:
     from app.db import models as m
@@ -66,10 +66,13 @@ class ProjectController(Controller):
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> Sequence[m.Project]:
         """Get a list of Models."""
-        default_filters = [OrderBy(field_name="created_at", sort_order="desc")] + (filters or [])
+        default_filters = [
+            OrderBy(field_name="created_at", sort_order="desc"),
+            CollectionFilter(field_name="is_archived", values=[False]),
+        ] + (filters or [])
         return await service.list(*default_filters)
 
-    @post(urls.PROJECT_CREATE)
+    @post(urls.PROJECT_CREATE, guards=[requires_superuser])
     async def create_project(
         self,
         data: m.Project,
@@ -95,7 +98,7 @@ class ProjectController(Controller):
         """Get Model by ID."""
         return await service.repository.get_by_slug(slug)
 
-    @put(urls.PROJECT_UPDATE)
+    @put(urls.PROJECT_UPDATE, guards=[requires_superuser])
     async def update_project(
         self,
         data: m.Project,
@@ -107,7 +110,9 @@ class ProjectController(Controller):
         data.owner_id = current_user.id
         return await service.update(item_id=id, data=data)
 
-    @delete(urls.PROJECT_DELETE, status_code=HTTP_200_OK)
-    async def delete_project(self, service: ProjectService, id: UUID) -> m.Project:
+    @delete(urls.PROJECT_DELETE, status_code=HTTP_200_OK, guards=[requires_superuser])
+    async def delete_project(self, service: ProjectService, id: UUID) -> None:
         """Delete Author by ID."""
-        return await service.delete(id)
+        project_obj = await service.get_one_or_none(id=id)
+        if project_obj:
+            await service.update(item_id=id, data={"is_archived": True})
