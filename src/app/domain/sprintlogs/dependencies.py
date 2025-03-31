@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, AsyncGenerator
 import pkgutil
 
-from sqlalchemy import select
+from sqlalchemy import select, case
 from sqlalchemy.orm import joinedload
 
 import app.plugins
@@ -14,7 +14,7 @@ from app.lib.plugin import SprintlogPlugin
 from app.domain.sprintlogs.service import SprintLogService
 from app.db import models as m
 from structlog import get_logger
-
+from app.db.models.enums import Priority
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +24,14 @@ __all__ = ("provide_sprintlog_service",)
 
 settings = get_settings()
 logger = get_logger()
+
+
+priority_order = case(
+    (m.SprintLog.priority == Priority.hi, 3),
+    (m.SprintLog.priority == Priority.med, 2),
+    (m.SprintLog.priority == Priority.low, 1),
+    else_=0,
+)
 
 
 async def provide_sprintlog_service(
@@ -41,7 +49,9 @@ async def provide_sprintlog_service(
                 plugins.append(obj())
     async with SprintLogService.new(
         session=db_session,
-        statement=select(m.SprintLog).order_by(m.SprintLog.updated_at.desc()).options(joinedload(m.SprintLog.project)),
+        statement=select(m.SprintLog)
+        .order_by(priority_order.desc(), m.SprintLog.created_at.desc())
+        .options(joinedload(m.SprintLog.project)),
     ) as service:
         service.plugins = set(plugins)
         try:
