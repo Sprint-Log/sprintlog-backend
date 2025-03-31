@@ -10,7 +10,7 @@ from litestar.enums import RequestEncodingType
 from litestar.params import Body
 
 from app.domain.accounts import urls
-from app.domain.accounts.deps import provide_users_service
+from app.domain.accounts.deps import provide_user_service
 from app.domain.accounts.guards import auth, requires_active_user
 from app.domain.accounts.schemas import AccountLogin, AccountRegister, User
 from structlog import get_logger
@@ -29,7 +29,7 @@ class AccessController(Controller):
 
     tags = ["Access"]
     dependencies = {
-        "users_service": Provide(provide_users_service),
+        "users_service": Provide(provide_user_service),
     }
 
     @post(operation_id="AccountLogin", path=urls.ACCOUNT_LOGIN, exclude_from_auth=True)

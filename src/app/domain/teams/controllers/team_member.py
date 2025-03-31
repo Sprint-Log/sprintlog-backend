@@ -11,7 +11,7 @@ from litestar.params import Parameter
 from sqlalchemy.orm import contains_eager, selectinload
 
 from app.db import models as m
-from app.domain.accounts.deps import provide_users_service
+from app.domain.accounts.deps import provide_user_service
 from app.domain.teams import urls
 from app.domain.teams.schemas import Team, TeamMemberModify
 from app.domain.teams.services import TeamMemberService, TeamService
@@ -37,7 +37,7 @@ class TeamMemberController(Controller):
                 selectinload(m.TeamMember.user),
             ],
         ),
-        "users_service": Provide(provide_users_service),
+        "users_service": Provide(provide_user_service),
     }
 
     @post(operation_id="AddMemberToTeam", path=urls.TEAM_ADD_MEMBER)

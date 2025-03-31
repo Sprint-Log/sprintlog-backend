@@ -91,9 +91,9 @@ async def current_user_from_token(token: Token, connection: ASGIConnection[Any, 
     Returns:
         User: User record mapped to the JWT identifier
     """
-    from app.domain.accounts.deps import provide_users_service
+    from app.domain.accounts.deps import provide_user_service
 
-    service = await anext(provide_users_service(alchemy.provide_session(connection.app.state, connection.scope)))
+    service = await anext(provide_user_service(alchemy.provide_session(connection.app.state, connection.scope)))
     user = await service.get_one_or_none(id=token.sub)
     return user if user and user.is_active else None
 

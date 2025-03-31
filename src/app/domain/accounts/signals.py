@@ -7,7 +7,7 @@ from litestar.events import listener
 
 from app.config.app import alchemy
 
-from .deps import provide_users_service
+from .deps import provide_user_service
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -26,7 +26,7 @@ async def user_created_event_handler(
     """
     await logger.ainfo("Running post signup flow.")
     async with alchemy.get_session() as db_session:
-        service = await anext(provide_users_service(db_session))
+        service = await anext(provide_user_service(db_session))
         obj = await service.get_one_or_none(id=user_id)
         if obj is None:
             await logger.aerror("Could not locate the specified user", id=user_id)

@@ -14,9 +14,9 @@ if TYPE_CHECKING:
     from litestar import Request
 
 
-__all__ = ("provide_users_service", "provide_user")
+__all__ = ("provide_user_service", "provide_user")
 # create a hard reference to this since it's used oven
-provide_users_service = create_service_provider(
+provide_user_service = create_service_provider(
     UserService,
     load=[
         selectinload(m.User.teams).options(

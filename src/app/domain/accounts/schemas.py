@@ -113,9 +113,8 @@ class UserUpdate(CamelizedBaseStruct, omit_defaults=True):
 
 
 class UserUpdatePassword(CamelizedBaseStruct):
-    old_password: str
+    current_password: str
     new_password: str
-    confirm_password: str
 
 
 class AccountLogin(CamelizedBaseStruct):

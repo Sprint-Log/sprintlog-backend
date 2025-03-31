@@ -83,7 +83,7 @@ def create_user(
     from rich import get_console
 
     from app.config.app import alchemy
-    from app.domain.accounts.deps import provide_users_service
+    from app.domain.accounts.deps import provide_user_service
     from app.domain.accounts.schemas import UserCreate
 
     console = get_console()
@@ -101,7 +101,7 @@ def create_user(
             is_superuser=superuser,
         )
         async with alchemy.get_session() as db_session:
-            users_service = await anext(provide_users_service(db_session))
+            users_service = await anext(provide_user_service(db_session))
             user = await users_service.create(data=obj_in.to_dict(), auto_commit=True)
             console.print(f"User created: {user.email}")
 
@@ -172,7 +172,7 @@ def create_default_roles() -> None:
 
     from app.config.app import alchemy
     from app.db.models import UserRole
-    from app.domain.accounts.deps import provide_users_service
+    from app.domain.accounts.deps import provide_user_service
     from app.domain.accounts.services import RoleService
     from app.lib.deps import create_service_provider
 
@@ -182,7 +182,7 @@ def create_default_roles() -> None:
     async def _create_default_roles() -> None:
         await load_database_fixtures()
         async with alchemy.get_session() as db_session:
-            users_service = await anext(provide_users_service(db_session))
+            users_service = await anext(provide_user_service(db_session))
             roles_service = await anext(provide_roles_service(db_session))
             default_role = await roles_service.get_one_or_none(slug=slugify(users_service.default_role))
             if default_role:
