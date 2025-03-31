@@ -56,7 +56,7 @@ def schema_upgrades() -> None:
         batch_op.add_column(sa.Column("status", sa.String(length=50), nullable=True))
         batch_op.add_column(sa.Column("is_archived", sa.Boolean(), nullable=True))
         batch_op.create_index(batch_op.f("ix_project_status"), ["status"], unique=False)
-    op.execute("UPDATE project SET status = 'not-started' WHERE status IS NULL;")
+    op.execute("UPDATE project SET status = 'not_started' WHERE status IS NULL;")
     op.execute("UPDATE project SET is_archived = FALSE WHERE is_archived IS NULL;")
 
     # Now that defaults are set, alter columns to be NOT NULL
