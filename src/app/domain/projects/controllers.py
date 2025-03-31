@@ -13,17 +13,19 @@ from litestar import (
 )
 from litestar.di import Provide
 from litestar.params import Dependency
+from litestar.status_codes import HTTP_200_OK
+from litestar.exceptions import NotFoundException
+from litestar import Response, patch
 
+from app.db.models.enums import ProjectStatus
 from app.domain.accounts.guards import requires_active_user, requires_superuser
 from app.domain.projects.dependencies import provide_project_service
-from litestar.status_codes import HTTP_200_OK
 from app.domain.projects.services import ProjectService
 
 from uuid import UUID
 from app.lib.deps import create_filter_dependencies
 from structlog import getLogger
 from app.domain.projects.dtos import WriteDTO, ReadDTO
-from litestar import Response
 from app.domain.projects import urls
 
 from advanced_alchemy.filters import OrderBy, CollectionFilter
@@ -109,6 +111,46 @@ class ProjectController(Controller):
         """Update an Model."""
         data.owner_id = current_user.id
         return await service.update(item_id=id, data=data)
+
+    @patch(urls.PROJECT_STATUS_UP, guards=[requires_superuser])
+    async def project_status_up(
+        self,
+        service: ProjectService,
+        id: UUID,
+    ) -> "m.Project":
+        """Increase proejct status."""
+        project = await service.get_one_or_none(id=id)
+        if project is None:
+            raise NotFoundException("Project not found!")
+
+        if project.status == ProjectStatus.NOT_STARTED:
+            project.status = ProjectStatus.ACTIVE
+        elif project.status == ProjectStatus.ACTIVE:
+            project.status = ProjectStatus.COMPLETED
+        else:
+            return project
+
+        return await service.update(item_id=id, data={"status": project.status})
+
+    @patch(urls.PROJECT_STATUS_DOWN, guards=[requires_superuser])
+    async def project_status_down(
+        self,
+        service: ProjectService,
+        id: UUID,
+    ) -> "m.Project":
+        """Increase proejct status."""
+        project = await service.get_one_or_none(id=id)
+        if project is None:
+            raise NotFoundException("Project not found!")
+
+        if project.status == ProjectStatus.ACTIVE:
+            project.status = ProjectStatus.NOT_STARTED
+        elif project.status == ProjectStatus.COMPLETED:
+            project.status = ProjectStatus.ACTIVE
+        else:
+            return project
+
+        return await service.update(item_id=id, data={"status": project.status})
 
     @delete(urls.PROJECT_DELETE, status_code=HTTP_200_OK, guards=[requires_superuser])
     async def delete_project(self, service: ProjectService, id: UUID) -> None:

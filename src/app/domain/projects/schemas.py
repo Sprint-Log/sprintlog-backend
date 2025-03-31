@@ -6,6 +6,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 from pydantic import Field
+from app.db.models.enums import ProjectStatus
 from app.lib.schema import CamelizedBaseStruct
 
 
@@ -30,6 +31,8 @@ class Project(CamelizedBaseStruct):
     plugin_meta: dict[str, Any] | None = None
     owner: str | None = None
     owner_id: UUID | None = None
+    is_archived: bool = False
+    status: ProjectStatus = ProjectStatus.NOT_STARTED
 
 
 class ProjectCreate(CamelizedBaseStruct):
