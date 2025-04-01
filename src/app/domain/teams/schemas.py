@@ -26,6 +26,7 @@ class TeamMember(CamelizedBaseStruct):
 class Team(CamelizedBaseStruct):
     id: UUID
     name: str
+    slug: str
     description: str | None = None
     members: list[TeamMember] = []
     tags: list[TeamTag] = []
@@ -47,3 +48,10 @@ class TeamMemberModify(CamelizedBaseStruct):
     """Team Member Modify."""
 
     user_name: str
+
+
+class AddTeamMember(CamelizedBaseStruct):
+    """Team Member Modify."""
+
+    id: str
+    role: TeamRoles | None = TeamRoles.MEMBER

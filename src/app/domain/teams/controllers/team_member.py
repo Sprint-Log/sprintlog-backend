@@ -8,15 +8,15 @@ from advanced_alchemy.exceptions import IntegrityError
 from litestar import Controller, post
 from litestar.di import Provide
 from litestar.params import Parameter
+from litestar.exceptions import NotFoundException
 from sqlalchemy.orm import contains_eager, selectinload
 
 from app.db import models as m
 from app.domain.accounts.deps import provide_user_service
 from app.domain.teams import urls
-from app.domain.teams.schemas import Team, TeamMemberModify
+from app.domain.teams.schemas import Team, TeamMemberModify, AddTeamMember
 from app.domain.teams.services import TeamMemberService, TeamService
 from app.lib.deps import create_service_provider
-from app.db.models.team_member import TeamRoles
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -45,18 +45,21 @@ class TeamMemberController(Controller):
         self,
         teams_service: TeamService,
         users_service: UserService,
-        data: TeamMemberModify,
+        data: list[AddTeamMember],
         team_id: UUID = Parameter(title="Team ID", description="The team to update."),
     ) -> Team:
         """Add a member to a team."""
         team_obj = await teams_service.get(team_id)
-        user_obj = await users_service.get_one(email=data.user_name)
-        is_member = any(membership.team.id == team_id for membership in user_obj.teams)
-        if is_member:
-            msg = "User is already a member of the team."
-            raise IntegrityError(msg)
-        team_obj.members.append(m.TeamMember(user_id=user_obj.id, role=TeamRoles.MEMBER))
-        team_obj = await teams_service.update(item_id=team_id, data=team_obj)
+        for user in data:
+            user_obj = await users_service.get_one_or_none(id=user.id)
+
+            if user_obj is None:
+                raise NotFoundException("User not found!")
+            is_member = any(membership.team.id == team_id for membership in user_obj.teams)
+            if is_member:
+                continue
+            team_obj.members.append(m.TeamMember(user_id=user_obj.id, role=user.role))
+        team_obj = await teams_service.update(item_id=team_id, data=team_obj.to_dict())
         return teams_service.to_schema(schema_type=Team, data=team_obj)
 
     @post(operation_id="RemoveMemberFromTeam", path=urls.TEAM_REMOVE_MEMBER)
