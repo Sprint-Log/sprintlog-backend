@@ -6,6 +6,7 @@ import msgspec
 
 from app.db.models.team_member import TeamRoles
 from app.lib.schema import CamelizedBaseStruct
+from datetime import datetime
 
 
 class TeamTag(CamelizedBaseStruct):
@@ -27,6 +28,8 @@ class Team(CamelizedBaseStruct):
     id: UUID
     name: str
     slug: str
+    created_at: datetime
+    updated_at: datetime
     description: str | None = None
     members: list[TeamMember] = []
     tags: list[TeamTag] = []
