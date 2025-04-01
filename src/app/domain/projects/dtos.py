@@ -5,7 +5,7 @@ from typing import Annotated
 from app.db.models import Project
 
 
-__all__ = ["ReadDTO", "WriteDTO"]
+__all__ = ["ReadDTO", "WriteDTO", "StatusWriteDTO"]
 
 WriteDTO = SQLAlchemyDTO[
     Annotated[
@@ -16,3 +16,5 @@ WriteDTO = SQLAlchemyDTO[
     ]
 ]
 ReadDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(exclude={"sprintlogs"})]]
+
+StatusWriteDTO = SQLAlchemyDTO[Annotated[Project, DTOConfig(include={"status"})]]
