@@ -1,3 +1,6 @@
+import string
+
+
 TEAM_LIST = "/api/teams"
 TEAM_DELETE = "/api/teams/{team_id:uuid}"
 TEAM_DETAIL = "/api/teams/{team_id:uuid}"
@@ -7,3 +10,4 @@ TEAM_INDEX = "/api/teams/{team_id:uuid}"
 TEAM_INVITATION_LIST = "/api/teams/{team_id:uuid}/invitations"
 TEAM_ADD_MEMBER = "/api/teams/{team_id:uuid}/members/add"
 TEAM_REMOVE_MEMBER = "/api/teams/{team_id:uuid}/members/remove"
+TEAM_SLUG = "/api/teams/{slug:str}"

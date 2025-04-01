@@ -69,6 +69,12 @@ class TeamController(Controller):
         db_obj = await teams_service.get(team_id)
         return teams_service.to_schema(schema_type=Team, data=db_obj)
 
+    @get(operation_id="GetTeamBySlug", path=urls.TEAM_SLUG)
+    async def get_team_by_slug(self, teams_service: TeamService, slug: str) -> Team:
+        "Get Project by Slug"
+        db_obj = await teams_service.repository.get_by_slug(slug)
+        return teams_service.to_schema(schema_type=Team, data=db_obj)
+
     @patch(operation_id="UpdateTeam", guards=[requires_team_admin], path=urls.TEAM_UPDATE)
     async def update_team(
         self,

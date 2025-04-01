@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from advanced_alchemy.repository import (
-    SQLAlchemyAsyncRepository,
-    SQLAlchemyAsyncSlugRepository,
-)
+from advanced_alchemy.repository import SQLAlchemyAsyncRepository, SQLAlchemyAsyncSlugRepository
 from advanced_alchemy.service import (
     SQLAlchemyAsyncRepositoryService,
     is_dict,
@@ -16,7 +13,6 @@ from advanced_alchemy.service import (
 from advanced_alchemy.utils.text import slugify
 from uuid_utils.compat import uuid4
 
-from app.config import constants
 from app.db import models as m
 from app.db.models.team_member import TeamRoles
 
@@ -38,6 +34,7 @@ class TeamService(SQLAlchemyAsyncRepositoryService[m.Team]):
     class TeamRepository(SQLAlchemyAsyncSlugRepository[m.Team]):
         """Team Repository."""
 
+        slug_field = "slug"
         model_type = m.Team
 
     repository_type = TeamRepository
@@ -60,9 +57,7 @@ class TeamService(SQLAlchemyAsyncRepositoryService[m.Team]):
 
     @staticmethod
     def can_view_all(user: m.User) -> bool:
-        return bool(
-            user.is_superuser
-        )
+        return bool(user.is_superuser)
 
     async def _populate_slug(self, data: ModelDictT[m.Team]) -> ModelDictT[m.Team]:
         if is_dict_without_field(data, "slug") and is_dict_with_field(data, "name"):
