@@ -58,3 +58,13 @@ class AddTeamMember(CamelizedBaseStruct):
 
     id: str
     role: TeamRoles | None = TeamRoles.MEMBER
+
+
+class TeamStatistics(CamelizedBaseStruct):
+    """Team Statistics."""
+
+    member_count: int
+    task_count: int
+    in_progress_task_count: int
+    idle_task_count: int
+    completed_task_count: int
