@@ -2,14 +2,19 @@
 
 from __future__ import annotations
 
+import os
+import tempfile
+import mimetypes
 from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
-
+from click import File
+from litestar.enums import RequestEncodingType
 from litestar import Controller, delete, get, patch, post, Response
 from litestar.di import Provide
-from litestar.params import Dependency, Parameter
+from litestar.params import Dependency, Parameter, Body
 from litestar.exceptions import NotFoundException, NotAuthorizedException, PermissionDeniedException
-
+from litestar.datastructures import UploadFile
+from litestar.response import File
 from app.domain.accounts import urls
 from app.domain.accounts.deps import provide_user_service
 from app.domain.accounts.guards import requires_superuser, requires_active_user
@@ -71,6 +76,47 @@ class UserController(Controller):
         """Get a user."""
         db_obj = await user_service.get(user_id)
         return user_service.to_schema(db_obj, schema_type=User)
+
+    @post(
+        operation_id="UploadUserProfile",
+        path=urls.ACCOUNT_PROFILE_IMG,
+        guards=[requires_active_user],
+    )
+    async def upload_profile(
+        self,
+        user_service: UserService,
+        data: Annotated[UploadFile, Body(media_type=RequestEncodingType.MULTI_PART)],
+        current_user: m.User,
+    ) -> User:
+        content = data.file.read()
+        """Upload a user profile image and create a new user."""
+        os.makedirs(os.path.join(os.path.dirname(__file__), "../../../db/user_profile"), exist_ok=True)
+        file_path = os.path.join(os.path.dirname(__file__), "../../../db/user_profile/", data.filename)
+
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+            user = await user_service.update(item_id=current_user.id, data={"avatar_url": file_path})
+        return user_service.to_schema(user, schema_type=User)
+
+    @get(operation_id="getProfile", path=urls.ACCOUNT_PROFILE_IMG, guards=[requires_active_user])
+    async def get_profile(self, current_user: m.User) -> File | None:
+        if current_user.avatar_url:
+            extension = mimetypes.guess_extension(current_user.avatar_url)
+            mime_type = mimetypes.guess_type(current_user.avatar_url)[0]
+            file_name = current_user.avatar_url.split("/")[-1]
+            with open(current_user.avatar_url, "rb") as f:
+                content = f.read()
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{extension}") as tmp_file:
+                tmp_file.write(content)
+                tmp_file.flush()
+                return File(
+                    content_disposition_type="attachment",
+                    path=tmp_file.name,
+                    filename=file_name,
+                    media_type=mime_type,
+                )
 
     @post(operation_id="CreateUser", path=urls.ACCOUNT_CREATE, guards=[requires_superuser])
     async def create_user(self, user_service: UserService, data: UserCreate) -> User:

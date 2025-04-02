@@ -21,6 +21,7 @@ class TeamMember(CamelizedBaseStruct):
     name: str | None = None
     role: TeamRoles | None = TeamRoles.MEMBER
     is_owner: bool | None = False
+    avatar_url: str | None = None
 
 
 class Team(CamelizedBaseStruct):

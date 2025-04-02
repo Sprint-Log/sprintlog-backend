@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .team import Team
     from .user import User
 
+
 class TeamRoles(str, Enum):
     """Valid Values for Team Roles."""
 
@@ -47,6 +48,7 @@ class TeamMember(UUIDAuditBase):
     )
     name: AssociationProxy[str] = association_proxy("user", "name")
     email: AssociationProxy[str] = association_proxy("user", "email")
+    avatar_url: AssociationProxy[str] = association_proxy("user", "avatar_url")
     team: Mapped[Team] = relationship(
         back_populates="members",
         foreign_keys="TeamMember.team_id",

@@ -53,7 +53,7 @@ class TeamMemberController(Controller):
         """Add a member to a team. If the user is already a member, check their role and update if necessary."""
         team_obj = await teams_service.get(team_id)
         for user in data:
-            user_obj = await users_service.get_one_or_none(id=user.userId)
+            user_obj = await users_service.get_one_or_none(id=user.user_id)
 
             if user_obj is None:
                 raise NotFoundException("User not found!")
@@ -117,7 +117,7 @@ class TeamMemberController(Controller):
         team_id: UUID = Parameter(title="Team ID", description="The team to delete."),
     ) -> Team:
         """Revoke a members access to a team."""
-        member_obj = await team_members_service.get_one_or_none(team_id=team_id, user_id=data.userId)
+        member_obj = await team_members_service.get_one_or_none(team_id=team_id, user_id=data.user_id)
 
         if member_obj is None:
             raise NotFoundException("User is not a member of this team.")
