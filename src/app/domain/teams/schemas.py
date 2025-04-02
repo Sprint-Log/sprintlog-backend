@@ -16,7 +16,6 @@ class TeamTag(CamelizedBaseStruct):
 
 
 class TeamMember(CamelizedBaseStruct):
-    id: UUID
     user_id: UUID
     email: str
     name: str | None = None
@@ -50,14 +49,14 @@ class TeamUpdate(CamelizedBaseStruct, omit_defaults=True):
 class TeamMemberModify(CamelizedBaseStruct):
     """Team Member Modify."""
 
-    user_name: str
+    user_id: str
+    role: TeamRoles = TeamRoles.MEMBER
 
 
-class AddTeamMember(CamelizedBaseStruct):
+class RemoveTeamMember(CamelizedBaseStruct):
     """Team Member Modify."""
 
-    id: str
-    role: TeamRoles | None = TeamRoles.MEMBER
+    user_id: str
 
 
 class TeamStatistics(CamelizedBaseStruct):
