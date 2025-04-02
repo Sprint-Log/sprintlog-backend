@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID  # noqa: TC003
 
 import msgspec
 
 from app.db.models.team_member import TeamRoles
 from app.lib.schema import CamelizedBaseStruct
-from datetime import datetime
 
 
 class TeamTag(CamelizedBaseStruct):
@@ -24,6 +24,16 @@ class TeamMember(CamelizedBaseStruct):
     avatar_url: str | None = None
 
 
+class TeamMemberDetail(CamelizedBaseStruct):
+    id: UUID
+    user_id: UUID
+    email: str
+    name: str | None = None
+    role: TeamRoles | None = TeamRoles.MEMBER
+    is_owner: bool | None = False
+    avatar_url: str | None = None
+
+
 class Team(CamelizedBaseStruct):
     id: UUID
     name: str
@@ -31,7 +41,7 @@ class Team(CamelizedBaseStruct):
     created_at: datetime
     updated_at: datetime
     description: str | None = None
-    members: list[TeamMember] = []
+    members: list[TeamMemberDetail] = []
     tags: list[TeamTag] = []
 
 
@@ -68,3 +78,9 @@ class TeamStatistics(CamelizedBaseStruct):
     in_progress_task_count: int
     idle_task_count: int
     completed_task_count: int
+
+
+class TeamMemberRole(CamelizedBaseStruct):
+    """Team Member Role"""
+
+    role: TeamRoles = TeamRoles.MEMBER

@@ -6,17 +6,17 @@ from typing import TYPE_CHECKING
 
 from litestar import Controller, post, put
 from litestar.di import Provide
-from litestar.params import Parameter
 from litestar.exceptions import NotFoundException
+from litestar.params import Parameter
 from sqlalchemy.orm import contains_eager, selectinload
+from structlog import getLogger
 
 from app.db import models as m
 from app.domain.accounts.deps import provide_user_service
 from app.domain.teams import urls
-from app.domain.teams.schemas import RemoveTeamMember, Team, TeamMemberModify
+from app.domain.teams.schemas import RemoveTeamMember, Team, TeamMember, TeamMemberModify, TeamMemberRole
 from app.domain.teams.services import TeamMemberService, TeamService
 from app.lib.deps import create_service_provider
-from structlog import getLogger
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -126,3 +126,17 @@ class TeamMemberController(Controller):
 
         team_obj = await teams_service.get(team_id)
         return teams_service.to_schema(schema_type=Team, data=team_obj)
+
+    @post(operation_id="UpdateMemberRole", path=urls.TEAM_MEMBER_ROLE)
+    async def update_member_role(
+        self,
+        team_members_service: TeamMemberService,
+        data: TeamMemberRole,
+        member_id: UUID = Parameter(title="Member ID", description="The member to update role."),
+    ) -> TeamMember:
+        """Update a team member role."""
+        db_obj = await team_members_service.update(
+            item_id=member_id,
+            data=data.to_dict(),
+        )
+        return team_members_service.to_schema(schema_type=TeamMember, data=db_obj)
