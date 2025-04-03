@@ -57,7 +57,6 @@ class ProjectUpdate(CamelizedBaseStruct):
     """Schema used when updating an existing Project."""
 
     id: UUID
-    slug: str
     name: str
     start_date: date
     end_date: date
