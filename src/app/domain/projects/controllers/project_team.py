@@ -81,15 +81,13 @@ class ProjectTeamController(Controller):
         if project_obj is None:
             raise NotFoundException(detail="Project Not Found!", status_code=409)
 
-        logger.info("removed successfull")
-        logger.info("Before removing")
         for team in project_obj.teams:
             logger.info(team.id)
 
         teams = [team for team in project_obj.teams if str(team.id) != data.team_id]
 
         project_obj = await project_service.update(item_id=project_obj.id, data={"teams": teams})
-        logger.info("after assigned")
+
         for team in project_obj.teams:
             logger.info(team.id)
 

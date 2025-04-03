@@ -49,11 +49,15 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
 
         team_ids = [team.id for team in project.teams]
 
-        stmt = select(m.TeamMember).where(m.TeamMember.team_id.in_(team_ids))
+        stmt = (
+            select(m.User)
+            .join(m.TeamMember, m.User.id == m.TeamMember.user_id)
+            .where(m.TeamMember.team_id.in_(team_ids))
+            .distinct(m.User.id)
+        )
 
         result = await self.repository.session.execute(stmt)
-        team_members = result.scalars().all()
-        users = [member.user for member in team_members if member.user]
+        users = result.scalars().all()
 
         return users, len(users)
 
