@@ -47,7 +47,6 @@ class Project(UUIDAuditBase, SlugKey):
         lazy="joined",
         info=dto_field(Mark.PRIVATE),
     )
-    team_id: Mapped[UUID] = mapped_column(ForeignKey("team.id"), nullable=True)
     teams: Mapped[list["Team"]] = relationship(secondary="project_team", back_populates="projects", lazy="selectin")
 
     def __init__(self, **kw: Any) -> None:
