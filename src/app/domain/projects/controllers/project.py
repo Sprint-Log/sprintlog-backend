@@ -16,13 +16,15 @@ from app.domain.accounts.guards import requires_active_user, requires_superuser
 from app.domain.teams.services import TeamService
 
 from app.domain.projects.dependencies import provide_project_service
+from app.domain.accounts.deps import provide_user_service
+
 from app.domain.projects.services import ProjectService
+from app.domain.accounts.services import UserService
 from app.domain.projects import urls
 from app.domain.projects.schemas import ProjectCreate, Project, ProjectStatusUpdate, ProjectUpdate
-from app.domain.accounts.schemas import User
+from app.domain.accounts.schemas import User as UserSchema
 
 from app.lib.deps import create_filter_dependencies, create_service_dependencies
-
 from app.db import models as m
 
 if TYPE_CHECKING:
@@ -39,7 +41,7 @@ class ProjectController(Controller):
     guards = [requires_active_user]
     tags = ["Projects"]
     dependencies = (
-        {"project_service": Provide(provide_project_service)}
+        {"project_service": Provide(provide_project_service), "user_service": Provide(provide_user_service)}
         | create_service_dependencies(
             TeamService,
             key="teams_service",
@@ -184,6 +186,16 @@ class ProjectController(Controller):
             await project_service.update(item_id=id, data={"is_archived": True})
 
     @get(urls.PROJECT_ASSIGNEE, guards=[requires_superuser])
-    async def get_project_assignee_by_slug(self, project_service: ProjectService, slug: str) -> OffsetPagination[User]:
-        users = await project_service.get_assignees_from_project(slug)
-        return project_service.to_schema(data=users, total=len(users), schema_type=User)
+    async def get_project_assignee_by_slug(
+        self, project_service: ProjectService, user_service: UserService, slug: str
+    ) -> OffsetPagination[UserSchema]:
+        project = await project_service.repository.get_by_slug(slug)
+        if not project:
+            raise NotFoundException("Project not found")
+
+        if not project.teams:
+            return user_service.to_schema(data=[], total=0, schema_type=UserSchema)
+
+        users, total = await project_service.get_project_assignees(slug=slug)
+
+        return user_service.to_schema(data=users, total=total, schema_type=UserSchema)

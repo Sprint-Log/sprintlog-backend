@@ -4,7 +4,6 @@ from typing import Any
 import re
 import unicodedata
 from structlog import getLogger
-
 from litestar.exceptions import NotFoundException
 
 from advanced_alchemy.repository import (
@@ -14,10 +13,8 @@ from advanced_alchemy.service import (
     ModelDictT,
     SQLAlchemyAsyncRepositoryService,
 )
+
 from sqlalchemy import select
-
-from app.lib.exceptions import NotFoundException
-
 from app.lib.plugin import ProjectPlugin
 from app.db import models as m
 
@@ -45,6 +42,21 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
 
         self.model_type = self.repository.model_type
 
+    async def get_project_assignees(self, slug: str) -> tuple[list[m.User], int]:
+        project = await self.repository.get_by_slug(slug)
+        if not project:
+            raise NotFoundException("Project not found")
+
+        team_ids = [team.id for team in project.teams]
+
+        stmt = select(m.TeamMember).where(m.TeamMember.team_id.in_(team_ids))
+
+        result = await self.repository.session.execute(stmt)
+        team_members = result.scalars().all()
+        users = [member.user for member in team_members if member.user]
+
+        return users, len(users)
+
     async def create(
         self,
         data: ModelDictT[m.Project] | dict[str, Any],
@@ -68,6 +80,7 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
         data["slug"] = slug
 
         data = await super().to_model(data, "create")
+        self.repository.session
 
         for plugin in self.plugins:
             data = await plugin.before_create(data=data)
@@ -82,24 +95,6 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
             await plugin.after_create(data=obj)
 
         return obj
-
-    async def get_assignees_from_project(self, slug: str) -> list[m.User]:
-
-        project = await self.repository.get_by_slug(slug)
-        if not project:
-            raise NotFoundException("Project not found")
-
-        team_ids = [team.id for team in project.teams]
-
-        async with self.repository.session() as session:
-            statement = (
-                select(m.User)
-                .join(m.TeamMember, m.TeamMember.user_id == m.User.id)
-                .where(m.TeamMember.team_id.in_(team_ids))
-                .distinct()
-            )
-            result = await session.execute(statement)
-            return result.scalars().all()
 
     async def update(
         self,
