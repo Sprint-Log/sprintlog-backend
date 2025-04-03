@@ -12,6 +12,7 @@ from .enums import ProjectStatus
 
 if TYPE_CHECKING:
     from .user import User
+    from .team import Team
 
 
 __all__ = ["Project"]
@@ -45,6 +46,11 @@ class Project(UUIDAuditBase, SlugKey):
         uselist=False,
         lazy="joined",
         info=dto_field(Mark.PRIVATE),
+    )
+    team_id: Mapped[UUID] = mapped_column(ForeignKey("team.id"), nullable=True)
+    team: Mapped["Team"] = relationship(
+        "Team",
+        lazy="joined",
     )
 
     def __init__(self, **kw: Any) -> None:
