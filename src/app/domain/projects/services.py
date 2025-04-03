@@ -1,7 +1,12 @@
 from __future__ import annotations
+
 from typing import Any
 import re
 import unicodedata
+from structlog import getLogger
+
+from litestar.exceptions import NotFoundException
+
 from advanced_alchemy.repository import (
     SQLAlchemyAsyncSlugRepository,
 )
@@ -9,25 +14,26 @@ from advanced_alchemy.service import (
     ModelDictT,
     SQLAlchemyAsyncRepositoryService,
 )
+from sqlalchemy import select
+
+from app.lib.exceptions import NotFoundException
 
 from app.lib.plugin import ProjectPlugin
-
-from app.db.models import Project
-from structlog import getLogger
+from app.db import models as m
 
 __all__ = ["ProjectService"]
 
 logger = getLogger()
 
 
-class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
+class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
     """Handles database operations for projects."""
 
-    class ProjectRepository(SQLAlchemyAsyncSlugRepository[Project]):
+    class ProjectRepository(SQLAlchemyAsyncSlugRepository[m.Project]):
         """Project SQLAlchemy Repository."""
 
         slug_field = "slug"
-        model_type = Project
+        model_type = m.Project
 
     repository_type = ProjectRepository
 
@@ -41,12 +47,12 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
 
     async def create(
         self,
-        data: ModelDictT[Project] | dict[str, Any],
+        data: ModelDictT[m.Project] | dict[str, Any],
         auto_commit: bool | None = None,
         auto_expunge: bool | None = None,
         auto_refresh: bool | None = None,
         error_messages: dict[str, str] | None = None,
-    ) -> Project:
+    ) -> m.Project:
         # Call the before_create hook for each registered plugin
         if not isinstance(data, dict):
             data = data.to_dict()
@@ -69,7 +75,7 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
         if len(self.plugins) == 0:
             data.plugin_meta = {}
 
-        obj: Project = await super().create(data)
+        obj: m.Project = await super().create(data)
 
         # Call the after_create hook for each registered plugin
         for plugin in self.plugins:
@@ -77,11 +83,29 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
 
         return obj
 
+    async def get_assignees_from_project(self, slug: str) -> list[m.User]:
+
+        project = await self.repository.get_by_slug(slug)
+        if not project:
+            raise NotFoundException("Project not found")
+
+        team_ids = [team.id for team in project.teams]
+
+        async with self.repository.session() as session:
+            statement = (
+                select(m.User)
+                .join(m.TeamMember, m.TeamMember.user_id == m.User.id)
+                .where(m.TeamMember.team_id.in_(team_ids))
+                .distinct()
+            )
+            result = await session.execute(statement)
+            return result.scalars().all()
+
     async def update(
         self,
-        data: ModelDictT[Project],
+        data: ModelDictT[m.Project],
         item_id: Any = None,
-    ) -> Project:
+    ) -> m.Project:
         # Call the before_update hook for each registered plugin
         old_data = await self.repository.get(item_id)
         data = await super().to_model(data, "update")
@@ -107,14 +131,13 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[Project]):
     async def delete(
         self,
         item_id: Any,
-    ) -> Project:
-        # Call the before_delete hook for each registered plugin
+    ) -> m.Project:
+
         for plugin in self.plugins:
             await plugin.before_delete(item_id=item_id)
 
-        obj: Project = await super().delete(item_id=item_id)
+        obj: m.Project = await super().delete(item_id=item_id)
 
-        # Call the after_delete hook for each registered plugin
         for plugin in self.plugins:
             await plugin.after_delete(data=obj)
 

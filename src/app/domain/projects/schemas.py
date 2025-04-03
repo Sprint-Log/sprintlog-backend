@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 from uuid import UUID
-from datetime import date
+from datetime import date, datetime
 from app.db.models.enums import ProjectStatus
 from app.lib.schema import CamelizedBaseStruct
 from app.domain.teams.schemas import Team
@@ -38,6 +38,8 @@ class Project(CamelizedBaseStruct):
     description: str
     start_date: date
     end_date: date
+    created_at: datetime
+    updated_at: datetime
     pin: bool = False
     labels: list[str] = []
     documents: list[str] = []
@@ -71,8 +73,8 @@ class ProjectUpdate(CamelizedBaseStruct):
     owner: str | None = None
     owner_id: UUID | None = None
     is_archived: bool = False
-    status: Optional[ProjectStatus] = ProjectStatus.NOT_STARTED
     team_ids: list[str] = []
+    status: Optional[ProjectStatus] = ProjectStatus.NOT_STARTED
 
 
 class ProjectTeamModify(CamelizedBaseStruct):

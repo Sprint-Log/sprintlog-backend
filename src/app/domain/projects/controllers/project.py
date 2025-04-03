@@ -17,8 +17,9 @@ from app.domain.teams.services import TeamService
 
 from app.domain.projects.dependencies import provide_project_service
 from app.domain.projects.services import ProjectService
-from app.domain.projects.schemas import ProjectCreate, Project, ProjectStatusUpdate, ProjectUpdate
 from app.domain.projects import urls
+from app.domain.projects.schemas import ProjectCreate, Project, ProjectStatusUpdate, ProjectUpdate
+from app.domain.accounts.schemas import User
 
 from app.lib.deps import create_filter_dependencies, create_service_dependencies
 
@@ -130,11 +131,34 @@ class ProjectController(Controller):
         data: ProjectUpdate,
         current_user: m.User,
         project_service: ProjectService,
+        teams_service: TeamService,
         id: UUID,
     ) -> Project:
         """Update an Model."""
-        data.owner_id = current_user.id
-        project_obj = await project_service.update(item_id=id, data=data)
+
+        project_obj = await project_service.get_one_or_none(id=id)
+
+        if project_obj is None:
+            raise NotFoundException(detail="Project Not found!", status_code=409)
+
+        updated_project = data.to_dict()
+        latest_team_ids = set(updated_project.pop("team_ids"))
+
+        project_obj = await project_service.update(item_id=id, data=updated_project)
+
+        latest_teams: list[m.Team] = []
+
+        for team_id in latest_team_ids:
+
+            new_team = await teams_service.get_one_or_none(id=team_id)
+
+            if new_team is None:
+                raise NotFoundException(detail="Team Not found!", status_code=409)
+
+            latest_teams.append(new_team)
+
+        project_obj.teams = latest_teams
+
         return project_service.to_schema(project_obj, schema_type=Project)
 
     @patch(urls.PROJECT_STATUS_UPDATE, guards=[requires_superuser])
@@ -158,3 +182,8 @@ class ProjectController(Controller):
         project_obj = await project_service.get_one_or_none(id=id)
         if project_obj:
             await project_service.update(item_id=id, data={"is_archived": True})
+
+    @get(urls.PROJECT_ASSIGNEE, guards=[requires_superuser])
+    async def get_project_assignee_by_slug(self, project_service: ProjectService, slug: str) -> OffsetPagination[User]:
+        users = await project_service.get_assignees_from_project(slug)
+        return project_service.to_schema(data=users, total=len(users), schema_type=User)

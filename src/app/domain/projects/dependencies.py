@@ -9,6 +9,8 @@ import app.plugins
 from app.config.base import get_settings
 from app.domain.projects.services import ProjectService
 from app.lib.plugin import ProjectPlugin
+from sqlalchemy.orm import selectinload
+from app.db import models as m
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
@@ -21,9 +23,8 @@ logger = get_logger()
 __all__ = ("provide_project_service",)
 
 
-async def provide_project_service(
-    db_session: AsyncSession,
-) -> AsyncGenerator[ProjectService, None]:
+async def provide_project_service(db_session: AsyncSession) -> AsyncGenerator[ProjectService, None]:
+    # Load plugins
     plugins = []
     for _, name, _ in pkgutil.iter_modules(list(app.plugins.__path__)):
         logger.info(f"checking plugin from project {name}")
@@ -36,8 +37,9 @@ async def provide_project_service(
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:
                 plugins.append(obj())
-    """Construct repository and ProjectService objects for the request."""
-    async with ProjectService.new(session=db_session) as service:
+
+    # Create the service
+    async with ProjectService.new(session=db_session, load=[selectinload(m.Project.teams)]) as service:
         service.plugins = set(plugins)
         try:
             yield service
