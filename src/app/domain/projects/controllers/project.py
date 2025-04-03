@@ -108,15 +108,21 @@ class ProjectController(Controller):
     @get(urls.PROJECT_DETAIL)
     async def get_project(self, project_service: ProjectService, id: UUID) -> Project:
         """Get Model by ID."""
-        project_obj = await project_service.get(id)
-
+        project_obj = await project_service.get_one_or_none(id=id)
+        if project_obj is None:
+            raise NotFoundException(detail="Project not found!", status_code=200)
+        logger.info("Project")
+        logger.info(project_obj.to_dict())
         return project_service.to_schema(project_obj, schema_type=Project)
 
     @get(urls.PROJECT_DETAIL_BY_SLUG)
     async def get_project_by_slug(self, project_service: ProjectService, slug: str) -> Project:
-        """Get Model by ID."""
+        """Get Model by slug."""
+        logger.info("It is indeed in a slug")
         project_obj = await project_service.repository.get_by_slug(slug)
-        return project_service.to_schema(project_obj, schema_type=Project)
+        if project_obj:
+            return project_service.to_schema(project_obj, schema_type=Project)
+        raise NotFoundException(detail="Project not found!", status_code=200)
 
     @put(urls.PROJECT_UPDATE, guards=[requires_superuser])
     async def update_project(

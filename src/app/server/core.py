@@ -62,14 +62,14 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.config import constants, get_settings
         from app.db import models as m
         from app.domain.accounts import signals as account_signals
-        from app.domain.accounts.controllers import AccessController, UserController 
+        from app.domain.accounts.controllers import AccessController, UserController
         from app.domain.accounts.deps import provide_user
         from app.domain.accounts.guards import auth as jwt_auth
         from app.domain.accounts.services import UserService
         from app.domain.system.controllers import SystemController
         from app.domain.tags.controllers import TagController
 
-        from app.domain.projects.controllers import ProjectController
+        from app.domain.projects.controllers import ProjectController, ProjectTeamController
 
         from app.domain.sprintlogs.controllers import SprintLogController
         from app.domain.teams import signals as team_signals
@@ -119,6 +119,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 TagController,
                 WebController,
                 ProjectController,
+                ProjectTeamController,
                 SprintLogController,
                 RoomController,
             ],

@@ -32,6 +32,7 @@ class ProjectCreate(CamelizedBaseStruct):
 
 
 class Project(CamelizedBaseStruct):
+    id: UUID
     slug: str
     name: str
     description: str
@@ -47,13 +48,13 @@ class Project(CamelizedBaseStruct):
     owner_id: UUID | None = None
     is_archived: bool = False
     status: Optional[ProjectStatus] = ProjectStatus.NOT_STARTED
-    teams: list[Team] = []
+    teams: Optional[list[Team]] = None
 
 
 class ProjectUpdate(CamelizedBaseStruct):
     """Schema used when updating an existing Project."""
 
-    id: str
+    id: UUID
     slug: str
     name: str
     start_date: date
@@ -72,6 +73,11 @@ class ProjectUpdate(CamelizedBaseStruct):
     is_archived: bool = False
     status: Optional[ProjectStatus] = ProjectStatus.NOT_STARTED
     team_ids: list[str] = []
+
+
+class ProjectTeamModify(CamelizedBaseStruct):
+    team_id: str
+    project_id: str
 
 
 class ProjectStatusUpdate(CamelizedBaseStruct):
