@@ -14,6 +14,7 @@ from app.domain.accounts.deps import provide_user_service
 from app.domain.accounts.guards import auth, requires_active_user
 from app.domain.accounts.schemas import AccountLogin, AccountRegister, User
 from structlog import get_logger
+from litestar.response import Redirect
 
 if TYPE_CHECKING:
     from litestar.security.jwt import OAuth2Login
@@ -60,3 +61,10 @@ class AccessController(Controller):
     async def profile(self, current_user: m.User, users_service: UserService) -> User:
         """User Profile."""
         return users_service.to_schema(current_user, schema_type=User)
+
+    @post(operation_id="AccountLogout", path=urls.ACCOUNT_LOGOUT, guards=[requires_active_user])
+    async def logout(self) -> Redirect:
+        """Logout endpoint that clears the auth token cookie and redirects to login."""
+        response = Redirect(path="/login")
+        response.set_cookie(key="token", value="", path="/", httponly=True, max_age=0)
+        return response
