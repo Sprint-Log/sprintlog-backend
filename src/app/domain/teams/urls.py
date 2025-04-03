@@ -10,3 +10,5 @@ TEAM_MODIFY_MEMBER = "/api/teams/{team_id:uuid}/members/modify"
 TEAM_REMOVE_MEMBER = "/api/teams/{team_id:uuid}/members/remove"
 TEAM_SLUG = "/api/teams/{slug:str}"
 TEAM_STATISTICS_SLUG = "/api/teams/statistics/{slug:str}"
+
+TEAM_MEMBER_ROLE = "/api/teams/members/{member_id:uuid}"

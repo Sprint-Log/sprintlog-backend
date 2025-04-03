@@ -178,3 +178,5 @@ db.duckdb
 local.duckdb
 
 requirements.txt
+
+src/app/db/user_profile/*

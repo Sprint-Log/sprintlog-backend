@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .team_invitation import TeamInvitation
     from .team_member import TeamMember
     from .project import Project
+    from .project_team import ProjectTeam
 
 
 class Team(UUIDAuditBase, SlugKey):
@@ -50,8 +51,8 @@ class Team(UUIDAuditBase, SlugKey):
         passive_deletes=True,
     )
     projects: Mapped[list[Project]] = relationship(
-        back_populates="team",
-        cascade="all, delete",
+        secondary="project_team",
+        back_populates="teams",
         passive_deletes=True,
         lazy="selectin",
     )

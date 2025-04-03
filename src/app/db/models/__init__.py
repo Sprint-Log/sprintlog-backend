@@ -9,6 +9,7 @@ from .project import Project
 from .sprintLog import SprintLog
 from .audit import Audit
 from .bank_account import BankAccount
+from .project_team import ProjectTeam
 
 __all__ = (
     "Tag",
@@ -21,4 +22,5 @@ __all__ = (
     "SprintLog",
     "Audit",
     "BankAccount",
+    "ProjectTeam",
 )
