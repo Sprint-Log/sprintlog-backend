@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID  # noqa: TC003
 
 import msgspec
 
 from app.db.models.team_member import TeamRoles
 from app.lib.schema import CamelizedBaseStruct
+from app.db.models.enums import ProjectStatus
+from typing import Optional
 
 
 class TeamTag(CamelizedBaseStruct):
@@ -34,15 +36,37 @@ class TeamMemberDetail(CamelizedBaseStruct):
     avatar_url: str | None = None
 
 
+class ProjectTeam(CamelizedBaseStruct):
+    id: UUID
+    slug: str
+    name: str
+    description: str
+    start_date: date
+    end_date: date
+    created_at: datetime
+    updated_at: datetime
+    pin: bool = False
+    labels: list[str] = []
+    documents: list[str] = []
+    sprint_weeks: Optional[int] = 2
+    sprint_amount: Optional[int] = 3
+    sprint_checkup_day: Optional[int] = 1
+    repo_urls: list[str] = []
+    owner_id: UUID | None = None
+    is_archived: bool = False
+    status: Optional[ProjectStatus] = ProjectStatus.NOT_STARTED
+
 class Team(CamelizedBaseStruct):
     id: UUID
     name: str
     slug: str
     created_at: datetime
     updated_at: datetime
+    projects: list[ProjectTeam]
     description: str | None = None
     members: list[TeamMemberDetail] = []
     tags: list[TeamTag] = []
+    
 
 
 class TeamCreate(CamelizedBaseStruct):
