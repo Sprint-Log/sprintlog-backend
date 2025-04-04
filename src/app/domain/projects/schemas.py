@@ -17,6 +17,8 @@ class ProjectCreate(CamelizedBaseStruct):
     slug: str
     name: str
     description: str
+    start_date: date
+    end_date: date
     pin: bool = False
     labels: list[str] = []
     documents: list[str] = []
@@ -56,7 +58,6 @@ class Project(CamelizedBaseStruct):
 class ProjectUpdate(CamelizedBaseStruct):
     """Schema used when updating an existing Project."""
 
-    id: UUID
     name: str
     start_date: date
     end_date: date
