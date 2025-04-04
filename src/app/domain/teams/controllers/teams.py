@@ -5,24 +5,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
 
-from advanced_alchemy.service import FilterTypeT  # noqa: TC002
 from litestar import Controller, delete, get, patch, post
 from litestar.di import Provide
-from sqlalchemy import select
 
 from app.db import models as m
-from app.db.models.team_member import TeamMember as TeamMemberModel
+from app.db.models.enums import Status
 from app.domain.accounts.guards import requires_active_user
-from app.domain.teams import urls
-from app.domain.teams.guards import requires_team_admin, requires_team_membership
-from app.domain.teams.schemas import Team, TeamCreate, TeamUpdate, TeamStatistics
-from app.domain.teams.services import TeamService
-from app.lib.deps import create_service_dependencies
 from app.domain.sprintlogs.dependencies import provide_sprintlog_service
 from app.domain.sprintlogs.service import SprintLogService
-from app.db.models.enums import Status
+from app.domain.teams import urls
+from app.domain.teams.guards import requires_team_admin, requires_team_membership
+from app.domain.teams.schemas import Team, TeamCreate, TeamStatistics, TeamUpdate
+from app.domain.teams.services import TeamService
+from app.lib.deps import create_service_dependencies
 
 if TYPE_CHECKING:
+    from advanced_alchemy.filters import FilterTypes
     from advanced_alchemy.service.pagination import OffsetPagination
     from litestar.params import Dependency, Parameter
 
@@ -35,7 +33,16 @@ class TeamController(Controller):
         TeamService,
         key="teams_service",
         load=[m.Team.tags, m.Team.members],
-        filters={"id_filter": UUID},
+        filters={
+            "id_filter": UUID,
+            "search": "name",
+            "pagination_type": "limit_offset",
+            "pagination_size": 20,
+            "created_at": True,
+            "updated_at": True,
+            "sort_field": "name",
+            "sort_order": "asc",
+        },
     )
 
     guards = [requires_active_user]
@@ -45,7 +52,7 @@ class TeamController(Controller):
         self,
         teams_service: TeamService,
         current_user: m.User,
-        filters: Annotated[list[FilterTypeT], Dependency(skip_validation=True)],
+        filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> OffsetPagination[Team]:
         """List teams that your account can access.."""
         if not teams_service.can_view_all(current_user):
