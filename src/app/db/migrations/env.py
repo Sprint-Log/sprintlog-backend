@@ -8,7 +8,9 @@ from alembic import context
 from alembic.autogenerate import rewriter
 from alembic.operations import ops
 from sqlalchemy import Column, pool
-from sqlalchemy.ext.asyncio import AsyncEngine, async_engine_from_config
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncEngine, async_engine_from_config
+
+from app.db.models.team import Team
 
 if TYPE_CHECKING:
     from advanced_alchemy.alembic.commands import AlembicCommandConfig
@@ -106,6 +108,29 @@ def do_run_migrations(connection: Connection) -> None:
         context.run_migrations()
 
 
+async def create_internal_team(connection: AsyncConnection) -> None:
+    """Add a default internal team"""
+    from sqlalchemy import orm
+
+    def sync_create_team(sync_connection: Connection) -> None:
+        session = orm.Session(bind=sync_connection)
+
+        existing_team = session.query(Team).filter_by(name="Internal").first()
+        if not existing_team:
+            internal_team = Team(
+                name="Internal",
+                slug="internal",
+                description="Default internal team of Hexcode members.",
+                is_active=True,
+            )
+            session.add(internal_team)
+
+        session.commit()
+        session.close()
+
+    await connection.run_sync(sync_create_team)
+
+
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
@@ -133,6 +158,7 @@ async def run_migrations_online() -> None:
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
+        await create_internal_team(connection)
 
     await connectable.dispose()
 

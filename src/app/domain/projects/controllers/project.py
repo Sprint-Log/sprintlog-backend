@@ -91,6 +91,8 @@ class ProjectController(Controller):
         data.owner_id = current_user.id
         team_ids = data.team_ids
         teams = []
+        internal_team = await teams_service.get_one_or_none(slug="internal")
+        teams.append(internal_team)
         for team_id in team_ids:
             team_obj = await teams_service.get_one_or_none(id=team_id)
 
