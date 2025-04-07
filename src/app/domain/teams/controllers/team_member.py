@@ -4,19 +4,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from structlog import getLogger
 from litestar import Controller, post, put
 from litestar.di import Provide
-from litestar.exceptions import NotFoundException
 from litestar.params import Parameter
-from sqlalchemy.orm import contains_eager, selectinload
-from structlog import getLogger
+from litestar.exceptions import NotFoundException
 
 from app.db import models as m
+
 from app.domain.accounts.deps import provide_user_service
+from app.domain.teams.deps import provide_team_member_service, provide_team_service
+
 from app.domain.teams import urls
+
+from app.domain.teams.guards import requires_team_ownership
 from app.domain.teams.schemas import RemoveTeamMember, Team, TeamMember, TeamMemberModify, TeamMemberRole
 from app.domain.teams.services import TeamMemberService, TeamService
-from app.lib.deps import create_service_provider
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -31,16 +34,11 @@ class TeamMemberController(Controller):
 
     tags = ["Team Members"]
     dependencies = {
-        "teams_service": create_service_provider(TeamService, load=[m.Team.tags, m.Team.members]),
-        "team_members_service": create_service_provider(
-            TeamMemberService,
-            load=[
-                selectinload(m.TeamMember.team).options(contains_eager(m.Team.tags)),
-                selectinload(m.TeamMember.user),
-            ],
-        ),
+        "teams_service": Provide(provide_team_service),
+        "team_members_service": Provide(provide_team_member_service),
         "users_service": Provide(provide_user_service),
     }
+    guards = [requires_team_ownership]
 
     @post(operation_id="AddMemberToTeam", path=urls.TEAM_ADD_MEMBER)
     async def add_member_to_team(

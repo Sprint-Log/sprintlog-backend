@@ -10,14 +10,15 @@ from litestar.di import Provide
 
 from app.db import models as m
 from app.db.models.enums import Status
-from app.domain.accounts.guards import requires_active_user
 from app.domain.sprintlogs.dependencies import provide_sprintlog_service
 from app.domain.sprintlogs.service import SprintLogService
 from app.domain.teams import urls
-from app.domain.teams.guards import requires_team_admin, requires_team_membership
+from app.domain.accounts.guards import requires_active_user
+from app.domain.teams.guards import requires_team_membership, requires_team_ownership
 from app.domain.teams.schemas import Team, TeamCreate, TeamStatistics, TeamUpdate
 from app.domain.teams.services import TeamService
-from app.lib.deps import create_service_dependencies
+from app.domain.teams.deps import provide_team_service
+from app.lib.deps import create_filter_dependencies
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
@@ -29,13 +30,13 @@ class TeamController(Controller):
     """Teams."""
 
     tags = ["Teams"]
-    dependencies = {"sprintlog_service": Provide(provide_sprintlog_service)} | create_service_dependencies(
-        TeamService,
-        key="teams_service",
-        load=[m.Team.tags, m.Team.members],
-        filters={
+    dependencies = {
+        "sprintlog_service": Provide(provide_sprintlog_service),
+        "teams_service": Provide(provide_team_service),
+    } | create_filter_dependencies(
+        {
             "id_filter": UUID,
-            "search": "name",
+            "search": "name, description",
             "pagination_type": "limit_offset",
             "pagination_size": 20,
             "created_at": True,
@@ -45,9 +46,7 @@ class TeamController(Controller):
         },
     )
 
-    guards = [requires_active_user]
-
-    @get(component="team/list", operation_id="ListTeams", path=urls.TEAM_LIST)
+    @get(component="team/list", operation_id="ListTeams", path=urls.TEAM_LIST, guards=[requires_active_user])
     async def list_teams(
         self,
         teams_service: TeamService,
@@ -55,7 +54,8 @@ class TeamController(Controller):
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> OffsetPagination[Team]:
         """List teams that your account can access.."""
-        if not teams_service.can_view_all(current_user):
+
+        if not current_user.is_superuser:
             filters.append(
                 m.Team.id.in_(select(TeamMemberModel.team_id).where(TeamMemberModel.user_id == current_user.id)),  # type: ignore[arg-type]
             )
@@ -80,7 +80,7 @@ class TeamController(Controller):
         db_obj = await teams_service.get(team_id)
         return teams_service.to_schema(schema_type=Team, data=db_obj)
 
-    @get(operation_id="GetTeamBySlug", path=urls.TEAM_SLUG)
+    @get(operation_id="GetTeamBySlug", path=urls.TEAM_SLUG, guards=[requires_team_membership])
     async def get_team_by_slug(self, teams_service: TeamService, slug: str) -> Team:
         "Get Project by Slug"
         db_obj = await teams_service.repository.get_by_slug(slug)
@@ -117,7 +117,7 @@ class TeamController(Controller):
             completed_task_count=completed_task,
         )
 
-    @patch(operation_id="UpdateTeam", guards=[requires_team_admin], path=urls.TEAM_UPDATE)
+    @patch(operation_id="UpdateTeam", guards=[requires_team_ownership], path=urls.TEAM_UPDATE)
     async def update_team(
         self,
         data: TeamUpdate,
@@ -131,7 +131,7 @@ class TeamController(Controller):
         )
         return teams_service.to_schema(schema_type=Team, data=db_obj)
 
-    @delete(operation_id="DeleteTeam", guards=[requires_team_admin], path=urls.TEAM_DELETE)
+    @delete(operation_id="DeleteTeam", guards=[requires_team_ownership], path=urls.TEAM_DELETE)
     async def delete_team(
         self,
         teams_service: TeamService,
