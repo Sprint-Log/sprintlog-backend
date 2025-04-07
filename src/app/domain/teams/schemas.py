@@ -62,11 +62,10 @@ class Team(CamelizedBaseStruct):
     slug: str
     created_at: datetime
     updated_at: datetime
-    projects: list[ProjectTeam]
+    projects: list[ProjectTeam] | None = None
     description: str | None = None
     members: list[TeamMemberDetail] = []
     tags: list[TeamTag] = []
-    
 
 
 class TeamCreate(CamelizedBaseStruct):
