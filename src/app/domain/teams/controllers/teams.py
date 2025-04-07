@@ -36,12 +36,12 @@ class TeamController(Controller):
     } | create_filter_dependencies(
         {
             "id_filter": UUID,
-            "search": "name, description",
+            "search": "name,description",
             "pagination_type": "limit_offset",
             "pagination_size": 20,
             "created_at": True,
             "updated_at": True,
-            "sort_field": "name",
+            "sort_field": "created_at",
             "sort_order": "asc",
         },
     )

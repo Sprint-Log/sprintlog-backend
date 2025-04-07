@@ -198,10 +198,19 @@ class UserController(Controller):
         if user_obj is None:
             raise NotFoundException("User not found!")
 
-        if current_user.id != user_id and not current_user.is_superuser:
-            raise PermissionDeniedException("Only allow superuser to proceed this action!")
+        if current_user.id != user_id:
+            if not current_user.is_superuser:
+                raise PermissionDeniedException("Only allow superuser to proceed this action!")
+            auth_email = current_user.email
+        else:
+            auth_email = user_obj.email
 
-        await user_service.authenticate(username=user_obj.email, password=data.current_password)
+        logger.info("Emial")
+        logger.info(auth_email)
+        logger.info("password")
+        logger.info(data.current_password)
+
+        await user_service.authenticate(username=auth_email, password=data.current_password)
 
         await user_service.update_password(data=data.to_dict(), db_obj=user_obj)
         return Response(
