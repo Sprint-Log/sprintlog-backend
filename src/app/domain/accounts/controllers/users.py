@@ -70,7 +70,7 @@ class UserController(Controller):
         results, total = await user_service.list_and_count(*default_filters)
         return user_service.to_schema(data=results, total=total, schema_type=User, filters=filters)
 
-    @get(operation_id="GetUser", path=urls.ACCOUNT_DETAIL, guards=[requires_superuser])
+    @get(operation_id="GetUser", path=urls.ACCOUNT_DETAIL, guards=[requires_active_user])
     async def get_user(
         self,
         user_service: UserService,
@@ -89,7 +89,7 @@ class UserController(Controller):
         self,
         user_service: UserService,
         data: Annotated[UploadFile, Body(media_type=RequestEncodingType.MULTI_PART)],
-        current_user: m.User,
+        user_id: UUID,
     ) -> User:
         content = data.file.read()
         """Upload a user profile image and create a new user."""
@@ -100,16 +100,22 @@ class UserController(Controller):
         with open(file_path, "wb") as f:
             f.write(content)
 
-            user = await user_service.update(item_id=current_user.id, data={"avatar_url": file_path})
+            user = await user_service.update(item_id=user_id, data={"avatar_url": file_path})
         return user_service.to_schema(user, schema_type=User)
 
     @get(operation_id="getProfile", path=urls.ACCOUNT_PROFILE_IMG, guards=[requires_active_user])
-    async def get_profile(self, current_user: m.User) -> File | None:
-        if current_user.avatar_url:
-            extension = mimetypes.guess_extension(current_user.avatar_url)
-            mime_type = mimetypes.guess_type(current_user.avatar_url)[0]
-            file_name = current_user.avatar_url.split("/")[-1]
-            with open(current_user.avatar_url, "rb") as f:
+    async def get_profile(self, user_service: UserService, user_id: UUID) -> File | None:
+
+        user_obj = await user_service.get_one_or_none(id=user_id)
+
+        if user_obj is None:
+            raise NotFoundException("User not found!")
+
+        if user_obj.avatar_url:
+            extension = mimetypes.guess_extension(user_obj.avatar_url)
+            mime_type = mimetypes.guess_type(user_obj.avatar_url)[0]
+            file_name = user_obj.avatar_url.split("/")[-1]
+            with open(user_obj.avatar_url, "rb") as f:
                 content = f.read()
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=f".{extension}") as tmp_file:
