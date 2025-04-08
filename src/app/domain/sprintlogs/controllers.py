@@ -14,7 +14,8 @@ from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
 from litestar.params import Dependency
 
-from app.domain.teams.guards import requires_team_ownership, requires_team_membership
+from app.domain.sprintlogs.guards import requires_project_owner, requires_project_assignee
+from app.domain.accounts.guards import requires_active_user
 from app.domain.sprintlogs.dependencies import provide_sprintlog_service
 
 from app.db.models.enums import (
@@ -77,7 +78,7 @@ class SprintLogController(Controller):
     active_project_route = "/projects/user/{user_id:uuid}"
     slug_route = "{slug:str}"
 
-    @get(urls.SPRINTLOG_LIST, guards=[requires_team_membership])
+    @get(urls.SPRINTLOG_LIST, guards=[requires_project_assignee])
     async def get_sprintlogs(
         self,
         sprintlog_service: SprintLogService,
@@ -85,7 +86,7 @@ class SprintLogController(Controller):
     ) -> Sequence[m.SprintLog]:
         return await sprintlog_service.list(*filters)
 
-    @post(urls.SPRINTLOG_CREATE, guards=[requires_team_ownership])
+    @post(urls.SPRINTLOG_CREATE, guards=[requires_project_owner])
     async def create_sprintlog(
         self,
         data: m.SprintLog,
@@ -98,11 +99,11 @@ class SprintLogController(Controller):
             data.assignee_id = current_user.id
         return await sprintlog_service.create(data)
 
-    @get(urls.SPRINTLOG_DETAIL, guards=[requires_team_membership])
+    @get(urls.SPRINTLOG_DETAIL, guards=[requires_project_assignee])
     async def retrieve(self, sprintlog_service: SprintLogService, row_id: UUID) -> m.SprintLog:
         return await sprintlog_service.get(row_id)
 
-    @put(urls.SPRINTLOG_UPDATE, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_UPDATE, guards=[requires_project_owner])
     async def update(
         self,
         data: m.SprintLog,
@@ -117,11 +118,11 @@ class SprintLogController(Controller):
             data.assignee_id = current_user.id
         return await sprintlog_service.update(data, row_id, old_data=old_data)
 
-    @delete(urls.SPRINTLOG_DELETE, guards=[requires_team_ownership], status_code=HTTP_200_OK)
+    @delete(urls.SPRINTLOG_DELETE, guards=[requires_project_owner], status_code=HTTP_200_OK)
     async def delete(self, sprintlog_service: SprintLogService, row_id: UUID) -> m.SprintLog:
         return await sprintlog_service.delete(row_id)
 
-    @get(urls.SPRINTLOG_BACKLOG_TASK_BY_PROJECT, guards=[requires_team_membership])
+    @get(urls.SPRINTLOG_BACKLOG_TASK_BY_PROJECT, guards=[requires_active_user])
     async def get_sprintlog_backlog_task_by_project(
         self,
         sprintlog_service: SprintLogService,
@@ -142,7 +143,7 @@ class SprintLogController(Controller):
             offset=limit_offset.offset,
         )
 
-    @get(urls.SPRINTLOG_DETAIL_BY_SLUG, guards=[requires_team_membership])
+    @get(urls.SPRINTLOG_DETAIL_BY_SLUG, guards=[requires_project_assignee])
     async def get_sprintlog_by_slug(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         obj: m.SprintLog | None = await sprintlog_service.repository.get_by_slug(slug)
         if obj:
@@ -152,7 +153,7 @@ class SprintLogController(Controller):
             detail=f"Sprintlog.slug {slug} not available",
         )
 
-    @get(urls.SPRINTLOG_PROJECT_BY_USER, guards=[requires_team_membership])
+    @get(urls.SPRINTLOG_PROJECT_BY_USER, guards=[requires_active_user])
     async def get_project_by_user(
         self, sprintlog_service: SprintLogService, user_id: UUID, limit_offset: LimitOffset
     ) -> OffsetPagination[ActiveProject]:
@@ -167,17 +168,17 @@ class SprintLogController(Controller):
             offset=limit_offset.offset,
         )
 
-    @get(urls.SPRINTLOG_TASK_BY_USER, guards=[requires_team_membership])
+    @get(urls.SPRINTLOG_TASK_BY_USER, guards=[requires_project_assignee])
     async def retrieve_tasks_by_user(self, sprintlog_service: SprintLogService, user_id: UUID) -> Sequence[m.SprintLog]:
         return await sprintlog_service.list(assignee_id=user_id)
 
-    @put(urls.SPRINTLOG_PROGRESS_UP, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_PROGRESS_UP, guards=[requires_project_owner])
     async def increase_progress(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         return await self._update_progress(sprintlog_service, slug, 1)
 
     @put(
         urls.SPRINTLOG_PROGRESS_COMPLETE,
-        guards=[requires_team_ownership],
+        guards=[requires_project_owner],
     )
     async def toggle_complete(
         self, sprintlog_service: SprintLogService, slug: str, current_user: m.User
@@ -186,27 +187,27 @@ class SprintLogController(Controller):
             return await self._toggle_completion(sprintlog_service, slug, authorized=True)
         return await self._toggle_completion(sprintlog_service, slug)
 
-    @put(urls.SPRINTLOG_PROGRESS_DOWN, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_PROGRESS_DOWN, guards=[requires_project_owner])
     async def decrease_progress(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         return await self._update_progress(sprintlog_service, slug, -1)
 
-    @put(urls.SPRINTLOG_PROGRESS_CIRCLE, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_PROGRESS_CIRCLE, guards=[requires_project_owner])
     async def circle_progress(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         return await self._circle_progress(sprintlog_service, slug)
 
-    @put(urls.SPRINTLOG_PRIORITY_CIRCLE, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_PRIORITY_CIRCLE, guards=[requires_project_owner])
     async def circle_priority(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         return await self._circle_priority(sprintlog_service, slug, 0)
 
-    @put(urls.SPRINTLOG_STATUS_CIRCLE, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_STATUS_CIRCLE, guards=[requires_project_owner])
     async def circle_status(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         return await self.update_status(sprintlog_service, slug, 0)
 
-    @put(urls.SPRINTLOG_SWITCH_TASK, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_SWITCH_TASK, guards=[requires_project_owner])
     async def switch_to_backlog(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         return await self._update_type(sprintlog_service, slug, "task")
 
-    @put(urls.SPRINTLOG_SWITCH_BACKLOG, guards=[requires_team_ownership])
+    @put(urls.SPRINTLOG_SWITCH_BACKLOG, guards=[requires_project_owner])
     async def switch_to_task(self, sprintlog_service: SprintLogService, slug: str) -> m.SprintLog:
         return await self._update_type(sprintlog_service, slug, "backlog")
 

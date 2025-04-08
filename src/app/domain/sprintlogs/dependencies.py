@@ -5,16 +5,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, AsyncGenerator
 import pkgutil
 
+from structlog import get_logger
 from sqlalchemy import select, case
-from sqlalchemy.orm import joinedload
 
 import app.plugins
 from app.config.base import get_settings
 from app.lib.plugin import SprintlogPlugin
 from app.domain.sprintlogs.service import SprintLogService
 from app.db import models as m
-from structlog import get_logger
 from app.db.models.enums import Priority
+from sqlalchemy.orm import selectinload
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -49,10 +49,10 @@ async def provide_sprintlog_service(
                 plugins.append(obj())
     async with SprintLogService.new(
         session=db_session,
-        statement=select(m.SprintLog)
-        .order_by(priority_order.desc(), m.SprintLog.created_at.desc())
-        .options(joinedload(m.SprintLog.project)),
+        load=[selectinload(m.SprintLog.project)],
+        statement=select(m.SprintLog).order_by(priority_order.desc(), m.SprintLog.created_at.desc()),
     ) as service:
+
         service.plugins = set(plugins)
         try:
             yield service
