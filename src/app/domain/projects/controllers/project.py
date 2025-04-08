@@ -115,14 +115,11 @@ class ProjectController(Controller):
         project_obj = await project_service.get_one_or_none(id=id)
         if project_obj is None:
             raise NotFoundException(detail="Project not found!", status_code=200)
-        logger.info("Project")
-        logger.info(project_obj.to_dict())
         return project_service.to_schema(project_obj, schema_type=Project)
 
     @get(urls.PROJECT_DETAIL_BY_SLUG)
     async def get_project_by_slug(self, project_service: ProjectService, slug: str) -> Project:
         """Get Model by slug."""
-        logger.info("It is indeed in a slug")
         project_obj = await project_service.repository.get_by_slug(slug)
         if project_obj:
             return project_service.to_schema(project_obj, schema_type=Project)

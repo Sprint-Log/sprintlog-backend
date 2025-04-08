@@ -79,8 +79,6 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
         is_unique = await self._is_slug_unique(slug=slug)
         if not is_unique:
             raise ValueError("Slug is not unique")
-        logger.info(f"slug: {slug}")
-        logger.info(f"is unique: {is_unique}")
         data["slug"] = slug
 
         data = await super().to_model(data, "create")

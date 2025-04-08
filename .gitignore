@@ -179,4 +179,4 @@ local.duckdb
 
 requirements.txt
 
-/src/app/db/user_profile/
+/src/app/db/profiles/

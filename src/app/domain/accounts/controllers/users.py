@@ -24,7 +24,8 @@ from app.db.models.enums import PaymentMethod
 from structlog import get_logger
 from app.db import models as m
 from advanced_alchemy.filters import OrderBy
-
+from app.config import get_settings
+from pathlib import Path
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
@@ -32,6 +33,8 @@ if TYPE_CHECKING:
     from app.domain.accounts.services import UserService
 
 logger = get_logger()
+settings = get_settings()
+profile_base_dir = settings.app.PROFILE_BASE_DIR
 
 
 class UserController(Controller):
@@ -90,8 +93,9 @@ class UserController(Controller):
     ) -> User:
         content = data.file.read()
         """Upload a user profile image and create a new user."""
-        os.makedirs(os.path.join(os.path.dirname(__file__), "../../../db/user_profile"), exist_ok=True)
-        file_path = os.path.join(os.path.dirname(__file__), "../../../db/user_profile/", data.filename)
+        Path(profile_base_dir).mkdir(parents=True, exist_ok=True)
+
+        file_path = os.path.join(profile_base_dir, data.filename)
 
         with open(file_path, "wb") as f:
             f.write(content)
@@ -204,11 +208,6 @@ class UserController(Controller):
             auth_email = current_user.email
         else:
             auth_email = user_obj.email
-
-        logger.info("Emial")
-        logger.info(auth_email)
-        logger.info("password")
-        logger.info(data.current_password)
 
         await user_service.authenticate(username=auth_email, password=data.current_password)
 

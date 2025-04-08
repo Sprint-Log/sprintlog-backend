@@ -29,10 +29,9 @@ async def provide_project_service(db_session: AsyncSession) -> AsyncGenerator[Pr
     for _, name, _ in pkgutil.iter_modules(list(app.plugins.__path__)):
         logger.info(f"checking plugin from project {name}")
         if name not in settings.plugin.ENABLED:
-            logger.info(f"skipped {name} plugin in projects")
             continue
         module = __import__(f"{app.plugins.__name__}.{name}", fromlist=["*"])
-        logger.info(f"module name: {module}")
+
         for obj_name in dir(module):
             obj = getattr(module, obj_name)
             if isinstance(obj, type) and issubclass(obj, ProjectPlugin) and obj is not ProjectPlugin:

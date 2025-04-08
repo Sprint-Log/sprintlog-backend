@@ -40,7 +40,6 @@ class AccessController(Controller):
         data: Annotated[AccountLogin, Body(title="Login", media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Response[OAuth2Login]:
         """Authenticate a user."""
-        logger.info("it reached this thought")
         user = await users_service.authenticate(data.username, data.password)
         return auth.login(str(user.id))
 
