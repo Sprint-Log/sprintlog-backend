@@ -1,26 +1,27 @@
-from contextlib import asynccontextmanager
-from typing import AsyncContextManager
+from collections.abc import AsyncGenerator
+from typing import Any
 
-from litestar import WebSocket, websocket_listener
+from litestar import Controller, get, post
 from litestar.channels import ChannelsPlugin
-from litestar.exceptions import WebSocketDisconnect
+from litestar.response import ServerSentEvent
 
 
-@asynccontextmanager
-async def chat_room_lifespan(
-    socket: WebSocket, channels: ChannelsPlugin
-) -> AsyncContextManager[None]:
-    async with channels.start_subscription(
-        socket.path_params["chan"], history=10
-    ) as subscriber:
-        try:
-            async with subscriber.run_in_background(socket.send_data):
-                yield
-        except WebSocketDisconnect:
-            return
+class Stream(Controller):
+    path = "/stream"
+    @get("/events/{topic:str}")
+    async def get_notified(self,
+            topic: str,
+            channels: ChannelsPlugin
+    ) -> ServerSentEvent:
+        async def generator() -> AsyncGenerator[bytes, Any]:
+            async with channels.start_subscription([topic]) as subscriber:
+                await channels.put_subscriber_history(subscriber, [topic], limit=100)
+                async for event in subscriber.iter_events():
+                    yield event
 
+        return ServerSentEvent(generator(), event_type="stream")
 
-@websocket_listener("/ws/{chan:str}", connection_lifespan=chat_room_lifespan)
-async def chat_handler(data: str, chan: str, channels: ChannelsPlugin) -> None:
-    channels.publish(data, chan)
+    @post("/notify/{topic:str}")
+    async def notify(self,topic: str, data: dict, channels: ChannelsPlugin) -> None:
+        channels.publish(str(data), [topic])
 
