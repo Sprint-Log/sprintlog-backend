@@ -358,6 +358,7 @@ class AppSettings:
     SECRET_KEY: str = field(
         default_factory=get_env("SECRET_KEY", binascii.hexlify(os.urandom(32)).decode(encoding="utf-8")),
     )
+    PROFILE_BASE_DIR: str = field(default_factory=get_env("PROFILE_BASE_DIR", f"/workspace/app/src/app/db/profiles/"))
     """Application name."""
     NAME: str = field(default_factory=lambda: "app")
     """Allowed CORS Origins"""

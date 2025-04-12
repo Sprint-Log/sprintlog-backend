@@ -24,7 +24,8 @@ from app.db.models.enums import PaymentMethod
 from structlog import get_logger
 from app.db import models as m
 from advanced_alchemy.filters import OrderBy
-
+from app.config import get_settings
+from pathlib import Path
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
@@ -32,6 +33,8 @@ if TYPE_CHECKING:
     from app.domain.accounts.services import UserService
 
 logger = get_logger()
+settings = get_settings()
+profile_base_dir = settings.app.PROFILE_BASE_DIR
 
 
 class UserController(Controller):
@@ -67,7 +70,7 @@ class UserController(Controller):
         results, total = await user_service.list_and_count(*default_filters)
         return user_service.to_schema(data=results, total=total, schema_type=User, filters=filters)
 
-    @get(operation_id="GetUser", path=urls.ACCOUNT_DETAIL, guards=[requires_superuser])
+    @get(operation_id="GetUser", path=urls.ACCOUNT_DETAIL, guards=[requires_active_user])
     async def get_user(
         self,
         user_service: UserService,
@@ -86,26 +89,33 @@ class UserController(Controller):
         self,
         user_service: UserService,
         data: Annotated[UploadFile, Body(media_type=RequestEncodingType.MULTI_PART)],
-        current_user: m.User,
+        user_id: UUID,
     ) -> User:
         content = data.file.read()
         """Upload a user profile image and create a new user."""
-        os.makedirs(os.path.join(os.path.dirname(__file__), "../../../db/user_profile"), exist_ok=True)
-        file_path = os.path.join(os.path.dirname(__file__), "../../../db/user_profile/", data.filename)
+        Path(profile_base_dir).mkdir(parents=True, exist_ok=True)
+
+        file_path = os.path.join(profile_base_dir, data.filename)
 
         with open(file_path, "wb") as f:
             f.write(content)
 
-            user = await user_service.update(item_id=current_user.id, data={"avatar_url": file_path})
+            user = await user_service.update(item_id=user_id, data={"avatar_url": file_path})
         return user_service.to_schema(user, schema_type=User)
 
     @get(operation_id="getProfile", path=urls.ACCOUNT_PROFILE_IMG, guards=[requires_active_user])
-    async def get_profile(self, current_user: m.User) -> File | None:
-        if current_user.avatar_url:
-            extension = mimetypes.guess_extension(current_user.avatar_url)
-            mime_type = mimetypes.guess_type(current_user.avatar_url)[0]
-            file_name = current_user.avatar_url.split("/")[-1]
-            with open(current_user.avatar_url, "rb") as f:
+    async def get_profile(self, user_service: UserService, user_id: UUID) -> File | None:
+
+        user_obj = await user_service.get_one_or_none(id=user_id)
+
+        if user_obj is None:
+            raise NotFoundException("User not found!")
+
+        if user_obj.avatar_url:
+            extension = mimetypes.guess_extension(user_obj.avatar_url)
+            mime_type = mimetypes.guess_type(user_obj.avatar_url)[0]
+            file_name = user_obj.avatar_url.split("/")[-1]
+            with open(user_obj.avatar_url, "rb") as f:
                 content = f.read()
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=f".{extension}") as tmp_file:
@@ -198,10 +208,14 @@ class UserController(Controller):
         if user_obj is None:
             raise NotFoundException("User not found!")
 
-        if current_user.id != user_id and not current_user.is_superuser:
-            raise PermissionDeniedException("Only allow superuser to proceed this action!")
+        if current_user.id != user_id:
+            if not current_user.is_superuser:
+                raise PermissionDeniedException("Only allow superuser to proceed this action!")
+            auth_email = current_user.email
+        else:
+            auth_email = user_obj.email
 
-        await user_service.authenticate(username=user_obj.email, password=data.current_password)
+        await user_service.authenticate(username=auth_email, password=data.current_password)
 
         await user_service.update_password(data=data.to_dict(), db_obj=user_obj)
         return Response(

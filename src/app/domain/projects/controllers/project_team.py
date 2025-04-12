@@ -81,14 +81,8 @@ class ProjectTeamController(Controller):
         if project_obj is None:
             raise NotFoundException(detail="Project Not Found!", status_code=409)
 
-        for team in project_obj.teams:
-            logger.info(team.id)
-
         teams = [team for team in project_obj.teams if str(team.id) != data.team_id]
 
         project_obj = await project_service.update(item_id=project_obj.id, data={"teams": teams})
-
-        for team in project_obj.teams:
-            logger.info(team.id)
 
         return project_service.to_schema(project_obj, schema_type=Project)

@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from typing import Any
-from uuid import UUID  # noqa: TC003
 
 from advanced_alchemy.repository import (
     SQLAlchemyAsyncRepository,
-    SQLAlchemyAsyncSlugRepository,
 )
 from advanced_alchemy.service import (
     ModelDictT,
     SQLAlchemyAsyncRepositoryService,
     is_dict,
-    is_dict_with_field,
-    is_dict_without_field,
     schema_dump,
 )
 from litestar.exceptions import PermissionDeniedException
@@ -66,9 +61,6 @@ class UserService(SQLAlchemyAsyncRepositoryService[m.User]):
         if db_obj.hashed_password is None:
             msg = "User not found or password invalid."
             raise PermissionDeniedException(detail=msg)
-        if not await crypt.verify_password(data["current_password"], db_obj.hashed_password):
-            msg = "User not found or password invalid."
-            raise PermissionDeniedException(detail=msg)
         if not db_obj.is_active:
             msg = "User account is not active"
             raise PermissionDeniedException(detail=msg)
@@ -77,9 +69,7 @@ class UserService(SQLAlchemyAsyncRepositoryService[m.User]):
 
     @staticmethod
     def is_superuser(user: m.User) -> bool:
-        return bool(
-            user.is_superuser
-        )
+        return bool(user.is_superuser)
 
     async def _populate_model(self, data: ModelDictT[m.User]) -> ModelDictT[m.User]:
         data = schema_dump(data)
@@ -89,4 +79,3 @@ class UserService(SQLAlchemyAsyncRepositoryService[m.User]):
         if is_dict(data) and (password := data.pop("password", None)) is not None:
             data["hashed_password"] = await crypt.get_password_hash(password)
         return data
-

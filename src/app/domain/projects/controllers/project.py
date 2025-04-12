@@ -1,31 +1,28 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
-from structlog import getLogger
 from uuid import UUID
 
-from advanced_alchemy.filters import OrderBy, CollectionFilter
-from litestar import Controller, delete, get, post, put, patch
+from advanced_alchemy.filters import CollectionFilter, OrderBy
+from litestar import Controller, delete, get, patch, post, put
 from litestar.di import Provide
-from litestar.params import Dependency
-from litestar.status_codes import HTTP_200_OK
 from litestar.exceptions import NotFoundException, ValidationException
 from litestar.pagination import OffsetPagination
+from litestar.params import Dependency
+from litestar.status_codes import HTTP_200_OK
+from structlog import getLogger
 
-from app.domain.accounts.guards import requires_active_user, requires_superuser
-from app.domain.teams.services import TeamService
-
-from app.domain.projects.dependencies import provide_project_service
+from app.db import models as m
 from app.domain.accounts.deps import provide_user_service
-
-from app.domain.projects.services import ProjectService
+from app.domain.accounts.guards import requires_active_user, requires_superuser
+from app.domain.accounts.schemas import User as UserSchema
 from app.domain.accounts.services import UserService
 from app.domain.projects import urls
-from app.domain.projects.schemas import ProjectCreate, Project, ProjectStatusUpdate, ProjectUpdate
-from app.domain.accounts.schemas import User as UserSchema
-
+from app.domain.projects.dependencies import provide_project_service
+from app.domain.projects.schemas import Project, ProjectCreate, ProjectStatusUpdate, ProjectUpdate
+from app.domain.projects.services import ProjectService
+from app.domain.teams.services import TeamService
 from app.lib.deps import create_filter_dependencies, create_service_dependencies
-from app.db import models as m
 
 if TYPE_CHECKING:
     from advanced_alchemy.filters import FilterTypes
@@ -66,6 +63,7 @@ class ProjectController(Controller):
     async def list_project(
         self,
         project_service: ProjectService,
+        current_user: m.User,
         filters: Annotated[list[FilterTypes], Dependency(skip_validation=True)],
     ) -> OffsetPagination[Project]:
         """Get a list of Models."""
@@ -73,7 +71,8 @@ class ProjectController(Controller):
             OrderBy(field_name="created_at", sort_order="desc"),
             CollectionFilter(field_name="is_archived", values=[False]),
         ] + (filters or [])
-
+        if not (current_user.is_superuser):
+            default_filters.append(m.Project.teams.any(m.Team.id.in_([team.team_id for team in current_user.teams])))
         project_objs, count = await project_service.list_and_count(*default_filters)
 
         return project_service.to_schema(data=project_objs, total=count, filters=default_filters, schema_type=Project)
@@ -91,6 +90,8 @@ class ProjectController(Controller):
         data.owner_id = current_user.id
         team_ids = data.team_ids
         teams = []
+        internal_team = await teams_service.get_one_or_none(slug="internal")
+        teams.append(internal_team)
         for team_id in team_ids:
             team_obj = await teams_service.get_one_or_none(id=team_id)
 
@@ -114,14 +115,11 @@ class ProjectController(Controller):
         project_obj = await project_service.get_one_or_none(id=id)
         if project_obj is None:
             raise NotFoundException(detail="Project not found!", status_code=200)
-        logger.info("Project")
-        logger.info(project_obj.to_dict())
         return project_service.to_schema(project_obj, schema_type=Project)
 
     @get(urls.PROJECT_DETAIL_BY_SLUG)
     async def get_project_by_slug(self, project_service: ProjectService, slug: str) -> Project:
         """Get Model by slug."""
-        logger.info("It is indeed in a slug")
         project_obj = await project_service.repository.get_by_slug(slug)
         if project_obj:
             return project_service.to_schema(project_obj, schema_type=Project)
