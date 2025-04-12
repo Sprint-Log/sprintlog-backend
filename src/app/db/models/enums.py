@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-__all__ = ["Priority", "Progress", "Status", "Category", "ItemType", "PaymentMethod"]
+__all__ = ["Category", "ItemType", "PaymentMethod", "Priority", "Progress", "Status"]
 
 
 class Priority(StrEnum):
@@ -55,6 +55,30 @@ class PaymentMethod(StrEnum):
     K_PAY = "k-pay"
     AYA_PAY = "aya-pay"
     WAVE_PAY = "wave-pay"
+
+class ChatType(StrEnum):
+    MESSAGE = "message"
+    ANNOUNCEMENT = "announcement"
+    NOTE = "note"
+    GROUP = "group"
+    DIRECT = "direct"
+    CHANNEL = "channel"
+
+class EventType(StrEnum):
+    CREATED = "created"
+    UPDATED = "updated"
+    DELETED = "deleted"
+    JOINED = "joined"
+    LEFT = "left"
+    ARCHIVED = "archived"
+    UNARCHIVED = "unarchived"
+    PINNED = "pinned"
+    UNPINNED = "unpinned"
+    MENTIONED = "mentioned"
+    REACTED = "reacted"
+    UNREACTED = "unreacted"
+    SHARED = "shared"
+    UNSHARED = "unshared"
 
 
 class ProjectStatus(StrEnum):

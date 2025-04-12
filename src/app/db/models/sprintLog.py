@@ -1,21 +1,22 @@
 from __future__ import annotations
 
-from uuid import UUID
 from datetime import UTC, date, datetime
-from sqlalchemy import ForeignKey, String, ARRAY, ForeignKey, SQLColumnExpression
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
+from typing import TYPE_CHECKING, cast
+from uuid import UUID
+
 from advanced_alchemy.base import UUIDAuditBase
 from litestar.dto import Mark, dto_field
-
-from typing import TYPE_CHECKING, cast
+from sqlalchemy import ARRAY, ForeignKey, SQLColumnExpression, String
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
-from .enums import Priority, Progress, Status, Category, ItemType
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .enums import Category, ItemType, Priority, Progress, Status
 
 if TYPE_CHECKING:
-    from .user import User
-    from .project import Project
     from .audit import Audit
+    from .project import Project
+    from .user import User
 
 __all__ = ["SprintLog"]
 
