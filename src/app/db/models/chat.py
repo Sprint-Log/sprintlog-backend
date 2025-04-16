@@ -21,8 +21,8 @@ class Chat(UUIDAuditBase):
     __tablename__ = "chats"
 
     parent_id: Mapped[UUID | None] = mapped_column(ForeignKey("chats.id"), nullable=True)
-    parent: Mapped["Chat"] = relationship("Chat", remote_side="Chat.id", back_populates="replies")
-    replies: Mapped[list["Chat"]] = relationship("Chat", back_populates="parent")
+    parent = relationship("Chat", remote_side="Chat.id", back_populates="replies", lazy="selectin", join_depth=2)
+    replies = relationship("Chat", back_populates="parent", lazy="selectin", join_depth=2)
 
     sprint_id: Mapped[UUID | None] = mapped_column(ForeignKey("sprint_log.id"), nullable=False)
     chat_type: Mapped[ChatType] = mapped_column(ENUM(ChatType), nullable=False)

@@ -1,20 +1,24 @@
 from collections.abc import AsyncGenerator
-from typing import Any
-
+from typing import Any, Sequence
 from litestar import Controller, get, post
 from litestar.di import Provide
 from litestar.channels import ChannelsPlugin
 from litestar.response import ServerSentEvent
 
-from app.domain.chat.schemas import Chat, ChatCreate
+from app.domain.chat.dtos import WriteDTO, ReadDTO
+from app.domain.chat.schemas import Chat
 from app.domain.chat.deps import provide_chat_service
 
 from app.domain.chat.service import ChatService
+from uuid import UUID
+from app.db import models as m
 
 
 class StreamController(Controller):
     path = "/api/stream"
     tags = ["Chats"]
+    return_dto = ReadDTO
+    dto = WriteDTO
     dependencies = {"chat_service": Provide(provide_chat_service)}
 
     @get("/events/{topic:str}")
@@ -28,27 +32,16 @@ class StreamController(Controller):
         return ServerSentEvent(generator(), event_type="stream")
 
     @post("/notify/{topic:str}")
-    async def notify(self, topic: str, data: dict, channels: ChannelsPlugin) -> None:
-        channels.publish(str(data), [topic])
-
-    @get("/chats/{topic:str}")
-    async def stream_messages(self, topic: str, channels: ChannelsPlugin) -> ServerSentEvent:
-        async def generator():
-            async with channels.start_subscription([topic]) as subscriber:
-                async for event in subscriber.iter_events():
-                    yield event
-
-        return ServerSentEvent(generator(), event_type="message")
-
-    # @get("/chat/{sprint_id:uuid}")
-    # async def get_messages(self, sprint_id: UUID, chat_service: ChatService) -> OffsetPagination[Chat]:
-
-    #     chats, total = await chat_service.list_and_count(sprint_id=sprint_id)
-    #     return chat_service.to_schema(data=chats, total=total, schema_type=Chat)
+    async def notify(self, topic: str, data: m.Chat, channels: ChannelsPlugin, chat_service: ChatService) -> None:
+        chat_obj = await chat_service.create(data=data)
+        message = chat_service.to_schema(data=chat_obj, schema_type=Chat)
+        channels.publish(message, [topic])
 
     @post("/chats/create")
-    async def create_message(self, data: ChatCreate, chat_service: ChatService) -> Chat:
+    async def create_message(self, data: m.Chat, chat_service: ChatService) -> m.Chat:
+        return await chat_service.create(data=data)
 
-        chat_obj = await chat_service.create(data=data)
+    @get("/chats/list/{sprint_id:uuid}")
+    async def get_messages(self, sprint_id: UUID, chat_service: ChatService) -> Sequence[m.Chat]:
 
-        return chat_service.to_schema(data=chat_obj, schema_type=Chat)
+        return await chat_service.list(sprint_id=sprint_id)
