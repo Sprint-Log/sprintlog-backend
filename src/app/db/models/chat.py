@@ -16,6 +16,7 @@ __all__ = ["Chat"]
 if TYPE_CHECKING:
     from .sprintLog import SprintLog
 
+
 class Chat(UUIDAuditBase):
     __tablename__ = "chats"
 
@@ -23,7 +24,7 @@ class Chat(UUIDAuditBase):
     parent: Mapped["Chat"] = relationship("Chat", remote_side="Chat.id", back_populates="replies")
     replies: Mapped[list["Chat"]] = relationship("Chat", back_populates="parent")
 
-    sprint_id: Mapped[UUID | None] = mapped_column(ForeignKey("sprintlogs.id"), nullable=False)
+    sprint_id: Mapped[UUID | None] = mapped_column(ForeignKey("sprint_log.id"), nullable=False)
     chat_type: Mapped[ChatType] = mapped_column(ENUM(ChatType), nullable=False)
     event_type: Mapped[EventType] = mapped_column(ENUM(EventType), nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)

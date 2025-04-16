@@ -77,6 +77,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
         from app.domain.teams.services import TeamMemberService, TeamService
         from app.domain.web.controllers import WebController
         from app.domain.room.controller import RoomController
+        from app.domain.chat.controllers import StreamController
         from app.lib.exceptions import ApplicationError, exception_to_http_response
         from app.server import plugins
 
@@ -122,6 +123,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
                 ProjectTeamController,
                 SprintLogController,
                 RoomController,
+                StreamController,
             ],
         )
         # signatures

@@ -6,10 +6,6 @@ x-development-volumes: &development-volumes
     - ./Makefile:/workspace/app/Makefile
     - ./pyproject.toml:/workspace/app/pyproject.toml
     - ./uv.lock:/workspace/app/uv.lock
-    - ./resources:/workspace/app/resources
-    - ./public:/workspace/app/public
-    - ./components.json:/workspace/app/components.json
-    - ./postcss.config.cjs:/workspace/app/postcss.config.cjs
     - ./.env.docker.example:/workspace/app/.env
 
 services:

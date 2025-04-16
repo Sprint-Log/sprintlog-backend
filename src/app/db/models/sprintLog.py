@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from .audit import Audit
     from .project import Project
     from .user import User
+    from .chat import Chat
 
 __all__ = ["SprintLog"]
 
@@ -91,6 +92,10 @@ class SprintLog(UUIDAuditBase):
         foreign_keys=owner_id,
         lazy="joined",
         info=dto_field(Mark.PRIVATE),
+    )
+    chats: Mapped[list["Chat"]] = relationship(
+        "Chat",
+        lazy="noload",
     )
     audits: Mapped[list["Audit"]] = relationship(
         "Audit",
