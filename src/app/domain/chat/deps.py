@@ -13,6 +13,6 @@ __all__ = ["provide_chat_service"]
 
 provide_chat_service = create_service_provider(
     ChatService,
-    load=[selectinload(m.Chat.sprintlog), selectinload(m.Chat.parent), selectinload(m.Chat.replies)],
+    load=[selectinload(m.Chat.parent), selectinload(m.Chat.replies)],
     error_messages={"duplicate_key": "This chat already exists.", "integrity": "Chat operation failed."},
 )

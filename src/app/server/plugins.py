@@ -12,5 +12,5 @@ structlog = StructlogPlugin(config=config.log)
 saq = SAQPlugin(config=config.saq)
 alchemy = SQLAlchemyPlugin(config=config.alchemy)
 granian = GranianPlugin()
-channels_backend = MemoryChannelsBackend(history=100)
-channels_instance = ChannelsPlugin(backend=channels_backend, arbitrary_channels_allowed=True)
+
+channels_instance = ChannelsPlugin(backend=MemoryChannelsBackend(history=100), arbitrary_channels_allowed=True)

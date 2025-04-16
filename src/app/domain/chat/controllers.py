@@ -1,24 +1,28 @@
+from __future__ import annotations
+
+import json
 from collections.abc import AsyncGenerator
-from typing import Any, Sequence
+from typing import Any, Annotated
 from litestar import Controller, get, post
 from litestar.di import Provide
+from litestar.params import Body
 from litestar.channels import ChannelsPlugin
 from litestar.response import ServerSentEvent
 
-from app.domain.chat.dtos import WriteDTO, ReadDTO
-from app.domain.chat.schemas import Chat
+from app.domain.chat.schemas import Chat, ChatCreate
 from app.domain.chat.deps import provide_chat_service
 
 from app.domain.chat.service import ChatService
 from uuid import UUID
-from app.db import models as m
+from structlog import getLogger
+
+logger = getLogger()
 
 
 class StreamController(Controller):
     path = "/api/stream"
     tags = ["Chats"]
-    return_dto = ReadDTO
-    dto = WriteDTO
+
     dependencies = {"chat_service": Provide(provide_chat_service)}
 
     @get("/events/{topic:str}")
@@ -32,16 +36,22 @@ class StreamController(Controller):
         return ServerSentEvent(generator(), event_type="stream")
 
     @post("/notify/{topic:str}")
-    async def notify(self, topic: str, data: m.Chat, channels: ChannelsPlugin, chat_service: ChatService) -> None:
-        chat_obj = await chat_service.create(data=data)
-        message = chat_service.to_schema(data=chat_obj, schema_type=Chat)
-        channels.publish(message, [topic])
+    async def notify(self, topic: str, data: dict, channels: ChannelsPlugin, chat_service: ChatService) -> None:
+
+        channels.publish(json.dumps(data), [topic])
 
     @post("/chats/create")
-    async def create_message(self, data: m.Chat, chat_service: ChatService) -> m.Chat:
-        return await chat_service.create(data=data)
+    async def create_message(self, data: Annotated[ChatCreate, Body()], chat_service: ChatService) -> Chat:
+        chat = await chat_service.create(data=data)
+
+        return chat_service.to_schema(data=chat, schema_type=Chat)
 
     @get("/chats/list/{sprint_id:uuid}")
-    async def get_messages(self, sprint_id: UUID, chat_service: ChatService) -> Sequence[m.Chat]:
+    async def get_messages(self, sprint_id: UUID, chat_service: ChatService) -> list[Chat]:
 
-        return await chat_service.list(sprint_id=sprint_id)
+        chats, total = await chat_service.list_and_count(sprint_id=sprint_id, parent_id=None)
+        formatted_chats = []
+        for chat in chats:
+            formatted_chats.append(chat_service.to_chat_schema(chat))
+
+        return formatted_chats

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from app.lib.schema import CamelizedBaseStruct
 from app.db.models.enums import ChatType, EventType
 from typing import Optional

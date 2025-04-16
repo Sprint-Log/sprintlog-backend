@@ -9,7 +9,7 @@ from advanced_alchemy.repository import (
 from advanced_alchemy.service import (
     SQLAlchemyAsyncRepositoryService,
 )
-
+from app.domain.chat.schemas import Chat as ChatSchema
 
 from app.db import models as m
 
@@ -34,3 +34,15 @@ class ChatService(SQLAlchemyAsyncRepositoryService[m.Chat]):
         super().__init__(**repo_kwargs)
 
         self.model_type = self.repository.model_type
+
+    def to_chat_schema(self, chat: m.Chat) -> ChatSchema:
+        return ChatSchema(
+            id=chat.id,
+            message=chat.message,
+            chat_type=chat.chat_type,
+            event_type=chat.event_type,
+            sprint_id=chat.sprint_id,
+            parent_id=chat.parent_id,
+            parent=None,
+            replies=[self.to_chat_schema(reply) for reply in chat.replies or []],
+        )
