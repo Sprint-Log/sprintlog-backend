@@ -8,14 +8,12 @@ from litestar.response import ServerSentEvent
 
 from app.domain.chat.schemas import Chat, ChatCreate
 from app.domain.chat.deps import provide_chat_service
-from advanced_alchemy.service import OffsetPagination
 
 from app.domain.chat.service import ChatService
-from uuid import UUID
 
 
 class StreamController(Controller):
-    path = "/stream"
+    path = "/api/stream"
     tags = ["Chats"]
     dependencies = {"chat_service": Provide(provide_chat_service)}
 
@@ -33,7 +31,7 @@ class StreamController(Controller):
     async def notify(self, topic: str, data: dict, channels: ChannelsPlugin) -> None:
         channels.publish(str(data), [topic])
 
-    @get("/{topic:str}")
+    @get("/chats/{topic:str}")
     async def stream_messages(self, topic: str, channels: ChannelsPlugin) -> ServerSentEvent:
         async def generator():
             async with channels.start_subscription([topic]) as subscriber:
@@ -42,17 +40,15 @@ class StreamController(Controller):
 
         return ServerSentEvent(generator(), event_type="message")
 
-    @get("/chat/{sprint_id:uuid}")
-    async def get_messages(self, sprint_id: UUID, chat_service: ChatService) -> OffsetPagination[Chat]:
+    # @get("/chat/{sprint_id:uuid}")
+    # async def get_messages(self, sprint_id: UUID, chat_service: ChatService) -> OffsetPagination[Chat]:
 
-        chats, total = await chat_service.list_and_count(sprint_id=sprint_id)
-        return chat_service.to_schema(data=chats, total=total, schema_type=Chat)
+    #     chats, total = await chat_service.list_and_count(sprint_id=sprint_id)
+    #     return chat_service.to_schema(data=chats, total=total, schema_type=Chat)
 
-    @post("/chat/{sprint_id:str}")
-    async def create_message(self, data: ChatCreate, sprint_id: str, chat_service: ChatService) -> Chat:
+    @post("/chats/create")
+    async def create_message(self, data: ChatCreate, chat_service: ChatService) -> Chat:
 
-        chat_dict = data.to_dict()
-        chat_dict["sprint_id"] = sprint_id
-        chat_obj = await chat_service.create(data=chat_dict)
+        chat_obj = await chat_service.create(data=data)
 
         return chat_service.to_schema(data=chat_obj, schema_type=Chat)

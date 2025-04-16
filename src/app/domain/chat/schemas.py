@@ -9,7 +9,7 @@ class ChatCreate(CamelizedBaseStruct):
     chat_type: ChatType
     event_type: EventType
     sprint_id: UUID
-    parent_id: UUID
+    parent_id: Optional[UUID] = None
 
 
 class Chat(CamelizedBaseStruct):
