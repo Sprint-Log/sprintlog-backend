@@ -6,12 +6,12 @@ from structlog import getLogger
 from advanced_alchemy.repository import (
     SQLAlchemyAsyncSlugRepository,
 )
-from advanced_alchemy.service import (
-    SQLAlchemyAsyncRepositoryService,
-)
-from app.domain.chat.schemas import Chat as ChatSchema
-
+from advanced_alchemy.service import SQLAlchemyAsyncRepositoryService
+from sqlalchemy import select, and_
+from sqlalchemy.orm import selectinload
 from app.db import models as m
+from uuid import UUID
+from app.domain.chat.schemas import Chat as ChatSchema
 
 __all__ = ["ChatService"]
 
@@ -46,3 +46,22 @@ class ChatService(SQLAlchemyAsyncRepositoryService[m.Chat]):
             parent=None,
             replies=[self.to_chat_schema(reply) for reply in chat.replies or []],
         )
+
+    def _build_selectinload_chain(self, relationship_name: str, depth: int):
+        option = selectinload(getattr(m.Chat, relationship_name))
+        for _ in range(depth - 1):
+            option = option.selectinload(getattr(m.Chat, relationship_name))
+        return option
+
+    async def get_nested_chats(self, sprint_id: UUID, max_depth: int = 4) -> tuple[list[m.Chat], int]:
+        replies_option = self._build_selectinload_chain("replies", max_depth)
+        logger.info("replies_option")
+        logger.info(replies_option)
+        stmt = (
+            select(m.Chat)
+            .options(replies_option)
+            .where(and_(m.Chat.parent_id.is_(None), m.Chat.sprint_id == sprint_id))
+        )
+        result = await self.repository.session.execute(stmt)
+        chats = result.scalars().all()
+        return chats, len(chats)

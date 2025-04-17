@@ -63,19 +63,19 @@ services:
       SAQ_USE_SERVER_LIFESPAN: "false"
     env_file:
       - .env
-  worker:
-    build:
-      context: .
-      dockerfile: deploy/docker/run/Dockerfile
-    command: litestar workers run
-    restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-    env_file:
-      - .env
+  # worker:
+  #   build:
+  #     context: .
+  #     dockerfile: deploy/docker/run/Dockerfile
+  #   command: litestar workers run
+  #   restart: always
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     cache:
+  #       condition: service_healthy
+  #   env_file:
+  #     - .env
   migrator:
     build:
       context: .
