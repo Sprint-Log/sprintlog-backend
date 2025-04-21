@@ -99,6 +99,7 @@ async def current_user_from_token(token: Token, connection: ASGIConnection[Any, 
 
 
 auth = JWTCookieAuth[m.User](
+    key="access-token-unsecure",
     retrieve_user_handler=current_user_from_token,
     token_secret=settings.app.SECRET_KEY,
     exclude=[
