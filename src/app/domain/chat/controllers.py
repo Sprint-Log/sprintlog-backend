@@ -16,6 +16,7 @@ from app.domain.chat.schemas import Chat, ChatCreate
 from app.domain.chat.deps import provide_chat_service
 from app.domain.chat.service import ChatService
 
+# from litestar.channels.backends.redis import RedisChannelsBackend
 logger = getLogger()
 
 

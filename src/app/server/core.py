@@ -101,7 +101,7 @@ class ApplicationCore(InitPluginProtocol, CLIPluginProtocol):
 
         # plugins
         app_config.plugins.extend(
-            [plugins.structlog, plugins.granian, plugins.alchemy, plugins.saq, plugins.channels_instance],
+            [plugins.structlog, plugins.granian, plugins.alchemy, plugins.saq, plugins.channels_plugin],
         )
 
         # routes
