@@ -65,5 +65,5 @@ class AccessController(Controller):
     async def logout(self) -> Redirect:
         """Logout endpoint that clears the auth token cookie and redirects to login."""
         response = Redirect(path="/login")
-        response.set_cookie(key="access-token-unsecure", value="", path="/", httponly=True, max_age=0)
+        response.set_cookie(key="token", value="", path="/", httponly=True, max_age=0)
         return response
