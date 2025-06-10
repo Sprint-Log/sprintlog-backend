@@ -88,11 +88,14 @@ class ProjectController(Controller):
         """Create an `Model`."""
 
         data.owner_id = current_user.id
-        team_ids = data.team_ids
+
         teams = []
         internal_team = await teams_service.get_one_or_none(slug="internal")
-        teams.append(internal_team)
-        for team_id in team_ids:
+
+        if internal_team and internal_team.id not in data.team_ids:
+            teams.append(internal_team)
+
+        for team_id in data.team_ids:
             team_obj = await teams_service.get_one_or_none(id=team_id)
 
             if team_obj is None:

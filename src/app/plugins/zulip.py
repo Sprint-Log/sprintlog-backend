@@ -410,8 +410,13 @@ class ZulipProjectPlugin(ProjectPlugin):
 
     async def after_create(self, data: "Project") -> "Project":
         try:
+
+            principals = [server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS]
+
             email = "" if data.owner.email is None else data.owner.email
-            principals = [server.ZULIP_ADMIN_EMAIL, server.ZULIP_EMAIL_ADDRESS, email]
+            if email not in principals:
+                principals.append(server.ZULIP_EMAIL_ADDRESS)
+
             stream_name = _gen_stream_name(data.name, data.pin)
 
             response = await create_stream(stream_name, data.description, principals)

@@ -74,7 +74,7 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
             data = data.to_dict()
 
         name = data["name"]
-        slug = self._slugify(name)
+        slug = self._slugify(data["slug"] or name)
 
         is_unique = await self._is_slug_unique(slug=slug)
         if not is_unique:
