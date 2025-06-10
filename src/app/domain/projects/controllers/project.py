@@ -6,7 +6,7 @@ from uuid import UUID
 from advanced_alchemy.filters import CollectionFilter, OrderBy
 from litestar import Controller, delete, get, patch, post, put
 from litestar.di import Provide
-from litestar.exceptions import NotFoundException, ValidationException
+from litestar.exceptions import NotFoundException, HTTPException
 from litestar.pagination import OffsetPagination
 from litestar.params import Dependency
 from litestar.status_codes import HTTP_200_OK
@@ -82,6 +82,7 @@ class ProjectController(Controller):
         self,
         data: ProjectCreate,
         current_user: m.User,
+        user_service: UserService,
         project_service: ProjectService,
         teams_service: TeamService,
     ) -> Project:
@@ -89,7 +90,7 @@ class ProjectController(Controller):
 
         data.owner_id = current_user.id
 
-        teams = []
+        teams: list[m.Team] | list = []
         internal_team = await teams_service.get_one_or_none(slug="internal")
 
         if internal_team and internal_team.id not in data.team_ids:
@@ -107,10 +108,18 @@ class ProjectController(Controller):
             project_obj = await project_service.create(data)
             if len(teams) > 0:
                 project_obj.teams = teams
+                participants = []
+                for team in teams:
+                    for member in team.members:
+                        db_obj = await user_service.get(member.user_id)
+                        participants.append(db_obj.email)
+
+                await project_service.assigned_participants(data=project_obj, participants=participants)
+                
             return project_service.to_schema(data=project_obj, schema_type=Project)
         except Exception as e:
             logger.error(e)
-            raise ValidationException(status_code=409, detail="Slug is not unique")
+            raise HTTPException(status_code=409, detail="Failed to create project")
 
     @get(urls.PROJECT_DETAIL)
     async def get_project(self, project_service: ProjectService, id: UUID) -> Project:
@@ -133,6 +142,7 @@ class ProjectController(Controller):
         self,
         data: ProjectUpdate,
         current_user: m.User,
+        user_service: UserService,
         project_service: ProjectService,
         teams_service: TeamService,
         id: UUID,
@@ -143,23 +153,38 @@ class ProjectController(Controller):
 
         if project_obj is None:
             raise NotFoundException(detail="Project Not found!", status_code=409)
+        
+        old_user_ids: set[str] = set()
+        for team in project_obj.teams:
+            for member in team.members:
+                old_user_ids.add(member.user_id)
 
         updated_project = data.to_dict()
         latest_team_ids = set(updated_project.pop("team_ids"))
-
         project_obj = await project_service.update(item_id=id, data=updated_project)
-
         latest_teams: list[m.Team] = []
-
+    
+    
+        new_user_ids: set[str] = set()
         for team_id in latest_team_ids:
 
             new_team = await teams_service.get_one_or_none(id=team_id)
-
             if new_team is None:
                 raise NotFoundException(detail="Team Not found!", status_code=409)
 
             latest_teams.append(new_team)
-
+            for member in new_team.members:
+                new_user_ids.add(member.user_id)
+                
+        new_participant_ids = list(new_user_ids - old_user_ids)
+        removed_participant_ids = list(old_user_ids - new_user_ids)
+ 
+        if removed_participant_ids:
+            removed_participants = [(await user_service.get(user_id)).email for user_id in removed_participant_ids]
+            await project_service.removed_participants(data=project_obj, participants=removed_participants)
+        if new_participant_ids:
+            new_participants = [(await user_service.get(user_id)).email for user_id in new_participant_ids]
+            await project_service.assigned_participants(data=project_obj, participants=new_participants)
         project_obj.teams = latest_teams
 
         return project_service.to_schema(project_obj, schema_type=Project)

@@ -200,7 +200,10 @@ class ServerSettings:
     ZULIP_UPDATE_MESSAGE_URL: str = field(default_factory=get_env("SERVER_ZULIP_UPDATE_MESSAGE_URL", ""))
     """Zulip Delete Message API URL. for zulip server"""
     ZULIP_DELETE_MESSAGE_URL: str = field(default_factory=get_env("SERVER_ZULIP_DELETE_MESSAGE_URL", ""))
-    """Zulip Bot Email Address. for zulip server"""
+    
+    ZULIP_SUB_STREAM_URL: str = field(default_factory=get_env("SERVER_ZULIP_SUBSCRIBE_STREAM_URL", ""))
+    """Zulip URL FOR SUBSCRIBE STREAM. for zulip server"""
+    
     ZULIP_EMAIL_ADDRESS: str = field(default_factory=get_env("SERVER_ZULIP_EMAIL_ADDRESS", ""))
     """Zulip Bot API key. for zulip server"""
     ZULIP_API_KEY: str = field(default_factory=get_env("SERVER_ZULIP_API_KEY", ""))

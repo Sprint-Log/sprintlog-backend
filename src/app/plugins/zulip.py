@@ -1,17 +1,17 @@
+from typing import Any
 import json
+import httpx
 import logging
 from enum import Enum
-from typing import Any
 from uuid import UUID
+from structlog import get_logger
 
-import httpx
 
 from app.db.models import Project, SprintLog
 
 from app.lib import serialization
 from app.lib.plugin import ProjectPlugin, SprintlogPlugin
 from app.config.base import get_settings
-from structlog import get_logger
 
 settings = get_settings()
 server = settings.server
@@ -51,6 +51,49 @@ async def create_stream(
             return dict(response.json())
         msg = f"{response.status_code}, {response.text}"
         raise httpx.HTTPError(msg)
+
+
+async def unsubscribe_from_stream(stream_name: str, principals: list[str]) -> dict:
+    url = f"{server.ZULIP_API_URL}{server.ZULIP_SUB_STREAM_URL}"
+    auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
+    
+    filtered_participants = []
+    for participant in principals:
+        if participant != "admin@gmail.com":
+            filtered_participants.append(participant)
+    
+    form = {
+        "subscriptions": json.dumps([stream_name]),
+        "principals":    json.dumps(filtered_participants),
+    }
+    logger.info("Removed principals")
+    logger.info(filtered_participants)
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.request("DELETE", url, auth=auth, data=form)
+        resp.raise_for_status()
+        return resp.json()
+
+
+async def subscribe_to_stream(name: str, principals: list[str]) -> dict:
+    logger.info("assigning users to zulip stream")
+    url = f"{server.ZULIP_API_URL}{server.ZULIP_SUB_STREAM_URL}"
+    auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
+    subscription = [{"name": name, "description": "Assigned participants"}]
+    
+    filtered_participants = []
+    for participant in principals:
+        if participant != "admin@gmail.com":
+            filtered_participants.append(participant)
+ 
+    form = {
+        "subscriptions": json.dumps(subscription),
+        "principals": json.dumps(filtered_participants),
+    }
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, auth=auth, data=form)
+        resp.raise_for_status()
+        return resp.json()
 
 
 def _gen_stream_name(name: str, is_pinned: bool | None = False) -> str:
@@ -408,6 +451,43 @@ class ZulipProjectPlugin(ProjectPlugin):
     async def before_create(self, data: "Project") -> "Project":
         return data
 
+    async def assigned_participants(self, name: str, participants: list[str]) -> bool:
+        try:
+            stream_name = _gen_stream_name(name)
+            response = await subscribe_to_stream(stream_name, participants)
+            if response["result"] != "success":
+                logger.info(str(response))
+            else:
+                logger.info("successfully assigned the team to zulip stream")
+                return True
+        except (
+            httpx.ConnectTimeout,
+            httpx.ReadTimeout,
+            httpx.ConnectError,
+            httpx.HTTPError,
+        ):
+            logger.info("failed to assign participants to the zulip stream: ")
+        return False
+    
+    async def removed_participants(self, name:str, participants: list[str]) -> bool:
+        
+        try:
+            stream_name = _gen_stream_name(name)
+            response = await unsubscribe_from_stream(stream_name, participants)
+            if response["result"] != "success":
+                logger.info(str(response))
+            else:
+                logger.info("successfully removed the participants to zulip stream")
+                return True
+        except (
+            httpx.ConnectTimeout,
+            httpx.ReadTimeout,
+            httpx.ConnectError,
+            httpx.HTTPError,
+        ):
+            logger.info("failed to remove participants to the zulip stream: ")
+        return False
+
     async def after_create(self, data: "Project") -> "Project":
         try:
 
@@ -420,6 +500,7 @@ class ZulipProjectPlugin(ProjectPlugin):
             stream_name = _gen_stream_name(data.name, data.pin)
 
             response = await create_stream(stream_name, data.description, principals)
+
             if response["result"] != "success":
                 logger.info(str(response))
             else:

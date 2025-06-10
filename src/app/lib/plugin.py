@@ -50,6 +50,14 @@ class ProjectPlugin(ABC):
         return data
 
     @abstractmethod
+    async def assigned_participants(self, name: str, participants: list[str]) -> bool:
+        return True
+    
+    @abstractmethod
+    async def removed_participants(self, name: str, participants: list[str]) -> bool:
+        return True
+
+    @abstractmethod
     async def after_create(self, data: "Project") -> "Project":
         return data
 

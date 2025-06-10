@@ -98,6 +98,16 @@ class ProjectService(SQLAlchemyAsyncRepositoryService[m.Project]):
 
         return obj
 
+    async def assigned_participants(self, data: ModelDictT[m.Project], participants: list[str]) -> m.Project:
+        for plugin in self.plugins:
+            await plugin.assigned_participants(name=data.name, participants=participants)
+        return data
+    
+    async def removed_participants(self, data: ModelDictT[m.Project], participants: list[str]) -> m.Project:
+        for plugin in self.plugins:
+            await plugin.removed_participants(name=data.name, participants=participants)
+        return data
+
     async def update(
         self,
         data: ModelDictT[m.Project],
