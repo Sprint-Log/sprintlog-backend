@@ -61,14 +61,13 @@ async def unsubscribe_from_stream(stream_name: str, principals: list[str]) -> di
     for participant in principals:
         if participant != "admin@gmail.com":
             filtered_participants.append(participant)
-    
+    logger.info("Unsubscribed principals")
+    logger.info(filtered_participants)
     form = {
         "subscriptions": json.dumps([stream_name]),
         "principals":    json.dumps(filtered_participants),
     }
-    logger.info("Removed principals")
-    logger.info(filtered_participants)
-
+ 
     async with httpx.AsyncClient() as client:
         resp = await client.request("DELETE", url, auth=auth, data=form)
         resp.raise_for_status()
@@ -86,6 +85,9 @@ async def subscribe_to_stream(name: str, principals: list[str]) -> dict:
         if participant != "admin@gmail.com":
             filtered_participants.append(participant)
  
+    logger.info("Subscribed principals")
+    logger.info(filtered_participants)
+    
     form = {
         "subscriptions": json.dumps(subscription),
         "principals": json.dumps(filtered_participants),
