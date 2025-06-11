@@ -57,10 +57,8 @@ async def unsubscribe_from_stream(stream_name: str, principals: list[str]) -> di
     url = f"{server.ZULIP_API_URL}{server.ZULIP_SUB_STREAM_URL}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     
-    filtered_participants = []
-    for participant in principals:
-        if participant != "admin@gmail.com":
-            filtered_participants.append(participant)
+    filtered_participants = [p for p in principals if "@hexcode.tech" in p]
+    
     logger.info("Unsubscribed principals")
     logger.info(filtered_participants)
     form = {
@@ -80,10 +78,7 @@ async def subscribe_to_stream(name: str, principals: list[str]) -> dict:
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     subscription = [{"name": name, "description": "Assigned participants"}]
     
-    filtered_participants = []
-    for participant in principals:
-        if participant != "admin@gmail.com":
-            filtered_participants.append(participant)
+    filtered_participants = [p for p in principals if "@hexcode.tech" in p]
  
     logger.info("Subscribed principals")
     logger.info(filtered_participants)
