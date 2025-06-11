@@ -58,9 +58,7 @@ async def unsubscribe_from_stream(stream_name: str, principals: list[str]) -> di
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     
     filtered_participants = [p for p in principals if "@hexcode.tech" in p]
-    
-    logger.info("Unsubscribed principals")
-    logger.info(filtered_participants)
+
     form = {
         "subscriptions": json.dumps([stream_name]),
         "principals":    json.dumps(filtered_participants),
@@ -73,16 +71,12 @@ async def unsubscribe_from_stream(stream_name: str, principals: list[str]) -> di
 
 
 async def subscribe_to_stream(name: str, principals: list[str]) -> dict:
-    logger.info("assigning users to zulip stream")
     url = f"{server.ZULIP_API_URL}{server.ZULIP_SUB_STREAM_URL}"
     auth = httpx.BasicAuth(server.ZULIP_EMAIL_ADDRESS, server.ZULIP_API_KEY)
     subscription = [{"name": name, "description": "Assigned participants"}]
     
     filtered_participants = [p for p in principals if "@hexcode.tech" in p]
  
-    logger.info("Subscribed principals")
-    logger.info(filtered_participants)
-    
     form = {
         "subscriptions": json.dumps(subscription),
         "principals": json.dumps(filtered_participants),
@@ -293,10 +287,6 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
         await self._delete_zulip_item(existing_meta, delete_mode or "", topic_name, stream_name)
 
-        logger.info("stream_name")
-        logger.info(stream_name)
-        logger.info(topic_name)
-        logger.info(content)
         if switch_to == "task":
             msg_response = await send_msg(stream_name, topic_name, content)
         else:
