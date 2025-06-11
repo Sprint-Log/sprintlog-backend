@@ -293,6 +293,10 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
         await self._delete_zulip_item(existing_meta, delete_mode or "", topic_name, stream_name)
 
+        logger.info("stream_name")
+        logger.info(stream_name)
+        logger.info(topic_name)
+        logger.info(content)
         if switch_to == "task":
             msg_response = await send_msg(stream_name, topic_name, content)
         else:
