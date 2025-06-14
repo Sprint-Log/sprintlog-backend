@@ -105,7 +105,8 @@ class SprintLogService(SQLAlchemyAsyncRepositoryService[SprintLog]):
     ) -> SprintLog:
         # Call the before_delete hook for each registered plugin
         for plugin in self.plugins:
-            await plugin.before_delete(item_id=item_id)
+            data = await self.repository.get(item_id)
+            await plugin.before_delete(item_id=item_id, data = data)
 
         obj = await self.repository.delete(item_id)
 

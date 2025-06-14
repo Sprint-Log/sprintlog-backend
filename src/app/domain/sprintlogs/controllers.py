@@ -120,6 +120,7 @@ class SprintLogController(Controller):
 
     @delete(urls.SPRINTLOG_DELETE, guards=[requires_project_ownership], status_code=HTTP_200_OK)
     async def delete(self, sprintlog_service: SprintLogService, row_id: UUID) -> m.SprintLog:
+ 
         return await sprintlog_service.delete(row_id)
 
     @get(urls.SPRINTLOG_BACKLOG_TASK_BY_PROJECT, guards=[requires_active_user])

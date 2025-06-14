@@ -24,6 +24,6 @@ SPRINTLOG_PROGRESS_COMPLETE = "/api/sprintlogs/progress/complete/{slug:str}"
 SPRINTLOG_PROGRESS_CIRCLE = "/api/sprintlogs/progress/circle/{slug:str}"
 SPRINTLOG_PRIORITY_CIRCLE = "/api/sprintlogs/priority/circle/{slug:str}"
 SPRINTLOG_STATUS_CIRCLE = "/api/sprintlogs/status/circle/{slug:str}"
-
+ 
 SPRINTLOG_SWITCH_TASK = "/api/sprintlogs/switch/task/{slug:str}"
 SPRINTLOG_SWITCH_BACKLOG = "/api/sprintlogs/switch/backlog/{slug:str}"

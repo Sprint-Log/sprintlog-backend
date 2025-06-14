@@ -379,7 +379,7 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
         )
         status = self._set_status(data, old_data)
         project_name = old_data.project_name if isinstance(old_data, SprintLog) else data.project_name
-
+        
         if meta_data:
             try:
                 logger.info(status)
@@ -429,7 +429,21 @@ class ZulipSprintlogPlugin(SprintlogPlugin):
 
         return data
 
-    async def before_delete(self, item_id: UUID) -> "UUID":
+    async def before_delete(self, item_id: UUID, data: "SprintLog") -> "UUID":
+  
+        existing_meta = (
+            serialization.eval_from_b64(data.plugin_meta)
+            if data.plugin_meta
+            else serialization.eval_from_b64(data.plugin_meta)
+        )
+        
+        delete_mode = "message"
+        logger.info(f">>> mode {delete_mode}")
+ 
+        _ , stream_name, topic_name = self._format_content(data).values()
+
+        await self._delete_zulip_item(existing_meta, delete_mode or "", topic_name, stream_name)
+ 
         return item_id
 
     async def after_delete(self, data: "SprintLog") -> "SprintLog":

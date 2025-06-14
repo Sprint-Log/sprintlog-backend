@@ -36,7 +36,7 @@ class SprintlogPlugin(ABC):
         return data
 
     @abstractmethod
-    async def before_delete(self, item_id: UUID) -> UUID:
+    async def before_delete(self, item_id: UUID, data: "SprintLog") -> UUID:
         return item_id
 
     @abstractmethod
